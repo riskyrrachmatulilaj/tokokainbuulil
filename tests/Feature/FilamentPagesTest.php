@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Pages\BackupPage;
 use App\Filament\Pages\CollectivePaymentPage;
 use App\Filament\Pages\Reports;
 use App\Filament\Resources\CollectivePaymentResource;
@@ -46,6 +47,7 @@ class FilamentPagesTest extends TestCase
             UserResource::getUrl('index'),
             CollectivePaymentPage::getUrl(),
             Reports::getUrl(),
+            BackupPage::getUrl(),
         ];
 
         foreach ($pages as $url) {
