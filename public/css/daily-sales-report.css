@@ -1,0 +1,249 @@
+/* Laporan Penjualan Harian — scoped styles (Filament prebuilt CSS does not include arbitrary Tailwind utilities) */
+.dsr-report {
+    --dsr-border: rgba(128, 128, 128, 0.22);
+    --dsr-muted: #6b7280;
+    --dsr-surface: rgba(255, 255, 255, 0.72);
+    --dsr-surface-solid: #f9fafb;
+    --dsr-header-bg: rgba(128, 128, 128, 0.08);
+    --dsr-row-hover: rgba(128, 128, 128, 0.06);
+    --dsr-text: #111827;
+    --dsr-text-soft: #4b5563;
+    --dsr-primary: var(--primary-600, #4f46e5);
+    --dsr-success: var(--success-600, #059669);
+    --dsr-success-soft: color-mix(in srgb, var(--dsr-success) 14%, transparent);
+    --dsr-warning: var(--warning-600, #d97706);
+    --dsr-warning-soft: color-mix(in srgb, var(--dsr-warning) 14%, transparent);
+    --dsr-radius: 0.85rem;
+    --dsr-info: var(--info-600, #2563eb);
+    --dsr-info-soft: color-mix(in srgb, var(--dsr-info) 14%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    color: var(--dsr-text);
+}
+
+.dark .dsr-report,
+html.dark .dsr-report {
+    --dsr-border: rgba(255, 255, 255, 0.12);
+    --dsr-muted: #9ca3af;
+    --dsr-surface: rgba(255, 255, 255, 0.04);
+    --dsr-surface-solid: rgba(255, 255, 255, 0.04);
+    --dsr-header-bg: rgba(255, 255, 255, 0.06);
+    --dsr-row-hover: rgba(255, 255, 255, 0.04);
+    --dsr-text: #f9fafb;
+    --dsr-text-soft: #d1d5db;
+}
+
+.dsr-report * {
+    box-sizing: border-box;
+}
+
+/* ---- Metric cards (Rekap) ---- */
+.dsr-report .dsr-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem;
+}
+
+@media (min-width: 640px) {
+    .dsr-report .dsr-metrics {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
+
+.dsr-report .dsr-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--dsr-border);
+    border-radius: var(--dsr-radius);
+    background: var(--dsr-surface-solid);
+    min-width: 0;
+}
+
+.dsr-report .dsr-metric-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--dsr-muted);
+    line-height: 1.3;
+}
+
+.dsr-report .dsr-metric-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--dsr-text);
+    line-height: 1.35;
+    word-break: break-word;
+    font-variant-numeric: tabular-nums;
+}
+
+.dsr-report .dsr-metric-hint {
+    font-size: 0.75rem;
+    color: var(--dsr-muted);
+    line-height: 1.3;
+}
+
+.dsr-report .dsr-metric.is-success {
+    border-color: color-mix(in srgb, var(--dsr-success) 35%, var(--dsr-border));
+    background: var(--dsr-success-soft);
+}
+
+.dsr-report .dsr-metric.is-warning {
+    border-color: color-mix(in srgb, var(--dsr-warning) 35%, var(--dsr-border));
+    background: var(--dsr-warning-soft);
+}
+
+.dsr-report .dsr-metric.is-info {
+    border-color: color-mix(in srgb, var(--dsr-info) 35%, var(--dsr-border));
+    background: var(--dsr-info-soft);
+}
+
+/* ---- Two-column layout for tables ---- */
+.dsr-report .dsr-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .dsr-report .dsr-columns {
+        grid-template-columns: 1.4fr 1fr;
+        align-items: start;
+    }
+}
+
+/* ---- Tables ---- */
+.dsr-report .dsr-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--dsr-border);
+    border-radius: var(--dsr-radius);
+    background: var(--dsr-surface);
+}
+
+.dsr-report .dsr-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.dsr-report .dsr-table th,
+.dsr-report .dsr-table td {
+    padding: 0.7rem 0.85rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--dsr-border);
+    color: var(--dsr-text);
+    white-space: nowrap;
+}
+
+.dsr-report .dsr-table th {
+    background: var(--dsr-header-bg);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--dsr-muted);
+}
+
+.dsr-report .dsr-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.dsr-report .dsr-table tbody tr:hover td {
+    background: var(--dsr-row-hover);
+}
+
+.dsr-report .dsr-table .dsr-col-product {
+    white-space: normal;
+    min-width: 8rem;
+}
+
+.dsr-report .dsr-table .dsr-col-party {
+    white-space: normal;
+    min-width: 6rem;
+    max-width: 10rem;
+}
+
+.dsr-report .dsr-table .dsr-num,
+.dsr-report .dsr-table .dsr-money {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.dsr-report .dsr-table th.dsr-num,
+.dsr-report .dsr-table th.dsr-money {
+    font-weight: 700;
+}
+
+.dsr-report .dsr-table .dsr-center {
+    text-align: center;
+}
+
+.dsr-report .dsr-table .dsr-txn {
+    font-weight: 600;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8125rem;
+}
+
+.dsr-report .dsr-table .dsr-empty {
+    text-align: center;
+    padding: 2rem 0.85rem;
+    color: var(--dsr-muted);
+    white-space: normal;
+    font-weight: 400;
+}
+
+/* ---- Payment method badges ---- */
+.dsr-report .dsr-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.55rem;
+    border-radius: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.dsr-report .dsr-badge.is-cash {
+    background: var(--dsr-success-soft);
+    color: var(--dsr-success);
+}
+
+.dsr-report .dsr-badge.is-credit {
+    background: var(--dsr-warning-soft);
+    color: var(--dsr-warning);
+}
+
+.dsr-report .dsr-badge.is-transfer {
+    background: var(--dsr-info-soft);
+    color: var(--dsr-info);
+}
+
+.dsr-report .dsr-badge.is-qty {
+    background: color-mix(in srgb, var(--dsr-muted) 14%, transparent);
+    color: var(--dsr-text-soft);
+    min-width: 2.25rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.dark .dsr-report .dsr-badge.is-cash,
+html.dark .dsr-report .dsr-badge.is-cash {
+    color: #6ee7b7;
+}
+
+.dark .dsr-report .dsr-badge.is-credit,
+html.dark .dsr-report .dsr-badge.is-credit {
+    color: #fcd34d;
+}
+
+.dark .dsr-report .dsr-badge.is-transfer,
+html.dark .dsr-report .dsr-badge.is-transfer {
+    color: #93c5fd;
+}

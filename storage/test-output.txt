@@ -1,0 +1,15 @@
+﻿
+   DEPR  Tests\Feature\PartyImportTest
+  ! imports new customers from xlsx ΓåÆ Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use Pdo\Mysql::AΓÇª 3.84s  
+  ! upserts customer by name and phone ΓåÆ Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use Pdo\MysqlΓÇª 0.41s  
+  ! validation failures are reported per row ΓåÆ Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use PdoΓÇª 0.31s  
+  ! imports receivable parties as debitur ΓåÆ Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use Pdo\MyΓÇª 0.34s  
+  ! rejects missing nama column ΓåÆ Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use Pdo\Mysql::ATTR_ΓÇª 0.36s  
+  ! template download returns xlsx ΓåÆ Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use Pdo\Mysql::ATΓÇª 0.41s  
+  ! admin sees import actions on list pages ΓåÆ Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use PdoΓÇª 0.62s  
+  ! kasir cannot see import actions ΓåÆ Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, use Pdo\Mysql::AΓÇª 0.34s  
+  ! admin can download template from help action ΓåÆ Constant PDO::MYSQL_ATTR_SSL_CA is deprecated since 8.5, useΓÇª 1.39s  
+
+  Tests:    9 deprecated (37 assertions)
+  Duration: 8.20s
+

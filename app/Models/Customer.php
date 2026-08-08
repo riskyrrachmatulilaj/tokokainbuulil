@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Customer extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'name',
+        'phone',
+        'address',
+    ];
+
+    public function debts()
+    {
+        return $this->hasMany(Debt::class);
+    }
+
+    public function paymentHistories()
+    {
+        return $this->hasMany(PaymentHistory::class);
+    }
+
+    public function collectivePayments()
+    {
+        return $this->hasMany(CollectivePayment::class);
+    }
+
+    public function unpaidDebts()
+    {
+        return $this->debts()
+            ->where('status', Debt::STATUS_UNPAID)
+            ->orderBy('debt_date');
+    }
+
+    public function scopeSearch($query, string $term): mixed
+    {
+        return $query->where(fn ($q) => $q
+            ->where('name', 'like', "%{$term}%")
+            ->orWhere('phone', 'like', "%{$term}%"));
+    }
+
+    public function getHasUnpaidDebtsAttribute(): bool
+    {
+        return $this->debts()
+            ->where('status', Debt::STATUS_UNPAID)
+            ->exists();
+    }
+}
