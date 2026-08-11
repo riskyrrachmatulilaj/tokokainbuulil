@@ -3,7 +3,7 @@
 @endphp
 
 <x-filament-panels::page>
-    <link rel="stylesheet" href="{{ asset('css/kasir.css') }}?v=2" data-navigate-track />
+    <link rel="stylesheet" href="{{ asset('css/kasir.css') }}?v=4" data-navigate-track />
 
     <div class="kasir-pos">
         <div class="kasir-steps" aria-label="Alur kasir">
@@ -59,9 +59,13 @@
                                     wire:click="addToCart({{ $product->id }})"
                                     wire:loading.attr="disabled"
                                     wire:target="addToCart({{ $product->id }})"
+                                    title="{{ $product->name }}"
                                 >
                                     <span class="kasir-product-meta">
                                         <span class="kasir-product-name">{{ $product->name }}</span>
+                                        @if (! empty($product->description))
+                                            <span class="kasir-product-desc">{{ $product->description }}</span>
+                                        @endif
                                         <span class="kasir-product-price">{{ rupiah($product->price) }}</span>
                                     </span>
                                     <span class="kasir-product-add">Tambah</span>
@@ -81,7 +85,7 @@
                         @if (empty($this->cart))
                             Belum ada item. Pilih produk di sebelah kiri.
                         @else
-                            {{ count($this->cart) }} jenis produk · Total qty {{ collect($this->cart)->sum('quantity') }}
+                            {{ count($this->cart) }} jenis produk · Total qty {{ (float) collect($this->cart)->sum('quantity') == (int) collect($this->cart)->sum('quantity') ? (int) collect($this->cart)->sum('quantity') : collect($this->cart)->sum('quantity') }}
                         @endif
                     </x-slot>
 
@@ -90,11 +94,31 @@
                     @else
                         <div class="kasir-cart-list">
                             @foreach ($this->cart as $index => $row)
-                                <div class="kasir-cart-row" wire:key="cart-{{ $row['product_id'] }}-{{ $index }}-{{ $row['quantity'] }}">
+                                <div class="kasir-cart-row" wire:key="cart-{{ $row['product_id'] }}-{{ $index }}-{{ $row['quantity'] }}-{{ $row['price'] }}">
                                     <div class="kasir-cart-top">
                                         <div class="kasir-cart-info">
                                             <span class="kasir-cart-name">{{ $row['name'] }}</span>
-                                            <span class="kasir-cart-unit">{{ rupiah($row['price']) }} / item</span>
+                                            <div class="kasir-price-edit" x-data="{ price: @js($row['price']) }">
+                                                <span class="kasir-price-label">Rp</span>
+                                                <input
+                                                    type="number"
+                                                    class="kasir-price-input"
+                                                    min="0"
+                                                    step="100"
+                                                    inputmode="numeric"
+                                                    x-bind:value="price"
+                                                    x-on:input="price = $event.target.value"
+                                                    x-on:change="$wire.setPrice({{ $index }}, price)"
+                                                    x-on:blur="$wire.setPrice({{ $index }}, price)"
+                                                    x-on:keydown.enter.prevent="$wire.setPrice({{ $index }}, price); $event.target.blur()"
+                                                    aria-label="Ubah harga {{ $row['name'] }}"
+                                                    title="Klik untuk mengubah harga satuan item ini"
+                                                />
+                                                <span class="kasir-price-unit">/ item</span>
+                                                @if (isset($row['original_price']) && (float) $row['price'] !== (float) $row['original_price'])
+                                                    <span class="kasir-price-badge" title="Harga standar {{ rupiah($row['original_price']) }}">Diubah</span>
+                                                @endif
+                                            </div>
                                         </div>
                                         <div class="kasir-cart-subtotal">{{ rupiah($row['subtotal']) }}</div>
                                     </div>
@@ -110,9 +134,9 @@
                                             <input
                                                 type="number"
                                                 class="kasir-qty-input"
-                                                min="1"
-                                                step="1"
-                                                inputmode="numeric"
+                                                min="0.01"
+                                                step="any"
+                                                inputmode="decimal"
                                                 x-data="{ qty: @js($row['quantity']) }"
                                                 x-bind:value="qty"
                                                 x-on:input="qty = $event.target.value"
@@ -177,6 +201,15 @@
                         >
                             <strong>Transfer</strong>
                             <span>Bayar via transfer bank</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="kasir-pay-btn {{ $this->paymentMethod === Sale::PAYMENT_METHOD_SPLIT ? 'is-selected' : '' }}"
+                            data-method="split"
+                            wire:click="$set('paymentMethod', '{{ Sale::PAYMENT_METHOD_SPLIT }}')"
+                        >
+                            <strong>Tunai + Transfer</strong>
+                            <span>Sebagian tunai & transfer</span>
                         </button>
                         <button
                             type="button"
@@ -268,12 +301,33 @@
                     @if ($this->paymentMethod === Sale::PAYMENT_METHOD_CASH)
                         <div
                             class="kasir-field"
+                            wire:key="payment-cash-{{ count($this->cart) }}-{{ $this->cartTotal() }}"
                             x-data="{
-                                received: @js($this->receivedAmount ?? ''),
-                                total: @js($this->cartTotal()),
+                                received: $wire.entangle('receivedAmount'),
+                                parseNum(val) {
+                                    if (val === null || val === undefined || val === '') return 0;
+                                    if (typeof val === 'number') return isNaN(val) ? 0 : val;
+                                    let str = String(val).trim();
+                                    if (!str) return 0;
+                                    if (str.includes('.') && !str.includes(',')) {
+                                        let parts = str.split('.');
+                                        if (parts.length > 1 && parts.slice(1).every(p => p.length === 3)) str = parts.join('');
+                                    } else if (str.includes(',') && !str.includes('.')) {
+                                        let parts = str.split(',');
+                                        if (parts.length > 1 && parts.slice(1).every(p => p.length === 3)) str = parts.join('');
+                                        else str = str.replace(',', '.');
+                                    } else if (str.includes('.') && str.includes(',')) {
+                                        str = str.replace(/\./g, '').replace(',', '.');
+                                    }
+                                    let num = parseFloat(str);
+                                    return isNaN(num) ? 0 : num;
+                                },
+                                get currentTotal() {
+                                    return ($wire.cart || []).reduce((sum, item) => sum + (parseFloat(item.subtotal) || 0), 0);
+                                },
                                 get change() {
-                                    let r = parseFloat(this.received) || 0;
-                                    return Math.max(0, r - this.total);
+                                    let r = this.parseNum(this.received);
+                                    return Math.max(0, r - this.currentTotal);
                                 }
                             }"
                         >
@@ -283,7 +337,7 @@
                                     id="kasir-received-amount"
                                     type="number"
                                     x-model="received"
-                                    x-on:blur="$wire.set('receivedAmount', parseFloat(received) || null)"
+                                    wire:model.live.debounce.250ms="receivedAmount"
                                     min="0"
                                     step="1000"
                                     placeholder="contoh: 100000"
@@ -294,6 +348,90 @@
                             <div class="kasir-change" x-bind:class="change > 0 ? 'is-positive' : ''">
                                 <span class="kasir-change-label">Kembalian</span>
                                 <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(change)"></span>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if ($this->paymentMethod === Sale::PAYMENT_METHOD_SPLIT)
+                        <div
+                            class="kasir-field"
+                            wire:key="payment-split-{{ count($this->cart) }}-{{ $this->cartTotal() }}"
+                            x-data="{
+                                cash: $wire.entangle('cashAmount'),
+                                transfer: $wire.entangle('transferAmount'),
+                                parseNum(val) {
+                                    if (val === null || val === undefined || val === '') return 0;
+                                    if (typeof val === 'number') return isNaN(val) ? 0 : val;
+                                    let str = String(val).trim();
+                                    if (!str) return 0;
+                                    if (str.includes('.') && !str.includes(',')) {
+                                        let parts = str.split('.');
+                                        if (parts.length > 1 && parts.slice(1).every(p => p.length === 3)) str = parts.join('');
+                                    } else if (str.includes(',') && !str.includes('.')) {
+                                        let parts = str.split(',');
+                                        if (parts.length > 1 && parts.slice(1).every(p => p.length === 3)) str = parts.join('');
+                                        else str = str.replace(',', '.');
+                                    } else if (str.includes('.') && str.includes(',')) {
+                                        str = str.replace(/\./g, '').replace(',', '.');
+                                    }
+                                    let num = parseFloat(str);
+                                    return isNaN(num) ? 0 : num;
+                                },
+                                get currentTotal() {
+                                    return ($wire.cart || []).reduce((sum, item) => sum + (parseFloat(item.subtotal) || 0), 0);
+                                },
+                                get totalReceived() {
+                                    let c = this.parseNum(this.cash);
+                                    let t = this.parseNum(this.transfer);
+                                    return c + t;
+                                },
+                                get change() {
+                                    return Math.max(0, this.totalReceived - this.currentTotal);
+                                }
+                            }"
+                        >
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem;">
+                                <div>
+                                    <label class="kasir-label" for="kasir-cash-amount">Nominal Tunai</label>
+                                    <x-filament::input.wrapper>
+                                        <x-filament::input
+                                            id="kasir-cash-amount"
+                                            type="number"
+                                            x-model="cash"
+                                            wire:model.live.debounce.250ms="cashAmount"
+                                            min="0"
+                                            step="1000"
+                                            placeholder="contoh: 50000"
+                                            inputmode="numeric"
+                                        />
+                                    </x-filament::input.wrapper>
+                                </div>
+                                <div>
+                                    <label class="kasir-label" for="kasir-transfer-amount">Nominal Transfer</label>
+                                    <x-filament::input.wrapper>
+                                        <x-filament::input
+                                            id="kasir-transfer-amount"
+                                            type="number"
+                                            x-model="transfer"
+                                            wire:model.live.debounce.250ms="transferAmount"
+                                            min="0"
+                                            step="1000"
+                                            placeholder="contoh: 50000"
+                                            inputmode="numeric"
+                                        />
+                                    </x-filament::input.wrapper>
+                                </div>
+                            </div>
+
+                            <div class="kasir-change" x-bind:class="change > 0 ? 'is-positive' : ''" style="margin-top: 0.75rem;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span class="kasir-change-label">Total Dibayar</span>
+                                    <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(totalReceived)"></span>
+                                </div>
+                                <div style="text-align: right; display: flex; flex-direction: column;">
+                                    <span class="kasir-change-label">Kembalian</span>
+                                    <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(change)"></span>
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -355,6 +493,18 @@
                             <div class="kasir-stat-label">Kembalian</div>
                             <div class="kasir-stat-value">{{ rupiah($this->result['change']) }}</div>
                         </div>
+                    @elseif ($this->result['payment_method'] === Sale::PAYMENT_METHOD_SPLIT)
+                        <div class="kasir-stat">
+                            <div class="kasir-stat-label">Rincian Bayar</div>
+                            <div class="kasir-stat-value" style="font-size: 0.875rem;">
+                                Tunai: {{ rupiah($this->result['cash_amount']) }}<br>
+                                Transfer: {{ rupiah($this->result['transfer_amount']) }}
+                            </div>
+                        </div>
+                        <div class="kasir-stat">
+                            <div class="kasir-stat-label">Kembalian</div>
+                            <div class="kasir-stat-value">{{ rupiah($this->result['change']) }}</div>
+                        </div>
                     @endif
                     <div class="kasir-stat">
                         <div class="kasir-stat-label">Jumlah Item</div>
@@ -364,23 +514,48 @@
 
                 <div class="kasir-actions">
                     <x-filament::button
-                        type="button"
+                        tag="a"
+                        href="{{ route('sales.thermal', ['sale' => $this->result['sale_id']]) }}"
+                        target="_blank"
                         color="success"
                         size="lg"
                         icon="heroicon-o-printer"
-                        wire:click="printThermal"
                     >
                         Cetak Struk Thermal
                     </x-filament::button>
                     <x-filament::button
-                        type="button"
+                        tag="a"
+                        href="{{ route('sales.nota', ['sale' => $this->result['sale_id']]) }}"
+                        target="_blank"
                         color="info"
                         size="lg"
                         icon="heroicon-o-document-text"
-                        wire:click="printNota"
                     >
                         Cetak Nota A4
                     </x-filament::button>
+                    @if (!empty($this->result['wa_link']))
+                        <x-filament::button
+                            tag="a"
+                            href="{{ $this->result['wa_link'] }}"
+                            target="_blank"
+                            color="warning"
+                            size="lg"
+                            icon="heroicon-o-chat-bubble-left-right"
+                        >
+                            Kirim WA
+                        </x-filament::button>
+                    @else
+                        <x-filament::button
+                            type="button"
+                            color="gray"
+                            size="lg"
+                            icon="heroicon-o-chat-bubble-left-right"
+                            disabled
+                            x-tooltip="'Nomor HP pelanggan belum diisi'"
+                        >
+                            Kirim WA
+                        </x-filament::button>
+                    @endif
                     <x-filament::button
                         type="button"
                         color="gray"

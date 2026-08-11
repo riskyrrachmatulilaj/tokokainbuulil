@@ -33,7 +33,11 @@ class KasirPage extends Page
 
     public string $paymentMethod = Sale::PAYMENT_METHOD_CASH;
 
-    public ?float $receivedAmount = null;
+    public mixed $receivedAmount = null;
+
+    public mixed $cashAmount = null;
+
+    public mixed $transferAmount = null;
 
     public ?int $receivablePartyId = null;
 
@@ -119,6 +123,7 @@ class KasirPage extends Page
             $this->cart[] = [
                 'product_id' => $product->id,
                 'name' => $product->name,
+                'original_price' => (float) $product->price,
                 'price' => (float) $product->price,
                 'quantity' => 1,
                 'subtotal' => (float) $product->price,
@@ -129,7 +134,7 @@ class KasirPage extends Page
     public function incrementQty(int $index): void
     {
         if (isset($this->cart[$index])) {
-            $this->cart[$index]['quantity'] += 1;
+            $this->cart[$index]['quantity'] = round((float) $this->cart[$index]['quantity'] + 1, 3);
             $this->cart[$index]['subtotal'] = round((float) $this->cart[$index]['price'] * $this->cart[$index]['quantity'], 2);
         }
     }
@@ -140,19 +145,21 @@ class KasirPage extends Page
             return;
         }
 
-        if ($this->cart[$index]['quantity'] <= 1) {
+        $newQty = round((float) $this->cart[$index]['quantity'] - 1, 3);
+
+        if ($newQty <= 0) {
             $this->removeFromCart($index);
 
             return;
         }
 
-        $this->cart[$index]['quantity'] -= 1;
-        $this->cart[$index]['subtotal'] = round((float) $this->cart[$index]['price'] * $this->cart[$index]['quantity'], 2);
+        $this->cart[$index]['quantity'] = $newQty;
+        $this->cart[$index]['subtotal'] = round((float) $this->cart[$index]['price'] * $newQty, 2);
     }
 
     /**
-     * Set kuantitas item keranjang langsung (ketik angka).
-     * Nilai di bawah 1 akan menghapus item dari keranjang.
+     * Set kuantitas item keranjang langsung (ketik angka pecahan/desimal seperti 1.5, 0.5, 4.3).
+     * Nilai di bawah atau sama dengan 0 akan menghapus item dari keranjang.
      */
     public function setQty(int $index, mixed $quantity): void
     {
@@ -160,9 +167,9 @@ class KasirPage extends Page
             return;
         }
 
-        $qty = (int) $quantity;
+        $qty = static::parseNumericAmount($quantity);
 
-        if ($qty < 1) {
+        if ($qty === null || $qty <= 0) {
             $this->removeFromCart($index);
 
             return;
@@ -172,16 +179,102 @@ class KasirPage extends Page
         $this->cart[$index]['subtotal'] = round((float) $this->cart[$index]['price'] * $qty, 2);
     }
 
+    /**
+     * Set harga satuan item keranjang secara manual.
+     */
+    public function setPrice(int $index, mixed $price): void
+    {
+        if (! isset($this->cart[$index])) {
+            return;
+        }
+
+        $newPrice = max(0, (float) (static::parseNumericAmount($price) ?? 0));
+        $this->cart[$index]['price'] = $newPrice;
+        $this->cart[$index]['subtotal'] = round($newPrice * (float) $this->cart[$index]['quantity'], 2);
+    }
+
     public function removeFromCart(int $index): void
     {
         unset($this->cart[$index]);
         $this->cart = array_values($this->cart);
     }
 
+    public function updatedReceivedAmount(mixed $value): void
+    {
+        $this->receivedAmount = static::parseNumericAmount($value);
+    }
+
+    public function updatedCashAmount(mixed $value): void
+    {
+        $this->cashAmount = static::parseNumericAmount($value);
+    }
+
+    public function updatedTransferAmount(mixed $value): void
+    {
+        $this->transferAmount = static::parseNumericAmount($value);
+    }
+
+    public static function parseNumericAmount(mixed $amount): ?float
+    {
+        if ($amount === null || $amount === '') {
+            return null;
+        }
+
+        if (is_numeric($amount) && ! is_string($amount)) {
+            return (float) $amount;
+        }
+
+        $str = trim((string) $amount);
+        if ($str === '') {
+            return null;
+        }
+
+        if (str_contains($str, '.') && ! str_contains($str, ',')) {
+            $parts = explode('.', $str);
+            if (count($parts) > 1) {
+                $isThousand = true;
+                for ($i = 1; $i < count($parts); $i++) {
+                    if (strlen($parts[$i]) !== 3) {
+                        $isThousand = false;
+                        break;
+                    }
+                }
+                if ($isThousand) {
+                    $str = implode('', $parts);
+                }
+            }
+        } elseif (str_contains($str, ',') && ! str_contains($str, '.')) {
+            $parts = explode(',', $str);
+            if (count($parts) > 1) {
+                $isThousand = true;
+                for ($i = 1; $i < count($parts); $i++) {
+                    if (strlen($parts[$i]) !== 3) {
+                        $isThousand = false;
+                        break;
+                    }
+                }
+                if ($isThousand) {
+                    $str = implode('', $parts);
+                } else {
+                    $str = str_replace(',', '.', $str);
+                }
+            }
+        } elseif (str_contains($str, '.') && str_contains($str, ',')) {
+            $str = str_replace('.', '', $str);
+            $str = str_replace(',', '.', $str);
+        }
+
+        $val = (float) $str;
+
+        return is_nan($val) ? null : round($val, 2);
+    }
+
     public function clearCart(): void
     {
         $this->cart = [];
         $this->receivedAmount = null;
+        $this->cashAmount = null;
+        $this->transferAmount = null;
         $this->receivablePartyId = null;
         $this->partySearch = '';
     }
@@ -193,7 +286,20 @@ class KasirPage extends Page
 
     public function changeAmount(): float
     {
-        return max(0, round((float) ($this->receivedAmount ?? 0) - $this->cartTotal(), 2));
+        $total = $this->cartTotal();
+
+        if ($this->paymentMethod === Sale::PAYMENT_METHOD_CASH) {
+            $received = static::parseNumericAmount($this->receivedAmount) ?? 0.0;
+            return max(0.0, round($received - $total, 2));
+        }
+
+        if ($this->paymentMethod === Sale::PAYMENT_METHOD_SPLIT) {
+            $cash = static::parseNumericAmount($this->cashAmount) ?? 0.0;
+            $transfer = static::parseNumericAmount($this->transferAmount) ?? 0.0;
+            return max(0.0, round(($cash + $transfer) - $total, 2));
+        }
+
+        return 0.0;
     }
 
     public function processSale(): void
@@ -208,6 +314,7 @@ class KasirPage extends Page
             $data = [
                 'items' => collect($this->cart)->map(fn (array $row) => [
                     'product_id' => $row['product_id'],
+                    'price' => (float) $row['price'],
                     'quantity' => $row['quantity'],
                 ])->all(),
                 'payment_method' => $this->paymentMethod,
@@ -216,11 +323,16 @@ class KasirPage extends Page
             ];
 
             if ($this->paymentMethod === Sale::PAYMENT_METHOD_CASH) {
-                $data['received_amount'] = $this->receivedAmount;
+                $data['received_amount'] = static::parseNumericAmount($this->receivedAmount);
             }
 
             if ($this->paymentMethod === Sale::PAYMENT_METHOD_TRANSFER) {
                 $data['received_amount'] = null;
+            }
+
+            if ($this->paymentMethod === Sale::PAYMENT_METHOD_SPLIT) {
+                $data['cash_amount'] = static::parseNumericAmount($this->cashAmount);
+                $data['transfer_amount'] = static::parseNumericAmount($this->transferAmount);
             }
 
             $sale = app(SaleService::class)->createSale($data, auth()->user());
@@ -233,13 +345,18 @@ class KasirPage extends Page
                 'party_name' => $sale->party?->name,
                 'receivable_invoice' => $sale->receivable?->invoice_number,
                 'total' => (float) $sale->total_amount,
+                'cash_amount' => $sale->cash_amount !== null ? (float) $sale->cash_amount : null,
+                'transfer_amount' => $sale->transfer_amount !== null ? (float) $sale->transfer_amount : null,
                 'received' => $sale->received_amount !== null ? (float) $sale->received_amount : null,
                 'change' => $sale->change_amount !== null ? (float) $sale->change_amount : null,
                 'items_count' => $sale->items->sum('quantity'),
+                'wa_link' => $sale->whatsapp_link,
             ];
 
             $this->cart = [];
             $this->receivedAmount = null;
+            $this->cashAmount = null;
+            $this->transferAmount = null;
             $this->receivablePartyId = null;
             $this->partySearch = '';
 

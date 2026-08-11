@@ -41,7 +41,7 @@ class DebtResource extends Resource
                             ->dehydrated(false)
                             ->columnSpan(1),
                         Forms\Components\Select::make('customer_id')
-                            ->label('Pelanggan')
+                            ->label('Supplier')
                             ->relationship('customer', 'name')
                             ->searchable()
                             ->preload()
@@ -88,7 +88,7 @@ class DebtResource extends Resource
                     ->sortable()
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Pelanggan')
+                    ->label('Supplier')
                     ->searchable()
                     ->sortable()
                     ->description(fn (Debt $record) => $record->customer?->phone ?? ''),
@@ -131,7 +131,7 @@ class DebtResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('customer_id')
-                    ->label('Pelanggan')
+                    ->label('Supplier')
                     ->options(fn () => Customer::query()->pluck('name', 'id')),
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status')

@@ -132,6 +132,23 @@
                     <td>Kembalian</td>
                     <td class="right">{{ number_format($sale->change_amount, 0, ',', '.') }}</td>
                 </tr>
+            @elseif ($sale->payment_method === 'split')
+                <tr>
+                    <td>Bayar Tunai</td>
+                    <td class="right">{{ number_format($sale->cash_amount, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>Bayar Transfer</td>
+                    <td class="right">{{ number_format($sale->transfer_amount, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>Total Dibayar</td>
+                    <td class="right">{{ number_format($sale->received_amount, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>Kembalian</td>
+                    <td class="right">{{ number_format($sale->change_amount, 0, ',', '.') }}</td>
+                </tr>
             @elseif ($sale->payment_method === 'transfer')
                 <tr>
                     <td>Status</td>

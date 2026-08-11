@@ -100,6 +100,11 @@ html.dark .dsr-report {
     background: var(--dsr-info-soft);
 }
 
+.dsr-report .dsr-metric.is-purple {
+    border-color: color-mix(in srgb, var(--dsr-primary) 35%, var(--dsr-border));
+    background: color-mix(in srgb, var(--dsr-primary) 14%, transparent);
+}
+
 /* ---- Two-column layout for tables ---- */
 .dsr-report .dsr-columns {
     display: grid;
@@ -224,6 +229,11 @@ html.dark .dsr-report {
 .dsr-report .dsr-badge.is-transfer {
     background: var(--dsr-info-soft);
     color: var(--dsr-info);
+}
+
+.dsr-report .dsr-badge.is-split {
+    background: color-mix(in srgb, var(--dsr-primary) 14%, transparent);
+    color: var(--dsr-primary);
 }
 
 .dsr-report .dsr-badge.is-qty {

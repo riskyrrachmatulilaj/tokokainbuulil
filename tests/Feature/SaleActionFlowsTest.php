@@ -81,6 +81,71 @@ class SaleActionFlowsTest extends TestCase
         ]);
     }
 
+    public function test_kasir_page_parses_formatted_received_amount_and_calculates_change(): void
+    {
+        $product = Product::create(['name' => 'HDP GSM 600', 'price' => 48500, 'is_active' => true]);
+        $party = ReceivableParty::create(['name' => 'Andika Koder', 'phone' => '08123456789']);
+
+        // 48500 * 13 = 630500 total
+        $component = Livewire::actingAs($this->admin())
+            ->test(KasirPage::class);
+
+        for ($i = 0; $i < 13; $i++) {
+            $component->call('addToCart', $product->id);
+        }
+
+        $component->set('receivedAmount', '650.000')
+            ->assertSet('receivedAmount', 650000.0);
+
+        $this->assertEquals(630500, $component->instance()->cartTotal());
+        $this->assertEquals(19500, $component->instance()->changeAmount());
+
+        $component->set('receivablePartyId', $party->id)
+            ->call('processSale');
+
+        $component->assertSet('result.change', 19500);
+
+        $this->assertDatabaseHas('sales', [
+            'total_amount' => 630500,
+            'received_amount' => 650000,
+            'change_amount' => 19500,
+        ]);
+    }
+
+    public function test_kasir_page_supports_decimal_quantity(): void
+    {
+        $product = Product::create(['name' => 'HDP GSM 600 - Ukuran 100', 'price' => 34500, 'is_active' => true]);
+        $party = ReceivableParty::create(['name' => 'Andika Koder', 'phone' => '08123456789']);
+
+        // 34500 * 4.3 = 148350
+        $component = Livewire::actingAs($this->admin())
+            ->test(KasirPage::class)
+            ->call('addToCart', $product->id)
+            ->call('setQty', 0, '4.3')
+            ->set('receivedAmount', '150000')
+            ->set('receivablePartyId', $party->id);
+
+        $this->assertEquals(4.3, $component->get('cart.0.quantity'));
+        $this->assertEquals(148350, $component->get('cart.0.subtotal'));
+        $this->assertEquals(148350, $component->instance()->cartTotal());
+        $this->assertEquals(1650, $component->instance()->changeAmount());
+
+        $component->call('processSale');
+
+        $component->assertSet('result.change', 1650);
+
+        $this->assertDatabaseHas('sales', [
+            'total_amount' => 148350,
+            'received_amount' => 150000,
+            'change_amount' => 1650,
+        ]);
+
+        $this->assertDatabaseHas('sale_items', [
+            'quantity' => 4.3,
+            'subtotal' => 148350,
+        ]);
+    }
+
     public function test_kasir_page_rejects_cash_sale_without_customer(): void
     {
         $product = Product::create(['name' => 'Kain Kasir Tanpa Pelanggan', 'price' => 30000, 'is_active' => true]);
@@ -168,18 +233,17 @@ class SaleActionFlowsTest extends TestCase
         $this->assertStringStartsWith('%PDF-', base64_decode($download['content']));
     }
 
-    public function test_sale_view_page_print_nota_action_downloads_pdf(): void
+    public function test_sale_view_page_print_nota_action_has_preview_url(): void
     {
         $sale = Sale::firstOrFail();
 
         $component = Livewire::actingAs($this->admin())
-            ->test(ViewSale::class, ['record' => $sale->getRouteKey()])
-            ->callAction('print_nota');
+            ->test(ViewSale::class, ['record' => $sale->getRouteKey()]);
 
-        $download = data_get($component->effects, 'download');
-        $this->assertNotNull($download, 'Expected a file download effect.');
-        $this->assertEquals('application/pdf', $download['contentType']);
-        $this->assertStringStartsWith('%PDF-', base64_decode($download['content']));
+        $action = $component->instance()->getAction('print_nota');
+        $this->assertNotNull($action);
+        $this->assertEquals(route('sales.nota', ['sale' => $sale->id]), $action->getUrl());
+        $this->assertTrue($action->shouldOpenUrlInNewTab());
     }
 
     public function test_daily_sales_report_page_generates_result(): void

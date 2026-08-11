@@ -33,12 +33,12 @@ class StatsOverview extends BaseWidget
                 ->color('info'),
 
             Stat::make('Total Nota', (string) Debt::count())
-                ->description('Nota hutang tercatat')
+                ->description('Nota piutang tercatat')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('primary'),
 
-            Stat::make('Total Hutang', rupiah($totalAmount))
-                ->description('Akumulasi nominal hutang')
+            Stat::make('Total Piutang', rupiah($totalAmount))
+                ->description('Akumulasi nominal piutang')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('gray'),
 
@@ -47,7 +47,7 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('success'),
 
-            Stat::make('Total Sisa Hutang', rupiah($totalRemaining))
+            Stat::make('Total Sisa Piutang', rupiah($totalRemaining))
                 ->description('Belum dibayar pelanggan')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color($totalRemaining > 0 ? 'warning' : 'success'),

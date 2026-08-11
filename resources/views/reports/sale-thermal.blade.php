@@ -4,38 +4,39 @@
     <meta charset="utf-8">
     <title>Struk {{ $sale->transaction_number }}</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-weight: bold; color: #000; }
         body {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 9px;
+            font-family: 'Arial Narrow', 'Consolas', 'Courier New', monospace;
+            font-size: 10px;
+            font-weight: bold;
+            font-stretch: condensed;
+            letter-spacing: -0.4px;
             color: #000;
             width: 72mm;
             padding: 4mm;
-            line-height: 1.4;
+            line-height: 1.3;
         }
         .center { text-align: center; }
         .right { text-align: right; }
         .bold { font-weight: bold; }
-        .separator {
+        .separator, .separator-double {
             border: none;
             border-top: 1px dashed #000;
-            margin: 4px 0;
-        }
-        .separator-double {
-            border: none;
-            border-top: 2px solid #000;
             margin: 4px 0;
         }
 
         /* Header Toko */
         .shop-name {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
+            letter-spacing: -0.5px;
             text-align: center;
             margin-bottom: 2px;
         }
         .shop-subtitle {
-            font-size: 9px;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: -0.3px;
             text-align: center;
             margin-bottom: 6px;
         }
@@ -44,22 +45,25 @@
         .info-row {
             display: flex;
             justify-content: space-between;
-            font-size: 8px;
+            font-size: 9px;
+            font-weight: bold;
         }
         .info-row .label {
-            color: #333;
+            color: #000;
+            font-weight: bold;
         }
 
         /* Item table */
         .item-name {
-            font-size: 9px;
+            font-size: 10px;
             font-weight: bold;
             display: block;
         }
         .item-detail {
             display: flex;
             justify-content: space-between;
-            font-size: 8px;
+            font-size: 9px;
+            font-weight: bold;
             padding-left: 8px;
         }
 
@@ -67,24 +71,27 @@
         .total-row {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
+            font-size: 10px;
+            font-weight: bold;
         }
         .total-row.grand {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
+            letter-spacing: -0.5px;
             margin: 3px 0;
         }
 
         /* Footer */
         .footer {
             text-align: center;
-            font-size: 8px;
-            color: #555;
+            font-size: 9px;
+            font-weight: bold;
+            color: #000;
             margin-top: 6px;
         }
         .thanks {
             text-align: center;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: bold;
             margin: 6px 0 2px;
         }
@@ -146,6 +153,19 @@
         <div class="total-row">
             <span>Tunai</span>
             <span>{{ number_format($sale->received_amount, 0, ',', '.') }}</span>
+        </div>
+        <div class="total-row">
+            <span>Kembali</span>
+            <span>{{ number_format($sale->change_amount, 0, ',', '.') }}</span>
+        </div>
+    @elseif ($sale->payment_method === 'split')
+        <div class="total-row">
+            <span>Tunai</span>
+            <span>{{ number_format($sale->cash_amount, 0, ',', '.') }}</span>
+        </div>
+        <div class="total-row">
+            <span>Transfer</span>
+            <span>{{ number_format($sale->transfer_amount, 0, ',', '.') }}</span>
         </div>
         <div class="total-row">
             <span>Kembali</span>

@@ -67,6 +67,79 @@ class SaleServicesTest extends TestCase
         ]);
     }
 
+    public function test_sale_with_custom_price(): void
+    {
+        $product = Product::create(['name' => 'Kain Custom Price Test', 'price' => 50000, 'is_active' => true]);
+        $party = ReceivableParty::create(['name' => 'Pelanggan Harga Khusus', 'phone' => '081300000099']);
+
+        $sale = app(SaleService::class)->createSale([
+            'items' => [
+                ['product_id' => $product->id, 'price' => 42000, 'quantity' => 2],
+            ],
+            'payment_method' => Sale::PAYMENT_METHOD_CASH,
+            'receivable_party_id' => $party->id,
+            'received_amount' => 100000,
+            'sale_date' => today()->toDateString(),
+        ], $this->kasir());
+
+        $this->assertEquals(84000, (float) $sale->total_amount);
+        $this->assertDatabaseHas('sale_items', [
+            'sale_id' => $sale->id,
+            'price' => 42000,
+            'subtotal' => 84000,
+        ]);
+    }
+
+    public function test_split_payment_sale_creates_sale(): void
+    {
+        $product = Product::create(['name' => 'Kain Split Test', 'price' => 50000, 'is_active' => true]);
+        $party = ReceivableParty::create(['name' => 'Pelanggan Split Test', 'phone' => '081300000088']);
+
+        $sale = app(SaleService::class)->createSale([
+            'items' => [
+                ['product_id' => $product->id, 'quantity' => 2],
+            ],
+            'payment_method' => Sale::PAYMENT_METHOD_SPLIT,
+            'receivable_party_id' => $party->id,
+            'cash_amount' => 40000,
+            'transfer_amount' => 60000,
+            'sale_date' => today()->toDateString(),
+        ], $this->kasir());
+
+        $this->assertEquals(Sale::PAYMENT_METHOD_SPLIT, $sale->payment_method);
+        $this->assertEquals(100000, (float) $sale->total_amount);
+        $this->assertEquals(40000, (float) $sale->cash_amount);
+        $this->assertEquals(60000, (float) $sale->transfer_amount);
+        $this->assertEquals(100000, (float) $sale->received_amount);
+        $this->assertEquals(0, (float) $sale->change_amount);
+        $this->assertEquals('Tunai + Transfer', $sale->payment_method_label);
+    }
+
+    public function test_receivable_sale_handles_soft_deleted_invoice_numbers(): void
+    {
+        $product = Product::create(['name' => 'Kain Kredit Soft Delete', 'price' => 50000, 'is_active' => true]);
+        $party = ReceivableParty::create(['name' => 'Pembeli Kredit Soft Delete', 'phone' => '081300000999']);
+
+        $receivable1 = app(\App\Services\ReceivableService::class)->createReceivable([
+            'receivable_party_id' => $party->id,
+            'amount' => 50000,
+            'receivable_date' => today()->toDateString(),
+        ], $this->kasir());
+
+        $firstInvoiceNumber = $receivable1->invoice_number;
+
+        $receivable1->delete();
+
+        $receivable2 = app(\App\Services\ReceivableService::class)->createReceivable([
+            'receivable_party_id' => $party->id,
+            'amount' => 50000,
+            'receivable_date' => today()->toDateString(),
+        ], $this->kasir());
+
+        $this->assertNotEquals($firstInvoiceNumber, $receivable2->invoice_number);
+        $this->assertStringStartsWith(substr($firstInvoiceNumber, 0, -4), $receivable2->invoice_number);
+    }
+
     public function test_cash_sale_requires_customer(): void
     {
         $product = Product::create(['name' => 'Kain Tanpa Pelanggan', 'price' => 20000, 'is_active' => true]);

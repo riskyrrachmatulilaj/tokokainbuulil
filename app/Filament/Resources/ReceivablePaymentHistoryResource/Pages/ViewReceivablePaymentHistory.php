@@ -22,7 +22,7 @@ class ViewReceivablePaymentHistory extends ViewRecord
                     ->schema([
                         Grid::make(2)->schema([
                             TextEntry::make('transaction_number')->label('No. Transaksi')->copyable(),
-                            TextEntry::make('party.name')->label('Debitur'),
+                            TextEntry::make('party.name')->label('Pelanggan'),
                             TextEntry::make('receivable.invoice_number')->label('Nota')
                                 ->url(fn (ReceivablePaymentHistory $record) => $record->receivable ? \App\Filament\Resources\ReceivableResource::getUrl('view', ['record' => $record->receivable]) : null),
                             TextEntry::make('payment_type')

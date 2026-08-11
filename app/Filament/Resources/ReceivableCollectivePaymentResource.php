@@ -42,7 +42,7 @@ class ReceivableCollectivePaymentResource extends Resource
                     ->sortable()
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('party.name')
-                    ->label('Debitur')
+                    ->label('Pelanggan')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
@@ -73,7 +73,7 @@ class ReceivableCollectivePaymentResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('receivable_party_id')
-                    ->label('Debitur')
+                    ->label('Pelanggan')
                     ->relationship('party', 'name')
                     ->searchable(),
                 Tables\Filters\Filter::make('payment_date')

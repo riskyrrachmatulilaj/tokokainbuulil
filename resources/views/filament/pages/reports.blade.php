@@ -44,7 +44,7 @@
                                 <tr class="border-b dark:border-white/5">
                                     @foreach (\App\Exports\ReportExport::valuesFor($type, $row) as $index => $value)
                                         <td class="px-3 py-2">
-                                            @if (in_array($columns[$index] ?? null, ['Nominal', 'Sudah Dibayar', 'Sisa Hutang', 'Total', 'Total Sisa Hutang'], true))
+                                            @if (in_array($columns[$index] ?? null, ['Nominal', 'Sudah Dibayar', 'Sisa Piutang', 'Total', 'Total Sisa Piutang'], true))
                                                 <span class="font-medium">{{ rupiah($value) }}</span>
                                             @elseif (str_contains($columns[$index] ?? '', 'Status'))
                                                 @if (str_contains($value, 'Lunas'))

@@ -69,6 +69,7 @@ class ProductResource extends Resource
                     ->label('Nama Produk')
                     ->searchable()
                     ->sortable()
+                    ->wrap()
                     ->description(fn (Product $record) => $record->description ?? 'Tanpa keterangan')
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('price')

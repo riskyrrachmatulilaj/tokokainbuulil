@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InstallmentResource\Pages;
+use App\Models\Customer;
 use App\Models\Debt;
 use App\Models\Installment;
 use App\Services\PaymentService;
@@ -21,11 +22,11 @@ class InstallmentResource extends Resource
 
     protected static string | \UnitEnum | null $navigationGroup = 'Transaksi Hutang';
 
-    protected static ?string $navigationLabel = 'Cicilan Nota';
+    protected static ?string $navigationLabel = 'Cicilan Nota Hutang';
 
     protected static ?string $modelLabel = 'Cicilan';
 
-    protected static ?string $pluralModelLabel = 'Cicilan Nota';
+    protected static ?string $pluralModelLabel = 'Cicilan Nota Hutang';
 
     protected static ?int $navigationSort = 1;
 
@@ -36,23 +37,46 @@ class InstallmentResource extends Resource
                 \Filament\Schemas\Components\Section::make('Tambah Cicilan')
                     ->description('Pembayaran cicilan untuk satu nota hutang.')
                     ->schema([
-                        Forms\Components\Select::make('debt_id')
-                            ->label('Nota')
-                            ->options(fn () => Debt::query()
-                                ->unpaid()
-                                ->with('customer')
-                                ->get()
-                                ->mapWithKeys(fn (Debt $debt) => [
-                                    $debt->id => "{$debt->invoice_number} - {$debt->customer?->name} (Sisa: ".rupiah($debt->remaining_amount).')',
-                                ]))
+                        Forms\Components\Select::make('customer_id')
+                            ->label('Supplier')
+                            ->options(fn () => Customer::query()
+                                ->whereHas('debts', fn ($q) => $q->unpaid())
+                                ->orderBy('name')
+                                ->pluck('name', 'id'))
                             ->required()
                             ->searchable()
                             ->preload()
                             ->reactive()
+                            ->afterStateUpdated(fn ($set) => $set('debt_id', null))
+                            ->helperText('Pilih supplier terlebih dahulu')
+                            ->columnSpanFull(),
+                        Forms\Components\Select::make('debt_id')
+                            ->label('Nota')
+                            ->options(function ($get) {
+                                $customerId = $get('customer_id');
+                                if (! $customerId) {
+                                    return [];
+                                }
+
+                                return Debt::query()
+                                    ->unpaid()
+                                    ->where('customer_id', $customerId)
+                                    ->get()
+                                    ->mapWithKeys(fn (Debt $debt) => [
+                                        $debt->id => "{$debt->invoice_number} (Sisa: ".rupiah($debt->remaining_amount).')',
+                                    ]);
+                            })
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->reactive()
+                            ->disabled(fn ($get) => ! $get('customer_id'))
                             ->afterStateUpdated(fn ($set, ?string $state) => $set('remaining_hint', Debt::find($state)?->remaining_amount))
-                            ->helperText(fn ($get) => ($remaining = $get('remaining_hint'))
-                                ? 'Sisa hutang nota ini: '.rupiah($remaining)
-                                : 'Pilih nota terlebih dahulu')
+                            ->helperText(fn ($get) => ! $get('customer_id')
+                                ? 'Pilih supplier terlebih dahulu'
+                                : (($remaining = $get('remaining_hint'))
+                                    ? 'Sisa hutang nota ini: '.rupiah($remaining)
+                                    : 'Pilih nota'))
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make('amount')
                             ->label('Nominal Cicilan')
@@ -86,7 +110,7 @@ class InstallmentResource extends Resource
                     ->weight('bold')
                     ->url(fn (Installment $record) => $record->debt ? DebtResource::getUrl('view', ['record' => $record->debt]) : null),
                 Tables\Columns\TextColumn::make('debt.customer.name')
-                    ->label('Pelanggan')
+                    ->label('Supplier')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('installment_date')
@@ -111,7 +135,7 @@ class InstallmentResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('debt.customer_id')
-                    ->label('Pelanggan')
+                    ->label('Supplier')
                     ->relationship('debt.customer', 'name')
                     ->searchable(),
                 Tables\Filters\Filter::make('installment_date')

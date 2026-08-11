@@ -38,7 +38,7 @@ class OverdueDebtsWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('customer.name')
                     ->label('Pelanggan'),
                 Tables\Columns\TextColumn::make('remaining_amount')
-                    ->label('Sisa Hutang')
+                    ->label('Sisa Piutang')
                     ->formatStateUsing(fn ($state) => rupiah($state))
                     ->badge()
                     ->color('danger'),
@@ -48,7 +48,7 @@ class OverdueDebtsWidget extends BaseWidget
                     ->badge()
                     ->color('danger'),
                 Tables\Columns\TextColumn::make('debt_date')
-                    ->label('Tanggal Hutang')
+                    ->label('Tanggal Piutang')
                     ->date('d M Y'),
             ])
             ->actions([

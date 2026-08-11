@@ -269,4 +269,18 @@ class ReceivableActionFlowsTest extends TestCase
             ->call('show')
             ->assertSet('results', fn (mixed $value) => $value !== null);
     }
+
+    public function test_associate_and_update_receivable_party_relationship(): void
+    {
+        $receivable = Receivable::firstOrFail();
+        $newParty = ReceivableParty::create([
+            'name' => 'Debitur Baru Test',
+            'phone' => '08123456789',
+        ]);
+
+        $receivable->party()->associate($newParty);
+        $receivable->save();
+
+        $this->assertEquals($newParty->id, $receivable->fresh()->receivable_party_id);
+    }
 }

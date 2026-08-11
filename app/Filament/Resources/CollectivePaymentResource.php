@@ -18,11 +18,11 @@ class CollectivePaymentResource extends Resource
 
     protected static string | \UnitEnum | null $navigationGroup = 'Transaksi Hutang';
 
-    protected static ?string $navigationLabel = 'Laporan Pembayaran Kolektif';
+    protected static ?string $navigationLabel = 'Laporan Pembayaran Kolektif Hutang';
 
-    protected static ?string $modelLabel = 'Laporan Pembayaran Kolektif';
+    protected static ?string $modelLabel = 'Laporan Pembayaran Kolektif Hutang';
 
-    protected static ?string $pluralModelLabel = 'Laporan Pembayaran Kolektif';
+    protected static ?string $pluralModelLabel = 'Laporan Pembayaran Kolektif Hutang';
 
     protected static ?int $navigationSort = 3;
 
@@ -42,7 +42,7 @@ class CollectivePaymentResource extends Resource
                     ->sortable()
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Pelanggan')
+                    ->label('Supplier')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
@@ -73,7 +73,7 @@ class CollectivePaymentResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('customer_id')
-                    ->label('Pelanggan')
+                    ->label('Supplier')
                     ->relationship('customer', 'name')
                     ->searchable(),
                 Tables\Filters\Filter::make('payment_date')
@@ -91,7 +91,7 @@ class CollectivePaymentResource extends Resource
                 Actions\ViewAction::make(),
                 Actions\DeleteAction::make()
                     ->label('Hapus')
-                    ->modalHeading('Hapus Pembayaran Kolektif')
+                    ->modalHeading('Hapus Pembayaran Kolektif Hutang')
                     ->modalDescription('Apakah Anda yakin ingin menghapus pembayaran kolektif ini? Semua alokasi pembayaran pada nota hutang akan dikembalikan (dibatalkan).')
                     ->using(function (CollectivePayment $record) {
                         app(\App\Services\CollectivePaymentService::class)->reversePayment($record);

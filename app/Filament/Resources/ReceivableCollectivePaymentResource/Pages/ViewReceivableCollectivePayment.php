@@ -36,7 +36,7 @@ class ViewReceivableCollectivePayment extends ViewRecord
                     ->schema([
                         Grid::make(2)->schema([
                             TextEntry::make('transaction_number')->label('No. Transaksi')->copyable(),
-                            TextEntry::make('party.name')->label('Debitur'),
+                            TextEntry::make('party.name')->label('Pelanggan'),
                             TextEntry::make('amount')->label('Total Diterima')->state(fn (ReceivableCollectivePayment $record) => rupiah($record->amount)),
                             TextEntry::make('payment_date')->label('Tanggal')->date('d M Y'),
                             TextEntry::make('description')->label('Keterangan')->placeholder('-')->columnSpanFull(),

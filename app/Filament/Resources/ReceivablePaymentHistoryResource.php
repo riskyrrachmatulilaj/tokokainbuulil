@@ -42,7 +42,7 @@ class ReceivablePaymentHistoryResource extends Resource
                     ->sortable()
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('party.name')
-                    ->label('Debitur')
+                    ->label('Pelanggan')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('receivable.invoice_number')
@@ -81,7 +81,7 @@ class ReceivablePaymentHistoryResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('receivable_party_id')
-                    ->label('Debitur')
+                    ->label('Pelanggan')
                     ->relationship('party', 'name')
                     ->searchable(),
                 Tables\Filters\SelectFilter::make('payment_type')

@@ -24,9 +24,9 @@ class CollectivePaymentPage extends Page implements HasForms
 
     protected static string | \UnitEnum | null $navigationGroup = 'Transaksi Hutang';
 
-    protected static ?string $navigationLabel = 'Pembayaran Kolektif';
+    protected static ?string $navigationLabel = 'Pembayaran Kolektif Hutang';
 
-    protected static ?string $title = 'Pembayaran Kolektif';
+    protected static ?string $title = 'Pembayaran Kolektif Hutang';
 
     protected static ?int $navigationSort = 3;
 
@@ -46,7 +46,7 @@ class CollectivePaymentPage extends Page implements HasForms
         return $form
             ->schema([
                 Select::make('customer_id')
-                    ->label('Pelanggan')
+                    ->label('Supplier')
                     ->options(fn () => Customer::query()
                         ->withCount('debts')
                         ->orderBy('name')
@@ -59,7 +59,7 @@ class CollectivePaymentPage extends Page implements HasForms
                     ->reactive()
                     ->helperText(fn ($state) => $state
                         ? 'Total sisa hutang: '.rupiah(Customer::find($state)?->debts()->sum('remaining_amount') ?? 0)
-                        : 'Pilih pelanggan terlebih dahulu')
+                        : 'Pilih supplier terlebih dahulu')
                     ->columnSpanFull(),
                 DatePicker::make('payment_date')
                     ->label('Tanggal Pembayaran')

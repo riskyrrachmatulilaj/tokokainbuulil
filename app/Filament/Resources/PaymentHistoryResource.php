@@ -18,11 +18,11 @@ class PaymentHistoryResource extends Resource
 
     protected static string | \UnitEnum | null $navigationGroup = 'Transaksi Hutang';
 
-    protected static ?string $navigationLabel = 'History Pembayaran';
+    protected static ?string $navigationLabel = 'History Pembayaran Hutang';
 
-    protected static ?string $modelLabel = 'Riwayat Pembayaran';
+    protected static ?string $modelLabel = 'Riwayat Pembayaran Hutang';
 
-    protected static ?string $pluralModelLabel = 'History Pembayaran';
+    protected static ?string $pluralModelLabel = 'History Pembayaran Hutang';
 
     protected static ?int $navigationSort = 2;
 
@@ -42,7 +42,7 @@ class PaymentHistoryResource extends Resource
                     ->sortable()
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Pelanggan')
+                    ->label('Supplier')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('debt.invoice_number')
@@ -81,7 +81,7 @@ class PaymentHistoryResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('customer_id')
-                    ->label('Pelanggan')
+                    ->label('Supplier')
                     ->relationship('customer', 'name')
                     ->searchable(),
                 Tables\Filters\SelectFilter::make('payment_type')

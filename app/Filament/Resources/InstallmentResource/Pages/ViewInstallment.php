@@ -23,7 +23,7 @@ class ViewInstallment extends ViewRecord
                         Grid::make(2)->schema([
                             TextEntry::make('debt.invoice_number')->label('No. Nota')
                                 ->url(fn (Installment $record) => $record->debt ? \App\Filament\Resources\DebtResource::getUrl('view', ['record' => $record->debt]) : null),
-                            TextEntry::make('debt.customer.name')->label('Pelanggan'),
+                            TextEntry::make('debt.customer.name')->label('Supplier'),
                             TextEntry::make('installment_date')->label('Tanggal')->date('d M Y'),
                             TextEntry::make('amount')->label('Nominal')->state(fn (Installment $record) => rupiah($record->amount)),
                             TextEntry::make('description')->label('Keterangan')->placeholder('-')->columnSpanFull(),

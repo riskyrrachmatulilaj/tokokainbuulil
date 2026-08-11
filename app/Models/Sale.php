@@ -12,6 +12,7 @@ class Sale extends Model
     public const PAYMENT_METHOD_CASH = 'cash';
     public const PAYMENT_METHOD_RECEIVABLE = 'receivable';
     public const PAYMENT_METHOD_TRANSFER = 'transfer';
+    public const PAYMENT_METHOD_SPLIT = 'split';
 
     protected $fillable = [
         'transaction_number',
@@ -20,6 +21,8 @@ class Sale extends Model
         'receivable_party_id',
         'receivable_id',
         'total_amount',
+        'cash_amount',
+        'transfer_amount',
         'received_amount',
         'change_amount',
         'description',
@@ -31,6 +34,8 @@ class Sale extends Model
         return [
             'sale_date' => 'date',
             'total_amount' => 'decimal:2',
+            'cash_amount' => 'decimal:2',
+            'transfer_amount' => 'decimal:2',
             'received_amount' => 'decimal:2',
             'change_amount' => 'decimal:2',
         ];
@@ -61,6 +66,7 @@ class Sale extends Model
         return match ($this->payment_method) {
             self::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang)',
             self::PAYMENT_METHOD_TRANSFER => 'Transfer',
+            self::PAYMENT_METHOD_SPLIT => 'Tunai + Transfer',
             default => 'Tunai',
         };
     }
@@ -68,5 +74,56 @@ class Sale extends Model
     public function getItemCountAttribute(): int
     {
         return $this->items->sum('quantity');
+    }
+
+    public function getWhatsappLinkAttribute(): ?string
+    {
+        $party = $this->party;
+        if (! $party || ! $party->phone) {
+            return null;
+        }
+
+        // Clean phone number
+        $phone = preg_replace('/[^0-9]/', '', $party->phone);
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        $dateStr = $this->sale_date ? $this->sale_date->format('d M Y') : today()->format('d M Y');
+
+        $message = "*NOTA PEMBELIAN - TOKO KAIN BU ULIL*\n";
+        $message .= "----------------------------------------\n";
+        $message .= "*No. Transaksi:* " . $this->transaction_number . "\n";
+        $message .= "*Tanggal:* " . $dateStr . "\n";
+        $message .= "*Pelanggan:* " . $party->name . "\n";
+        $message .= "*Metode Bayar:* " . $this->payment_method_label . "\n";
+        $message .= "----------------------------------------\n";
+        $message .= "*Rincian Barang:*\n";
+
+        foreach ($this->items as $item) {
+            $message .= "- " . $item->product_name . " (" . (int)$item->quantity . "x @ Rp " . number_format((float)$item->price, 0, ',', '.') . "): Rp " . number_format((float)$item->subtotal, 0, ',', '.') . "\n";
+        }
+
+        $message .= "----------------------------------------\n";
+        $message .= "*Total Belanja:* Rp " . number_format((float)$this->total_amount, 0, ',', '.') . "\n";
+
+        if ($this->payment_method === self::PAYMENT_METHOD_CASH) {
+            $message .= "*Bayar:* Rp " . number_format((float)$this->received_amount, 0, ',', '.') . "\n";
+            $message .= "*Kembalian:* Rp " . number_format((float)$this->change_amount, 0, ',', '.') . "\n";
+        } elseif ($this->payment_method === self::PAYMENT_METHOD_SPLIT) {
+            $message .= "*Bayar Tunai:* Rp " . number_format((float)$this->cash_amount, 0, ',', '.') . "\n";
+            $message .= "*Bayar Transfer:* Rp " . number_format((float)$this->transfer_amount, 0, ',', '.') . "\n";
+            $message .= "*Kembalian:* Rp " . number_format((float)$this->change_amount, 0, ',', '.') . "\n";
+        } elseif ($this->payment_method === self::PAYMENT_METHOD_RECEIVABLE) {
+            $message .= "*Sisa Piutang (Kredit):* Rp " . number_format((float)$this->total_amount, 0, ',', '.') . "\n";
+            if ($this->receivable && $this->receivable->due_date) {
+                $message .= "*Jatuh Tempo:* " . $this->receivable->due_date->format('d M Y') . "\n";
+            }
+        }
+
+        $message .= "----------------------------------------\n";
+        $message .= "Terima kasih telah berbelanja di toko kami! 🙏";
+
+        return "https://wa.me/" . $phone . "?text=" . rawurlencode($message);
     }
 }

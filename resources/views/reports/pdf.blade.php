@@ -40,7 +40,7 @@
 <body>
     <div class="header">
         <div class="brand">
-            <h1>Manajemen Hutang Pelanggan</h1>
+            <h1>Manajemen Piutang Pelanggan</h1>
             <p>Laporan {{ $title }}</p>
         </div>
         <div class="meta">
@@ -65,9 +65,9 @@
                 $exporter = $exporter ?? \App\Exports\ReportExport::class;
                 $reportType = $type ?? 'debt_list';
                 $rightColumns = $rightColumns ?? [
-                    'Nominal', 'Sudah Dibayar', 'Sisa Hutang', 'Sudah Diterima', 'Sisa Piutang',
+                    'Nominal', 'Sudah Dibayar', 'Sisa Piutang', 'Sudah Diterima',
                     'Total', 'Jumlah Transaksi', 'Jumlah Nota Belum Lunas', 'Jumlah Jatuh Tempo',
-                    'Total Sisa Hutang', 'Total Sisa Piutang',
+                    'Total Sisa Piutang',
                 ];
             @endphp
             @forelse ($rows as $row)
@@ -94,7 +94,7 @@
 
     <div class="footer">
         <span>Dicetak pada: {{ $generatedAt }}</span>
-        <span>© {{ date('Y') }} Manajemen Hutang</span>
+        <span>© {{ date('Y') }} Manajemen Piutang</span>
     </div>
 </body>
 </html>

@@ -63,6 +63,7 @@ class SaleResource extends Resource
                     ->color(fn (Sale $record) => match ($record->payment_method) {
                         Sale::PAYMENT_METHOD_CASH => 'success',
                         Sale::PAYMENT_METHOD_TRANSFER => 'info',
+                        Sale::PAYMENT_METHOD_SPLIT => 'primary',
                         Sale::PAYMENT_METHOD_RECEIVABLE => 'warning',
                         default => 'gray',
                     })
@@ -93,6 +94,7 @@ class SaleResource extends Resource
                     ->options([
                         Sale::PAYMENT_METHOD_CASH => 'Tunai',
                         Sale::PAYMENT_METHOD_TRANSFER => 'Transfer',
+                        Sale::PAYMENT_METHOD_SPLIT => 'Tunai + Transfer',
                         Sale::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang)',
                     ]),
                 Tables\Filters\Filter::make('sale_date')
@@ -110,17 +112,26 @@ class SaleResource extends Resource
             ])
             ->actions([
                 Actions\ViewAction::make(),
+                Actions\Action::make('send_whatsapp')
+                    ->label('Kirim WA')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->color('warning')
+                    ->url(fn (Sale $record) => $record->whatsapp_link)
+                    ->openUrlInNewTab()
+                    ->visible(fn (Sale $record) => $record->party && $record->party->phone),
                 Actions\ActionGroup::make([
                     Actions\Action::make('print_thermal')
                         ->label('Cetak Struk Thermal')
                         ->icon('heroicon-o-receipt-percent')
                         ->color('success')
-                        ->action(fn (Sale $record) => SaleThermalService::nota($record)),
+                        ->url(fn (Sale $record) => route('sales.thermal', ['sale' => $record->id]))
+                        ->openUrlInNewTab(),
                     Actions\Action::make('print_nota')
                         ->label('Cetak Nota A4')
                         ->icon('heroicon-o-document-text')
                         ->color('info')
-                        ->action(fn (Sale $record) => SalePdfService::nota($record)),
+                        ->url(fn (Sale $record) => route('sales.nota', ['sale' => $record->id]))
+                        ->openUrlInNewTab(),
                 ])->label('Cetak')->icon('heroicon-o-printer')->color('info'),
                 Actions\DeleteAction::make()
                     ->label('Batalkan')

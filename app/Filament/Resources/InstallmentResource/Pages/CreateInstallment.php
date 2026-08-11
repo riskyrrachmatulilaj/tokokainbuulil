@@ -16,6 +16,8 @@ class CreateInstallment extends CreateRecord
 
     protected function handleRecordCreation(array $data): Model
     {
+        unset($data['customer_id'], $data['remaining_hint']);
+
         try {
             return app(PaymentService::class)->recordInstallment($data, auth()->user());
         } catch (ValidationException $e) {

@@ -22,7 +22,7 @@ class SaleItem extends Model
     {
         return [
             'price' => 'decimal:2',
-            'quantity' => 'integer',
+            'quantity' => 'float',
             'subtotal' => 'decimal:2',
         ];
     }

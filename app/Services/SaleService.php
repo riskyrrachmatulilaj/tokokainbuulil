@@ -55,15 +55,19 @@ class SaleService
                     ]);
                 }
 
-                $quantity = max(1, (int) ($item['quantity'] ?? 1));
-                $lineTotal = round((float) $product->price * $quantity, 2);
+                $quantity = max(0.001, round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($item['quantity'] ?? 1) ?? 1), 3));
+                $price = isset($item['price']) && is_numeric($item['price']) && (float) $item['price'] >= 0
+                    ? (float) $item['price']
+                    : (float) $product->price;
+
+                $lineTotal = round($price * $quantity, 2);
 
                 $total = round($total + $lineTotal, 2);
 
                 $lines[] = [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
-                    'price' => $product->price,
+                    'price' => $price,
                     'quantity' => $quantity,
                     'subtotal' => $lineTotal,
                 ];
@@ -79,13 +83,33 @@ class SaleService
 
             $received = null;
             $change = null;
+            $cashAmount = null;
+            $transferAmount = null;
 
             if ($method === Sale::PAYMENT_METHOD_CASH) {
-                $received = round((float) ($data['received_amount'] ?? 0), 2);
+                $cashAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['received_amount'] ?? null) ?? 0), 2);
+                $received = $cashAmount;
 
                 if ($received < $total) {
                     throw ValidationException::withMessages([
                         'received_amount' => 'Uang yang diterima kurang dari total belanja ('.number_format($total, 2).').',
+                    ]);
+                }
+
+                $change = round($received - $total, 2);
+            } elseif ($method === Sale::PAYMENT_METHOD_TRANSFER) {
+                $cashAmount = 0;
+                $transferAmount = $total;
+                $received = $total;
+                $change = 0;
+            } elseif ($method === Sale::PAYMENT_METHOD_SPLIT) {
+                $cashAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['cash_amount'] ?? null) ?? 0), 2);
+                $transferAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['transfer_amount'] ?? null) ?? 0), 2);
+                $received = round($cashAmount + $transferAmount, 2);
+
+                if ($received < $total) {
+                    throw ValidationException::withMessages([
+                        'cash_amount' => 'Jumlah pembayaran (Tunai + Transfer) kurang dari total belanja ('.number_format($total, 2).').',
                     ]);
                 }
 
@@ -99,6 +123,8 @@ class SaleService
                 'receivable_party_id' => $party->id,
                 'receivable_id' => null,
                 'total_amount' => $total,
+                'cash_amount' => $cashAmount,
+                'transfer_amount' => $transferAmount,
                 'received_amount' => $received,
                 'change_amount' => $change,
                 'description' => $data['description'] ?? null,

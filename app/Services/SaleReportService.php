@@ -26,14 +26,20 @@ class SaleReportService
         $cashSales = $sales->where('payment_method', Sale::PAYMENT_METHOD_CASH);
         $receivableSales = $sales->where('payment_method', Sale::PAYMENT_METHOD_RECEIVABLE);
         $transferSales = $sales->where('payment_method', Sale::PAYMENT_METHOD_TRANSFER);
+        $splitSales = $sales->where('payment_method', Sale::PAYMENT_METHOD_SPLIT);
+
+        $cashRevenue = (float) $cashSales->sum('total_amount') + (float) $splitSales->sum('cash_amount');
+        $transferRevenue = (float) $transferSales->sum('total_amount') + (float) $splitSales->sum('transfer_amount');
 
         $summary = [
             'transactions' => $sales->count(),
             'total_revenue' => round((float) $sales->sum('total_amount'), 2),
             'cash_count' => $cashSales->count(),
-            'cash_revenue' => round((float) $cashSales->sum('total_amount'), 2),
+            'cash_revenue' => round($cashRevenue, 2),
             'transfer_count' => $transferSales->count(),
-            'transfer_revenue' => round((float) $transferSales->sum('total_amount'), 2),
+            'transfer_revenue' => round($transferRevenue, 2),
+            'split_count' => $splitSales->count(),
+            'split_revenue' => round((float) $splitSales->sum('total_amount'), 2),
             'receivable_count' => $receivableSales->count(),
             'receivable_revenue' => round((float) $receivableSales->sum('total_amount'), 2),
             'items_count' => $sales->sum(fn (Sale $sale) => $sale->items->sum('quantity')),

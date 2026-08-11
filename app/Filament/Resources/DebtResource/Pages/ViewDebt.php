@@ -24,7 +24,7 @@ class ViewDebt extends ViewRecord
                     ->schema([
                         Grid::make(2)->schema([
                             TextEntry::make('invoice_number')->label('Nomor Nota')->copyable(),
-                            TextEntry::make('customer.name')->label('Pelanggan')
+                            TextEntry::make('customer.name')->label('Supplier')
                                 ->url(fn (Debt $record) => $record->customer ? CustomerResource::getUrl('view', ['record' => $record->customer]) : null),
                             TextEntry::make('amount')->label('Nominal Hutang')->state(fn (Debt $record) => rupiah($record->amount)),
                             TextEntry::make('paid_amount')->label('Total Dibayar')->state(fn (Debt $record) => rupiah($record->paid_amount)),

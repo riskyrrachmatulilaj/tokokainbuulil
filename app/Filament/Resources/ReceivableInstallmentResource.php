@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ReceivableInstallmentResource\Pages;
 use App\Models\Receivable;
 use App\Models\ReceivableInstallment;
+use App\Models\ReceivableParty;
 use App\Services\ReceivablePaymentService;
 use Filament\Forms;
 use Filament\Schemas\Schema;
@@ -36,23 +37,46 @@ class ReceivableInstallmentResource extends Resource
                 \Filament\Schemas\Components\Section::make('Tambah Cicilan')
                     ->description('Pembayaran cicilan untuk satu nota piutang.')
                     ->schema([
-                        Forms\Components\Select::make('receivable_id')
-                            ->label('Nota')
-                            ->options(fn () => Receivable::query()
-                                ->unpaid()
-                                ->with('party')
-                                ->get()
-                                ->mapWithKeys(fn (Receivable $receivable) => [
-                                    $receivable->id => "{$receivable->invoice_number} - {$receivable->party?->name} (Sisa: ".rupiah($receivable->remaining_amount).')',
-                                ]))
+                        Forms\Components\Select::make('party_id')
+                            ->label('Pelanggan')
+                            ->options(fn () => ReceivableParty::query()
+                                ->whereHas('receivables', fn ($q) => $q->unpaid())
+                                ->orderBy('name')
+                                ->pluck('name', 'id'))
                             ->required()
                             ->searchable()
                             ->preload()
                             ->reactive()
+                            ->afterStateUpdated(fn ($set) => $set('receivable_id', null))
+                            ->helperText('Pilih pelanggan terlebih dahulu')
+                            ->columnSpanFull(),
+                        Forms\Components\Select::make('receivable_id')
+                            ->label('Nota')
+                            ->options(function ($get) {
+                                $partyId = $get('party_id');
+                                if (! $partyId) {
+                                    return [];
+                                }
+
+                                return Receivable::query()
+                                    ->unpaid()
+                                    ->where('receivable_party_id', $partyId)
+                                    ->get()
+                                    ->mapWithKeys(fn (Receivable $receivable) => [
+                                        $receivable->id => "{$receivable->invoice_number} (Sisa: ".rupiah($receivable->remaining_amount).')',
+                                    ]);
+                            })
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->reactive()
+                            ->disabled(fn ($get) => ! $get('party_id'))
                             ->afterStateUpdated(fn ($set, ?string $state) => $set('remaining_hint', Receivable::find($state)?->remaining_amount))
-                            ->helperText(fn ($get) => ($remaining = $get('remaining_hint'))
-                                ? 'Sisa piutang nota ini: '.rupiah($remaining)
-                                : 'Pilih nota terlebih dahulu')
+                            ->helperText(fn ($get) => ! $get('party_id')
+                                ? 'Pilih pelanggan terlebih dahulu'
+                                : (($remaining = $get('remaining_hint'))
+                                    ? 'Sisa piutang nota ini: '.rupiah($remaining)
+                                    : 'Pilih nota'))
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make('amount')
                             ->label('Nominal Cicilan')
@@ -86,7 +110,7 @@ class ReceivableInstallmentResource extends Resource
                     ->weight('bold')
                     ->url(fn (ReceivableInstallment $record) => $record->receivable ? ReceivableResource::getUrl('view', ['record' => $record->receivable]) : null),
                 Tables\Columns\TextColumn::make('receivable.party.name')
-                    ->label('Debitur')
+                    ->label('Pelanggan')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('installment_date')
@@ -111,7 +135,7 @@ class ReceivableInstallmentResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('receivable.receivable_party_id')
-                    ->label('Debitur')
+                    ->label('Pelanggan')
                     ->relationship('receivable.party', 'name')
                     ->searchable(),
                 Tables\Filters\Filter::make('installment_date')

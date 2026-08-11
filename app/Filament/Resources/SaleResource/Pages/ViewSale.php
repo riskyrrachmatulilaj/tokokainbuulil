@@ -68,17 +68,26 @@ class ViewSale extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('send_whatsapp')
+                ->label('Kirim WA')
+                ->icon('heroicon-o-chat-bubble-left-right')
+                ->color('warning')
+                ->url(fn () => $this->record->whatsapp_link)
+                ->openUrlInNewTab()
+                ->visible(fn () => $this->record->party && $this->record->party->phone),
             Actions\ActionGroup::make([
                 Actions\Action::make('print_thermal')
                     ->label('Cetak Struk Thermal')
                     ->icon('heroicon-o-receipt-percent')
                     ->color('success')
-                    ->action(fn () => SaleThermalService::nota($this->record)),
+                    ->url(fn () => route('sales.thermal', ['sale' => $this->record->id]))
+                    ->openUrlInNewTab(),
                 Actions\Action::make('print_nota')
                     ->label('Cetak Nota A4')
                     ->icon('heroicon-o-document-text')
                     ->color('info')
-                    ->action(fn () => SalePdfService::nota($this->record)),
+                    ->url(fn () => route('sales.nota', ['sale' => $this->record->id]))
+                    ->openUrlInNewTab(),
             ])->label('Cetak')->icon('heroicon-o-printer')->color('info'),
             Actions\DeleteAction::make()
                 ->label('Batalkan Penjualan')

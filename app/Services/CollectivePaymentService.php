@@ -47,13 +47,13 @@ class CollectivePaymentService
 
         if ($totalRemaining <= 0) {
             throw ValidationException::withMessages([
-                'customer_id' => 'Pelanggan ini tidak memiliki hutang yang belum lunas.',
+                'customer_id' => 'Supplier ini tidak memiliki hutang yang belum lunas.',
             ]);
         }
 
         if ($amount > $totalRemaining) {
             throw ValidationException::withMessages([
-                'amount' => 'Pembayaran melebihi total sisa hutang pelanggan ('.number_format($totalRemaining, 2).').',
+                'amount' => 'Pembayaran melebihi total sisa hutang supplier ('.number_format($totalRemaining, 2).').',
             ]);
         }
 

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class TransactionNumberService
 {
     /**
-     * Generate nomor nota hutang, contoh: INV-20260802-0001
+     * Generate nomor nota piutang, contoh: INV-20260802-0001
      */
     public function nextInvoiceNumber(): string
     {
@@ -30,12 +30,7 @@ class TransactionNumberService
      */
     public function nextTransactionNumber(): string
     {
-        $sequence = DB::table('payment_histories')
-            ->whereDate('created_at', today())
-            ->distinct()
-            ->count('transaction_number') + 1;
-
-        return 'TRX-'.today()->format('Ymd').'-'.str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        return $this->generateRaw('payment_histories', 'transaction_number', 'TRX');
     }
 
     /**
@@ -43,12 +38,7 @@ class TransactionNumberService
      */
     public function nextReceivableTransactionNumber(): string
     {
-        $sequence = DB::table('receivable_payment_histories')
-            ->whereDate('created_at', today())
-            ->distinct()
-            ->count('transaction_number') + 1;
-
-        return 'PTRX-'.today()->format('Ymd').'-'.str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        return $this->generateRaw('receivable_payment_histories', 'transaction_number', 'PTRX');
     }
 
     /**
@@ -61,8 +51,16 @@ class TransactionNumberService
 
     private function generate(string $model, string $column, string $prefix): string
     {
-        $latest = $model::query()
-            ->whereDate('created_at', today())
+        $todayStr = today()->format('Ymd');
+        $pattern = $prefix.'-'.$todayStr.'-%';
+
+        $query = $model::query();
+        if (in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($model))) {
+            $query->withTrashed();
+        }
+
+        $latest = $query
+            ->where($column, 'like', $pattern)
             ->orderByDesc('id')
             ->value($column);
 
@@ -72,6 +70,25 @@ class TransactionNumberService
             $sequence = (int) ($matches[1] ?? 0) + 1;
         }
 
-        return $prefix.'-'.today()->format('Ymd').'-'.str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        return $prefix.'-'.$todayStr.'-'.str_pad($sequence, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function generateRaw(string $table, string $column, string $prefix): string
+    {
+        $todayStr = today()->format('Ymd');
+        $pattern = $prefix.'-'.$todayStr.'-%';
+
+        $latest = DB::table($table)
+            ->where($column, 'like', $pattern)
+            ->orderByDesc('id')
+            ->value($column);
+
+        $sequence = 1;
+        if ($latest !== null) {
+            preg_match('/-(\d+)$/', $latest, $matches);
+            $sequence = (int) ($matches[1] ?? 0) + 1;
+        }
+
+        return $prefix.'-'.$todayStr.'-'.str_pad($sequence, 4, '0', STR_PAD_LEFT);
     }
 }

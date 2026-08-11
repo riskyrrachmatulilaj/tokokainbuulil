@@ -45,7 +45,7 @@ class ReceivableCollectivePaymentPage extends Page implements HasForms
         return $form
             ->schema([
                 Select::make('receivable_party_id')
-                    ->label('Debitur')
+                    ->label('Pelanggan')
                     ->options(fn () => ReceivableParty::query()
                         ->withCount('receivables')
                         ->orderBy('name')
@@ -58,7 +58,7 @@ class ReceivableCollectivePaymentPage extends Page implements HasForms
                     ->reactive()
                     ->helperText(fn ($state) => $state
                         ? 'Total sisa piutang: '.rupiah(ReceivableParty::find($state)?->receivables()->sum('remaining_amount') ?? 0)
-                        : 'Pilih debitur terlebih dahulu')
+                        : 'Pilih pelanggan terlebih dahulu')
                     ->columnSpanFull(),
                 DatePicker::make('payment_date')
                     ->label('Tanggal Pembayaran')

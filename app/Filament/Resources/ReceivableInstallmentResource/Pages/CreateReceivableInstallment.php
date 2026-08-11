@@ -16,6 +16,8 @@ class CreateReceivableInstallment extends CreateRecord
 
     protected function handleRecordCreation(array $data): Model
     {
+        unset($data['party_id'], $data['remaining_hint']);
+
         try {
             return app(ReceivablePaymentService::class)->recordInstallment($data, auth()->user());
         } catch (ValidationException $e) {

@@ -22,7 +22,7 @@ class ViewPaymentHistory extends ViewRecord
                     ->schema([
                         Grid::make(2)->schema([
                             TextEntry::make('transaction_number')->label('No. Transaksi')->copyable(),
-                            TextEntry::make('customer.name')->label('Pelanggan'),
+                            TextEntry::make('customer.name')->label('Supplier'),
                             TextEntry::make('debt.invoice_number')->label('Nota')
                                 ->url(fn (PaymentHistory $record) => $record->debt ? \App\Filament\Resources\DebtResource::getUrl('view', ['record' => $record->debt]) : null),
                             TextEntry::make('payment_type')

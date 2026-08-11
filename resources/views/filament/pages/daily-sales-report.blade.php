@@ -53,6 +53,13 @@
                         <div class="dsr-metric-value">{{ rupiah($summary['transfer_revenue']) }}</div>
                         <div class="dsr-metric-hint">{{ $summary['transfer_count'] }} transaksi</div>
                     </div>
+                    @if (isset($summary['split_count']) && $summary['split_count'] > 0)
+                        <div class="dsr-metric is-purple">
+                            <div class="dsr-metric-label">Tunai + Transfer</div>
+                            <div class="dsr-metric-value">{{ rupiah($summary['split_revenue']) }}</div>
+                            <div class="dsr-metric-hint">{{ $summary['split_count'] }} transaksi</div>
+                        </div>
+                    @endif
                     <div class="dsr-metric is-warning">
                         <div class="dsr-metric-label">Kredit (Piutang)</div>
                         <div class="dsr-metric-value">{{ rupiah($summary['receivable_revenue']) }}</div>
@@ -89,6 +96,8 @@
                                                 <span class="dsr-badge is-cash">Tunai</span>
                                             @elseif ($sale['payment_method_label'] === 'Transfer')
                                                 <span class="dsr-badge is-transfer">Transfer</span>
+                                            @elseif ($sale['payment_method_label'] === 'Tunai + Transfer')
+                                                <span class="dsr-badge is-split">Tunai + Transfer</span>
                                             @else
                                                 <span class="dsr-badge is-credit">Kredit</span>
                                             @endif

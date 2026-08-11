@@ -35,7 +35,7 @@ class ReceivablePaymentHistory extends Model
 
     public function party()
     {
-        return $this->belongsTo(ReceivableParty::class);
+        return $this->belongsTo(ReceivableParty::class, 'receivable_party_id');
     }
 
     public function receivable()

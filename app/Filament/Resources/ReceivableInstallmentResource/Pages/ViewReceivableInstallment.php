@@ -23,7 +23,7 @@ class ViewReceivableInstallment extends ViewRecord
                         Grid::make(2)->schema([
                             TextEntry::make('receivable.invoice_number')->label('No. Nota')
                                 ->url(fn (ReceivableInstallment $record) => $record->receivable ? \App\Filament\Resources\ReceivableResource::getUrl('view', ['record' => $record->receivable]) : null),
-                            TextEntry::make('receivable.party.name')->label('Debitur'),
+                            TextEntry::make('receivable.party.name')->label('Pelanggan'),
                             TextEntry::make('installment_date')->label('Tanggal')->date('d M Y'),
                             TextEntry::make('amount')->label('Nominal')->state(fn (ReceivableInstallment $record) => rupiah($record->amount)),
                             TextEntry::make('description')->label('Keterangan')->placeholder('-')->columnSpanFull(),

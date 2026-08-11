@@ -19,7 +19,7 @@
 
                 <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
                     <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/5">
-                        <div class="text-sm text-gray-500 dark:text-gray-400">Pelanggan</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Supplier</div>
                         <div class="mt-1 font-semibold">{{ $this->result['collectivePayment']['customer']['name'] }}</div>
                     </div>
                     <div class="rounded-xl bg-gray-50 p-4 dark:bg-white/5">

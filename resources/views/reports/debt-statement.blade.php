@@ -62,8 +62,8 @@
 <body>
     <div class="header">
         <div class="brand">
-            <h1>Manajemen Hutang Pelanggan</h1>
-            <p>Rincian Hutang Pelanggan</p>
+            <h1>Manajemen Hutang Supplier</h1>
+            <p>Rincian Hutang Supplier</p>
         </div>
         <div class="meta">
             <div>Dicetak pada: {{ $generatedAt }}</div>
@@ -171,7 +171,7 @@
             @empty
                 <tr>
                     <td colspan="8" style="text-align:center;padding:16px;color:#6b7280;">
-                        Pelanggan tidak memiliki nota hutang.
+                        Supplier tidak memiliki nota hutang.
                     </td>
                 </tr>
             @endforelse

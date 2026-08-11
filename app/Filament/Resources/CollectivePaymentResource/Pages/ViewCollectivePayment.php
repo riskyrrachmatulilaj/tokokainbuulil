@@ -37,7 +37,7 @@ class ViewCollectivePayment extends ViewRecord
                     ->schema([
                         Grid::make(2)->schema([
                             TextEntry::make('transaction_number')->label('No. Transaksi')->copyable(),
-                            TextEntry::make('customer.name')->label('Pelanggan'),
+                            TextEntry::make('customer.name')->label('Supplier'),
                             TextEntry::make('amount')->label('Total Dibayar')->state(fn (CollectivePayment $record) => rupiah($record->amount)),
                             TextEntry::make('payment_date')->label('Tanggal')->date('d M Y'),
                             TextEntry::make('description')->label('Keterangan')->placeholder('-')->columnSpanFull(),
