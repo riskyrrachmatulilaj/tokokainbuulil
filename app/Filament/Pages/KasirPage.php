@@ -115,10 +115,22 @@ class KasirPage extends Page
         }
 
         $existingIndex = collect($this->cart)->search(fn (array $row) => $row['product_id'] === $product->id);
+        $newQty = ($existingIndex !== false) ? round((float) $this->cart[$existingIndex]['quantity'] + 1, 3) : 1.0;
+
+        if (! $product->hasEnoughStock($newQty)) {
+            $stockText = (float) $product->stock == (int) $product->stock ? (int) $product->stock : number_format((float) $product->stock, 2, ',', '.');
+            Notification::make()
+                ->warning()
+                ->title('Stok Tidak Mencukupi')
+                ->body("Stok produk \"{$product->name}\" tersisa {$stockText}.")
+                ->send();
+
+            return;
+        }
 
         if ($existingIndex !== false) {
-            $this->cart[$existingIndex]['quantity'] += 1;
-            $this->cart[$existingIndex]['subtotal'] = round((float) $this->cart[$existingIndex]['price'] * $this->cart[$existingIndex]['quantity'], 2);
+            $this->cart[$existingIndex]['quantity'] = $newQty;
+            $this->cart[$existingIndex]['subtotal'] = round((float) $this->cart[$existingIndex]['price'] * $newQty, 2);
         } else {
             $this->cart[] = [
                 'product_id' => $product->id,
@@ -134,8 +146,22 @@ class KasirPage extends Page
     public function incrementQty(int $index): void
     {
         if (isset($this->cart[$index])) {
-            $this->cart[$index]['quantity'] = round((float) $this->cart[$index]['quantity'] + 1, 3);
-            $this->cart[$index]['subtotal'] = round((float) $this->cart[$index]['price'] * $this->cart[$index]['quantity'], 2);
+            $newQty = round((float) $this->cart[$index]['quantity'] + 1, 3);
+            $product = Product::find($this->cart[$index]['product_id'] ?? null);
+
+            if ($product && ! $product->hasEnoughStock($newQty)) {
+                $stockText = (float) $product->stock == (int) $product->stock ? (int) $product->stock : number_format((float) $product->stock, 2, ',', '.');
+                Notification::make()
+                    ->warning()
+                    ->title('Stok Tidak Mencukupi')
+                    ->body("Stok produk \"{$product->name}\" tersisa {$stockText}.")
+                    ->send();
+
+                return;
+            }
+
+            $this->cart[$index]['quantity'] = $newQty;
+            $this->cart[$index]['subtotal'] = round((float) $this->cart[$index]['price'] * $newQty, 2);
         }
     }
 
@@ -171,6 +197,19 @@ class KasirPage extends Page
 
         if ($qty === null || $qty <= 0) {
             $this->removeFromCart($index);
+
+            return;
+        }
+
+        $product = Product::find($this->cart[$index]['product_id'] ?? null);
+
+        if ($product && ! $product->hasEnoughStock($qty)) {
+            $stockText = (float) $product->stock == (int) $product->stock ? (int) $product->stock : number_format((float) $product->stock, 2, ',', '.');
+            Notification::make()
+                ->warning()
+                ->title('Stok Tidak Mencukupi')
+                ->body("Stok produk \"{$product->name}\" tersisa {$stockText}.")
+                ->send();
 
             return;
         }

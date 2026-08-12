@@ -56,6 +56,14 @@ class SaleService
                 }
 
                 $quantity = max(0.001, round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($item['quantity'] ?? 1) ?? 1), 3));
+
+                if (! $product->hasEnoughStock($quantity)) {
+                    $stockText = (float) $product->stock == (int) $product->stock ? (int) $product->stock : number_format((float) $product->stock, 2, ',', '.');
+                    throw ValidationException::withMessages([
+                        'items' => "Stok produk \"{$product->name}\" tidak mencukupi (Tersedia: {$stockText}).",
+                    ]);
+                }
+
                 $price = isset($item['price']) && is_numeric($item['price']) && (float) $item['price'] >= 0
                     ? (float) $item['price']
                     : (float) $product->price;
@@ -65,6 +73,7 @@ class SaleService
                 $total = round($total + $lineTotal, 2);
 
                 $lines[] = [
+                    'product' => $product,
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'price' => $price,
@@ -132,7 +141,12 @@ class SaleService
             ]);
 
             foreach ($lines as $line) {
+                /** @var Product $prod */
+                $prod = $line['product'];
+                unset($line['product']);
+
                 SaleItem::create(array_merge($line, ['sale_id' => $sale->id]));
+                $prod->deductStock($line['quantity']);
             }
 
             if ($method === Sale::PAYMENT_METHOD_RECEIVABLE) {
@@ -159,20 +173,28 @@ class SaleService
      */
     public function deleteSale(Sale $sale): void
     {
-        if ($sale->receivable_id) {
-            $receivable = $sale->receivable;
+        DB::transaction(function () use ($sale) {
+            if ($sale->receivable_id) {
+                $receivable = $sale->receivable;
 
-            if ($receivable && $receivable->paymentHistories()->exists()) {
-                throw ValidationException::withMessages([
-                    'sale' => 'Penjualan kredit ini sudah menerima pembayaran piutang dan tidak dapat dibatalkan.',
-                ]);
+                if ($receivable && $receivable->paymentHistories()->exists()) {
+                    throw ValidationException::withMessages([
+                        'sale' => 'Penjualan kredit ini sudah menerima pembayaran piutang dan tidak dapat dibatalkan.',
+                    ]);
+                }
+
+                if ($receivable) {
+                    app(ReceivableService::class)->deleteReceivable($receivable);
+                }
             }
 
-            if ($receivable) {
-                app(ReceivableService::class)->deleteReceivable($receivable);
+            foreach ($sale->items as $item) {
+                if ($item->product) {
+                    $item->product->restoreStock($item->quantity);
+                }
             }
-        }
 
-        $sale->delete();
+            $sale->delete();
+        });
     }
 }

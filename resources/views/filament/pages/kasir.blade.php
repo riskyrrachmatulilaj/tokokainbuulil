@@ -53,13 +53,17 @@
                     @else
                         <div class="kasir-product-grid" style="margin-top: 1rem;">
                             @foreach ($this->products() as $product)
+                                @php
+                                    $isOutOfStock = $product->track_stock && (float) $product->stock <= 0;
+                                @endphp
                                 <button
                                     type="button"
-                                    class="kasir-product"
+                                    class="kasir-product {{ $isOutOfStock ? 'opacity-60 cursor-not-allowed' : '' }}"
                                     wire:click="addToCart({{ $product->id }})"
                                     wire:loading.attr="disabled"
                                     wire:target="addToCart({{ $product->id }})"
                                     title="{{ $product->name }}"
+                                    @if ($isOutOfStock) disabled @endif
                                 >
                                     <span class="kasir-product-meta">
                                         <span class="kasir-product-name">{{ $product->name }}</span>
@@ -67,8 +71,13 @@
                                             <span class="kasir-product-desc">{{ $product->description }}</span>
                                         @endif
                                         <span class="kasir-product-price">{{ rupiah($product->price) }}</span>
+                                        @if ($product->track_stock)
+                                            <span class="kasir-product-stock text-xs font-semibold mt-1 inline-block {{ (float)$product->stock <= 0 ? 'text-red-500' : ((float)$product->stock <= 5 ? 'text-amber-500' : 'text-emerald-500') }}">
+                                                {{ $product->stock_label }}
+                                            </span>
+                                        @endif
                                     </span>
-                                    <span class="kasir-product-add">Tambah</span>
+                                    <span class="kasir-product-add">{{ $isOutOfStock ? 'Habis' : 'Tambah' }}</span>
                                 </button>
                             @endforeach
                         </div>

@@ -51,6 +51,21 @@ class ProductResource extends Resource
                             ->default(true)
                             ->helperText('Produk nonaktif tidak muncul di layar kasir.')
                             ->columnSpan(1),
+                        Forms\Components\Toggle::make('track_stock')
+                            ->label('Lacak Stok Produk')
+                            ->default(false)
+                            ->live()
+                            ->helperText('Aktifkan jika produk ini memiliki stok terbatas yang ingin dipantau.')
+                            ->columnSpan(1),
+                        Forms\Components\TextInput::make('stock')
+                            ->label('Jumlah Stok Tersedia')
+                            ->numeric()
+                            ->visible(fn ($get) => (bool) $get('track_stock'))
+                            ->required(fn ($get) => (bool) $get('track_stock'))
+                            ->minValue(0)
+                            ->step('0.01')
+                            ->placeholder('contoh: 25.5')
+                            ->columnSpan(1),
                         Forms\Components\Textarea::make('description')
                             ->label('Keterangan')
                             ->rows(3)
@@ -78,6 +93,22 @@ class ProductResource extends Resource
                     ->sortable()
                     ->badge()
                     ->color('info'),
+                Tables\Columns\TextColumn::make('stock_status')
+                    ->label('Stok')
+                    ->badge()
+                    ->state(fn (Product $record) => $record->stock_label)
+                    ->color(function (Product $record) {
+                        if (! $record->track_stock) {
+                            return 'gray';
+                        }
+                        if ((float) $record->stock <= 0) {
+                            return 'danger';
+                        }
+                        if ((float) $record->stock <= 5) {
+                            return 'warning';
+                        }
+                        return 'success';
+                    }),
                 Tables\Columns\TextColumn::make('sale_items_sum_quantity')
                     ->label('Terjual')
                     ->sum('saleItems', 'quantity')
@@ -100,6 +131,12 @@ class ProductResource extends Resource
                     ->placeholder('Semua')
                     ->trueLabel('Aktif')
                     ->falseLabel('Nonaktif'),
+                Tables\Filters\SelectFilter::make('track_stock')
+                    ->label('Pelacakan Stok')
+                    ->options([
+                        '1' => 'Stok Dilacak',
+                        '0' => 'Stok Tanpa Batas',
+                    ]),
             ])
             ->actions([
                 Actions\ViewAction::make(),
