@@ -63,6 +63,15 @@ class PaymentService
                 'created_by' => $user?->id,
             ]);
 
+            app(\App\Services\ActivityLogService::class)->log(
+                'Hutang',
+                'pay',
+                "Mencatat pembayaran cicilan hutang toko {$debt->invoice_number} (Pemasok: {$debt->customer->name}) sebesar Rp " . number_format($amount, 0, ',', '.'),
+                $installment,
+                ['amount' => $amount, 'invoice' => $debt->invoice_number, 'supplier' => $debt->customer->name],
+                $user
+            );
+
             return $installment->load('debt.customer');
         });
     }
@@ -86,6 +95,14 @@ class PaymentService
                 'remaining_amount' => $remaining,
                 'status' => $remaining <= 0 ? Debt::STATUS_PAID : Debt::STATUS_UNPAID,
             ]);
+
+            app(\App\Services\ActivityLogService::class)->log(
+                'Hutang',
+                'cancel',
+                "Membatalkan cicilan hutang toko {$debt->invoice_number} (Pemasok: {$debt->customer->name}) sebesar Rp " . number_format((float)$installment->amount, 0, ',', '.'),
+                $installment,
+                ['amount' => $installment->amount, 'invoice' => $debt->invoice_number, 'supplier' => $debt->customer->name]
+            );
 
             $installment->delete();
         });

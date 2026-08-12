@@ -17,11 +17,11 @@ class ReportService
     public const TYPE_OVERDUE_CUSTOMERS = 'overdue_customers';
 
     public const TYPES = [
-        self::TYPE_DEBT_LIST => 'Daftar Piutang Pelanggan',
-        self::TYPE_PAYMENT_HISTORY => 'Riwayat Pembayaran',
-        self::TYPE_PAYMENT_PERIOD => 'Rekap Pembayaran per Periode',
-        self::TYPE_UNPAID_DEBTS => 'Rekap Piutang Belum Lunas',
-        self::TYPE_OVERDUE_CUSTOMERS => 'Rekap Pelanggan Menunggak',
+        self::TYPE_DEBT_LIST => 'Daftar Hutang Toko',
+        self::TYPE_PAYMENT_HISTORY => 'Riwayat Pembayaran Hutang',
+        self::TYPE_PAYMENT_PERIOD => 'Rekap Pembayaran Hutang per Periode',
+        self::TYPE_UNPAID_DEBTS => 'Rekap Hutang Toko Belum Lunas',
+        self::TYPE_OVERDUE_CUSTOMERS => 'Rekap Supplier Jatuh Tempo',
     ];
 
     /**

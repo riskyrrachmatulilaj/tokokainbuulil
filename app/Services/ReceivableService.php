@@ -40,6 +40,15 @@ class ReceivableService
                 'created_by' => $user?->id,
             ]);
 
+            app(\App\Services\ActivityLogService::class)->log(
+                'Piutang',
+                'create',
+                "Mencatat nota piutang baru {$receivable->invoice_number} (Pelanggan: {$receivable->party->name}) sebesar Rp " . number_format((float)$receivable->amount, 0, ',', '.'),
+                $receivable,
+                ['invoice' => $receivable->invoice_number, 'party' => $receivable->party->name, 'amount' => $receivable->amount],
+                $user
+            );
+
             return $receivable->load('party');
         });
     }
@@ -78,6 +87,14 @@ class ReceivableService
                 'description' => array_key_exists('description', $data) ? $data['description'] : $receivable->description,
             ]);
 
+            app(\App\Services\ActivityLogService::class)->log(
+                'Piutang',
+                'update',
+                "Mengubah nota piutang {$receivable->invoice_number} (Pelanggan: {$receivable->party->name}) menjadi Rp " . number_format((float)$receivable->amount, 0, ',', '.'),
+                $receivable,
+                ['invoice' => $receivable->invoice_number, 'amount' => $receivable->amount]
+            );
+
             return $receivable->fresh();
         });
     }
@@ -93,6 +110,14 @@ class ReceivableService
             ]);
         }
 
+        app(\App\Services\ActivityLogService::class)->log(
+            'Piutang',
+            'delete',
+            "Menghapus nota piutang {$receivable->invoice_number} (Pelanggan: {$receivable->party->name})",
+            $receivable,
+            ['invoice' => $receivable->invoice_number]
+        );
+
         $receivable->delete();
     }
 
@@ -106,6 +131,14 @@ class ReceivableService
                 'party' => 'Debitur masih memiliki nota piutang yang belum lunas dan tidak dapat dihapus.',
             ]);
         }
+
+        app(\App\Services\ActivityLogService::class)->log(
+            'Pelanggan',
+            'delete',
+            "Menghapus data pelanggan piutang {$party->name}",
+            $party,
+            ['name' => $party->name]
+        );
 
         $party->delete();
     }

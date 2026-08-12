@@ -124,6 +124,15 @@ class CollectivePaymentService
                 $remainingPayment = round($remainingPayment - $allocation, 2);
             }
 
+            app(\App\Services\ActivityLogService::class)->log(
+                'Hutang',
+                'pay',
+                "Memproses pembayaran kolektif hutang toko {$collectivePayment->transaction_number} (Pemasok: {$customer->name}) sebesar Rp " . number_format($amount, 0, ',', '.') . " untuk " . count($allocations) . " nota",
+                $collectivePayment,
+                ['amount' => $amount, 'customer' => $customer->name, 'allocations_count' => count($allocations)],
+                $user
+            );
+
             return [
                 'collectivePayment' => $collectivePayment->fresh()->load('customer'),
                 'allocations' => $allocations,
@@ -157,6 +166,14 @@ class CollectivePaymentService
 
                 $history->delete();
             }
+
+            app(\App\Services\ActivityLogService::class)->log(
+                'Hutang',
+                'cancel',
+                "Membatalkan pembayaran kolektif hutang toko {$collectivePayment->transaction_number} (Pemasok: {$collectivePayment->customer->name}) sebesar Rp " . number_format((float)$collectivePayment->amount, 0, ',', '.'),
+                $collectivePayment,
+                ['amount' => $collectivePayment->amount, 'customer' => $collectivePayment->customer->name]
+            );
 
             $collectivePayment->delete();
         });

@@ -85,6 +85,38 @@ class Product extends Model
         $this->update(['stock' => $newStock]);
     }
 
+    protected static function booted(): void
+    {
+        static::created(function (Product $product) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Produk',
+                'create',
+                "Menambah produk baru '{$product->name}' dengan harga Rp " . number_format((float)$product->selling_price, 0, ',', '.'),
+                $product,
+                ['name' => $product->name, 'price' => $product->selling_price, 'stock' => $product->stock]
+            );
+        });
+
+        static::updated(function (Product $product) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Produk',
+                'update',
+                "Mengubah data produk '{$product->name}'",
+                $product
+            );
+        });
+
+        static::deleted(function (Product $product) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Produk',
+                'delete',
+                "Menghapus produk '{$product->name}'",
+                $product,
+                ['name' => $product->name]
+            );
+        });
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

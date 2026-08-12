@@ -51,4 +51,36 @@ class ReceivableParty extends Model
             ->where('status', Receivable::STATUS_UNPAID)
             ->exists();
     }
+
+    protected static function booted(): void
+    {
+        static::created(function (ReceivableParty $party) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Pelanggan',
+                'create',
+                "Menambah data pelanggan piutang baru '{$party->name}'",
+                $party,
+                ['name' => $party->name, 'phone' => $party->phone]
+            );
+        });
+
+        static::updated(function (ReceivableParty $party) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Pelanggan',
+                'update',
+                "Mengubah data pelanggan piutang '{$party->name}'",
+                $party
+            );
+        });
+
+        static::deleted(function (ReceivableParty $party) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Pelanggan',
+                'delete',
+                "Menghapus data pelanggan piutang '{$party->name}'",
+                $party,
+                ['name' => $party->name]
+            );
+        });
+    }
 }

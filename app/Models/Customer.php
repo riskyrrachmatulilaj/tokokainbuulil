@@ -51,4 +51,36 @@ class Customer extends Model
             ->where('status', Debt::STATUS_UNPAID)
             ->exists();
     }
+
+    protected static function booted(): void
+    {
+        static::created(function (Customer $customer) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Pelanggan',
+                'create',
+                "Menambah data supplier baru '{$customer->name}'",
+                $customer,
+                ['name' => $customer->name, 'phone' => $customer->phone]
+            );
+        });
+
+        static::updated(function (Customer $customer) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Pelanggan',
+                'update',
+                "Mengubah data supplier '{$customer->name}'",
+                $customer
+            );
+        });
+
+        static::deleted(function (Customer $customer) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Pelanggan',
+                'delete',
+                "Menghapus data supplier '{$customer->name}'",
+                $customer,
+                ['name' => $customer->name]
+            );
+        });
+    }
 }

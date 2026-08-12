@@ -13,11 +13,11 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class ReportExport
 {
     protected static array $columns = [
-        ReportService::TYPE_DEBT_LIST => ['No. Nota', 'Pelanggan', 'Tanggal Piutang', 'Nominal', 'Sudah Dibayar', 'Sisa Piutang', 'Status'],
-        ReportService::TYPE_PAYMENT_HISTORY => ['No. Transaksi', 'Pelanggan', 'No. Nota', 'Jenis Pembayaran', 'Nominal', 'Tanggal', 'Oleh'],
+        ReportService::TYPE_DEBT_LIST => ['No. Nota', 'Supplier', 'Tanggal Hutang', 'Nominal', 'Sudah Dibayar', 'Sisa Hutang', 'Status'],
+        ReportService::TYPE_PAYMENT_HISTORY => ['No. Transaksi', 'Supplier', 'No. Nota', 'Jenis Pembayaran', 'Nominal', 'Tanggal', 'Oleh'],
         ReportService::TYPE_PAYMENT_PERIOD => ['Periode', 'Jumlah Transaksi', 'Total'],
-        ReportService::TYPE_UNPAID_DEBTS => ['No. Nota', 'Pelanggan', 'Tanggal Piutang', 'Jatuh Tempo', 'Nominal', 'Sudah Dibayar', 'Sisa Piutang'],
-        ReportService::TYPE_OVERDUE_CUSTOMERS => ['Pelanggan', 'Telepon', 'Jumlah Nota Belum Lunas', 'Jumlah Jatuh Tempo', 'Total Sisa Piutang', 'Piutang Tertua'],
+        ReportService::TYPE_UNPAID_DEBTS => ['No. Nota', 'Supplier', 'Tanggal Hutang', 'Jatuh Tempo', 'Nominal', 'Sudah Dibayar', 'Sisa Hutang'],
+        ReportService::TYPE_OVERDUE_CUSTOMERS => ['Supplier', 'Telepon', 'Jumlah Nota Belum Lunas', 'Jumlah Jatuh Tempo', 'Total Sisa Hutang', 'Hutang Tertua'],
     ];
 
     public static function xlsx(string $type, array $filters): BinaryFileResponse

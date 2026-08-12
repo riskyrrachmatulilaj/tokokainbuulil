@@ -84,4 +84,36 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(Sale::class, 'created_by');
     }
+
+    protected static function booted(): void
+    {
+        static::created(function (User $user) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Pengguna',
+                'create',
+                "Membuat akun pengguna baru '{$user->name}' ({$user->email})",
+                $user,
+                ['name' => $user->name, 'email' => $user->email, 'role' => $user->role]
+            );
+        });
+
+        static::updated(function (User $user) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Pengguna',
+                'update',
+                "Mengubah data akun pengguna '{$user->name}'",
+                $user
+            );
+        });
+
+        static::deleted(function (User $user) {
+            app(\App\Services\ActivityLogService::class)->log(
+                'Pengguna',
+                'delete',
+                "Menghapus akun pengguna '{$user->name}' ({$user->email})",
+                $user,
+                ['name' => $user->name, 'email' => $user->email]
+            );
+        });
+    }
 }

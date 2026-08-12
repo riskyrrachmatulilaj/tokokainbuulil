@@ -40,6 +40,15 @@ class DebtService
                 'created_by' => $user?->id,
             ]);
 
+            app(\App\Services\ActivityLogService::class)->log(
+                'Hutang',
+                'create',
+                "Mencatat nota hutang toko baru {$debt->invoice_number} (Pemasok: {$debt->customer->name}) sebesar Rp " . number_format((float)$debt->amount, 0, ',', '.'),
+                $debt,
+                ['invoice' => $debt->invoice_number, 'supplier' => $debt->customer->name, 'amount' => $debt->amount],
+                $user
+            );
+
             return $debt->load('customer');
         });
     }
@@ -78,6 +87,14 @@ class DebtService
                 'description' => array_key_exists('description', $data) ? $data['description'] : $debt->description,
             ]);
 
+            app(\App\Services\ActivityLogService::class)->log(
+                'Hutang',
+                'update',
+                "Mengubah nota hutang toko {$debt->invoice_number} (Pemasok: {$debt->customer->name}) menjadi Rp " . number_format((float)$debt->amount, 0, ',', '.'),
+                $debt,
+                ['invoice' => $debt->invoice_number, 'amount' => $debt->amount]
+            );
+
             return $debt->fresh();
         });
     }
@@ -92,6 +109,14 @@ class DebtService
                 'debt' => 'Nota sudah memiliki pembayaran dan tidak dapat dihapus.',
             ]);
         }
+
+        app(\App\Services\ActivityLogService::class)->log(
+            'Hutang',
+            'delete',
+            "Menghapus nota hutang toko {$debt->invoice_number} (Pemasok: {$debt->customer->name})",
+            $debt,
+            ['invoice' => $debt->invoice_number]
+        );
 
         $debt->delete();
     }

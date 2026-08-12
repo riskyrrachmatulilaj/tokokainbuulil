@@ -1,0 +1,229 @@
+/* Reports Custom Dedicated Styling */
+.report-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .report-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .report-summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.report-metric-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dark .report-metric-card {
+    background-color: #111827;
+    border-color: #1f2937;
+}
+
+.report-metric-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+}
+
+.report-metric-icon svg {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    max-width: 1.5rem !important;
+    max-height: 1.5rem !important;
+}
+
+.report-metric-icon.is-primary {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+}
+
+.report-metric-icon.is-blue {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.report-metric-icon.is-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.report-metric-icon.is-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.report-metric-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.dark .report-metric-label {
+    color: #9ca3af;
+}
+
+.report-metric-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.75rem;
+}
+
+.dark .report-metric-value {
+    color: #ffffff;
+}
+
+.report-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+}
+
+.dark .report-table-wrapper {
+    border-color: #1f2937;
+}
+
+.report-table {
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+    border-collapse: collapse;
+}
+
+.report-table th {
+    padding: 0.875rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: #f9fafb;
+    color: #4b5563;
+    border-bottom: 2px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.dark .report-table th {
+    background-color: #111827;
+    color: #d1d5db;
+    border-bottom-color: #374151;
+}
+
+.report-table td {
+    padding: 0.875rem 1rem;
+    white-space: nowrap;
+    border-bottom: 1px solid #f3f4f6;
+    color: #111827;
+}
+
+.dark .report-table td {
+    border-bottom-color: #1f2937;
+    color: #f9fafb;
+}
+
+.report-table tr:nth-child(even) td {
+    background-color: #f9fafb;
+}
+
+.dark .report-table tr:nth-child(even) td {
+    background-color: rgba(17, 24, 39, 0.4);
+}
+
+.report-table tr:hover td {
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+.dark .report-table tr:hover td {
+    background-color: rgba(99, 102, 241, 0.15);
+}
+
+.report-table tfoot td {
+    font-weight: 700;
+    background-color: #f3f4f6;
+    border-top: 2px solid #d1d5db;
+}
+
+.dark .report-table tfoot td {
+    background-color: #111827;
+    border-top-color: #374151;
+}
+
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+
+.report-badge-code {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.375rem;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+}
+
+.dark .report-badge-code {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    border-color: #374151;
+}
+
+.report-badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.report-badge-status.is-lunas {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.dark .report-badge-status.is-lunas {
+    color: #34d399;
+}
+
+.report-badge-status.is-belum {
+    background-color: rgba(244, 63, 94, 0.1);
+    color: #e11d48;
+    border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+.dark .report-badge-status.is-belum {
+    color: #fb7185;
+}
+
+.report-status-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 9999px;
+}
+
+.is-lunas .report-status-dot { background-color: #10b981; }
+.is-belum .report-status-dot { background-color: #f43f5e; }

@@ -161,6 +161,15 @@ class SaleService
                 $sale->update(['receivable_id' => $receivable->id]);
             }
 
+            app(\App\Services\ActivityLogService::class)->log(
+                'Penjualan',
+                'create',
+                "Memproses transaksi penjualan {$sale->transaction_number} ({$sale->payment_method_label}) senilai Rp " . number_format($total, 0, ',', '.') . " untuk pelanggan {$party->name}",
+                $sale,
+                ['total' => $total, 'payment_method' => $method, 'party' => $party->name],
+                $user
+            );
+
             return $sale->fresh()->load(['items', 'party', 'creator', 'receivable']);
         });
     }
@@ -193,6 +202,14 @@ class SaleService
                     $item->product->restoreStock($item->quantity);
                 }
             }
+
+            app(\App\Services\ActivityLogService::class)->log(
+                'Penjualan',
+                'delete',
+                "Membatalkan nota penjualan {$sale->transaction_number} senilai Rp " . number_format((float)$sale->total_amount, 0, ',', '.'),
+                $sale,
+                ['transaction_number' => $sale->transaction_number, 'amount' => $sale->total_amount]
+            );
 
             $sale->delete();
         });

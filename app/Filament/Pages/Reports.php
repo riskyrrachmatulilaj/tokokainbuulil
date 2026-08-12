@@ -22,9 +22,9 @@ class Reports extends Page implements HasForms
 
     protected static string | \UnitEnum | null $navigationGroup = 'Laporan';
 
-    protected static ?string $navigationLabel = 'Laporan';
+    protected static ?string $navigationLabel = 'Laporan Hutang';
 
-    protected static ?string $title = 'Laporan';
+    protected static ?string $title = 'Laporan Hutang';
 
     protected static ?int $navigationSort = 1;
 
@@ -57,7 +57,7 @@ class Reports extends Page implements HasForms
                     ->label('Sampai Tanggal')
                     ->afterOrEqual('from'),
                 Select::make('customer_id')
-                    ->label('Pelanggan')
+                    ->label('Supplier / Pemasok')
                     ->options(fn () => \App\Models\Customer::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable()
                     ->preload()
