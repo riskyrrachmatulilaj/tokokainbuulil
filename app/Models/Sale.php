@@ -124,6 +124,6 @@ class Sale extends Model
         $message .= "----------------------------------------\n";
         $message .= "Terima kasih telah berbelanja di toko kami! 🙏";
 
-        return "https://wa.me/" . $phone . "?text=" . rawurlencode($message);
+        return "https://web.whatsapp.com/send?phone=" . $phone . "&text=" . rawurlencode($message);
     }
 }
