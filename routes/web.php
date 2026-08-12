@@ -10,6 +10,10 @@ use App\Models\Sale;
 use App\Services\SalePdfService;
 use App\Services\SaleThermalService;
 
+Route::get('/nota/{sale}', function (Sale $sale) {
+    return SalePdfService::notaInline($sale);
+})->name('sales.public-nota');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/sales/{sale}/nota', function (Sale $sale) {
         return SalePdfService::notaInline($sale);

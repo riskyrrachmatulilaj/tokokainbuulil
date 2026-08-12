@@ -122,8 +122,11 @@ class Sale extends Model
         }
 
         $message .= "----------------------------------------\n";
+        $message .= "📄 *Lihat / Unduh Nota PDF Resmi:*\n";
+        $message .= route('sales.public-nota', ['sale' => $this->id]) . "\n";
+        $message .= "----------------------------------------\n";
         $message .= "Terima kasih telah berbelanja di toko kami! 🙏";
 
-        return "https://web.whatsapp.com/send?phone=" . $phone . "&text=" . rawurlencode($message);
+        return "https://api.whatsapp.com/send?phone=" . $phone . "&text=" . rawurlencode($message);
     }
 }
