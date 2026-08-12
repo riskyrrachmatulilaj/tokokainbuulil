@@ -112,13 +112,32 @@ class SaleResource extends Resource
             ])
             ->actions([
                 Actions\ViewAction::make(),
-                Actions\Action::make('send_whatsapp')
-                    ->label('Kirim WA')
-                    ->icon('heroicon-o-chat-bubble-left-right')
-                    ->color('warning')
-                    ->url(fn (Sale $record) => $record->whatsapp_link)
-                    ->openUrlInNewTab()
-                    ->visible(fn (Sale $record) => $record->party && $record->party->phone),
+                Actions\ActionGroup::make([
+                    Actions\Action::make('copy_whatsapp')
+                        ->label('Salin Pesan WA')
+                        ->icon('heroicon-o-document-duplicate')
+                        ->color('info')
+                        ->action(function (Sale $record, $livewire) {
+                            $text = addslashes($record->whatsapp_message_text ?? '');
+                            $livewire->js("navigator.clipboard.writeText(`{$text}`);");
+
+                            Notification::make()
+                                ->success()
+                                ->title('Pesan WA Berhasil Disalin!')
+                                ->body('Silakan paste (Ctrl+V) pesan nota di chat WhatsApp Web/HP.')
+                                ->send();
+                        }),
+                    Actions\Action::make('send_whatsapp')
+                        ->label('Buka Aplikasi WA')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('warning')
+                        ->url(fn (Sale $record) => $record->whatsapp_link)
+                        ->openUrlInNewTab(),
+                ])
+                ->label('WA Nota')
+                ->icon('heroicon-o-chat-bubble-left-right')
+                ->color('warning')
+                ->visible(fn (Sale $record) => $record->party && $record->party->phone),
                 Actions\ActionGroup::make([
                     Actions\Action::make('print_thermal')
                         ->label('Cetak Struk Thermal')

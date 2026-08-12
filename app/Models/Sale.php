@@ -76,17 +76,12 @@ class Sale extends Model
         return $this->items->sum('quantity');
     }
 
-    public function getWhatsappLinkAttribute(): ?string
+    public function getWhatsappMessageTextAttribute(): ?string
     {
         $party = $this->party;
+
         if (! $party || ! $party->phone) {
             return null;
-        }
-
-        // Clean phone number
-        $phone = preg_replace('/[^0-9]/', '', $party->phone);
-        if (str_starts_with($phone, '0')) {
-            $phone = '62' . substr($phone, 1);
         }
 
         $dateStr = $this->sale_date ? $this->sale_date->format('d M Y') : today()->format('d M Y');
@@ -127,6 +122,23 @@ class Sale extends Model
         $message .= "----------------------------------------\n";
         $message .= "Terima kasih telah berbelanja di toko kami! 🙏";
 
-        return "https://api.whatsapp.com/send?phone=" . $phone . "&text=" . rawurlencode($message);
+        return $message;
+    }
+
+    public function getWhatsappLinkAttribute(): ?string
+    {
+        $party = $this->party;
+
+        if (! $party || ! $party->phone) {
+            return null;
+        }
+
+        $phone = preg_replace('/[^0-9]/', '', $party->phone);
+
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        return "https://api.whatsapp.com/send?phone=" . $phone . "&text=" . rawurlencode($this->whatsapp_message_text ?? '');
     }
 }
