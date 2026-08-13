@@ -19,20 +19,25 @@ class ActivityLogService
         ?Model $subject = null,
         ?array $properties = null,
         ?User $user = null
-    ): ActivityLog {
-        $actor = $user ?? auth()->user();
+    ): ?ActivityLog {
+        try {
+            $actor = $user ?? auth()->user();
 
-        return ActivityLog::create([
-            'user_id' => $actor?->id,
-            'user_name' => $actor?->name ?? 'Sistem / Guest',
-            'module' => $module,
-            'action' => $action,
-            'description' => $description,
-            'subject_type' => $subject ? get_class($subject) : null,
-            'subject_id' => $subject?->getKey(),
-            'properties' => $properties,
-            'ip_address' => Request::ip(),
-            'created_at' => now(),
-        ]);
+            return ActivityLog::create([
+                'user_id' => $actor?->id,
+                'user_name' => $actor?->name ?? 'Sistem / Guest',
+                'module' => $module,
+                'action' => $action,
+                'description' => $description,
+                'subject_type' => $subject ? get_class($subject) : null,
+                'subject_id' => $subject?->getKey(),
+                'properties' => $properties,
+                'ip_address' => Request::ip(),
+                'created_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            logger()->error('ActivityLog failed: ' . $e->getMessage());
+            return null;
+        }
     }
 }
