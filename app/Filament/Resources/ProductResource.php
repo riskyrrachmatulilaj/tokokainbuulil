@@ -112,6 +112,7 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('sale_items_sum_quantity')
                     ->label('Terjual')
                     ->sum('saleItems', 'quantity')
+                    ->formatStateUsing(fn ($state) => formatQuantity($state))
                     ->badge()
                     ->color('gray')
                     ->sortable(),
