@@ -36,7 +36,7 @@ class OverdueDebtsWidget extends BaseWidget
                     ->label('No. Nota')
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Pelanggan'),
+                    ->label('Supplier'),
                 Tables\Columns\TextColumn::make('remaining_amount')
                     ->label('Sisa Hutang')
                     ->formatStateUsing(fn ($state) => rupiah($state))

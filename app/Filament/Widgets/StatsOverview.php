@@ -27,8 +27,8 @@ class StatsOverview extends BaseWidget
         $salesCountToday = Sale::whereDate('sale_date', today())->count();
 
         return [
-            Stat::make('Total Pelanggan', (string) Customer::count())
-                ->description('Pelanggan terdaftar')
+            Stat::make('Total Supplier', (string) Customer::count())
+                ->description('Supplier terdaftar')
                 ->descriptionIcon('heroicon-m-users')
                 ->color('info'),
 
@@ -48,7 +48,7 @@ class StatsOverview extends BaseWidget
                 ->color('success'),
 
             Stat::make('Total Sisa Hutang', rupiah($totalRemaining))
-                ->description('Belum dibayar')
+                ->description('Belum dibayar ke supplier')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color($totalRemaining > 0 ? 'warning' : 'success'),
 
@@ -62,7 +62,7 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-bell-alert')
                 ->color(Debt::overdue()->count() > 0 ? 'danger' : 'success'),
 
-            Stat::make('Pembayaran Hari Ini', rupiah($paymentToday))
+            Stat::make('Pembayaran Hutang Hari Ini', rupiah($paymentToday))
                 ->description(PaymentHistory::whereDate('payment_date', today())->count().' transaksi hari ini')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('info'),

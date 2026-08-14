@@ -1,6 +1,6 @@
 -- ============================================================
 -- Export Data: Toko Kain Bu Ulil (SQLite → MySQL)
--- Tanggal: 2026-08-14 12:24:32
+-- Tanggal: 2026-08-14 12:29:07
 -- ============================================================
 -- PETUNJUK:
 -- 1. Pastikan sudah menjalankan `php artisan migrate` di server

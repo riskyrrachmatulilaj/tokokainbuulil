@@ -32,9 +32,9 @@ class LatestPaymentsWidget extends BaseWidget
                     ->searchable()
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Pelanggan'),
+                    ->label('Supplier'),
                 Tables\Columns\TextColumn::make('debt.invoice_number')
-                    ->label('Nota'),
+                    ->label('Nota Hutang'),
                 Tables\Columns\TextColumn::make('payment_type')
                     ->label('Jenis')
                     ->badge()
