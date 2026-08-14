@@ -3,7 +3,7 @@
 @endphp
 
 <x-filament-panels::page>
-    <link rel="stylesheet" href="{{ asset('css/kasir.css') }}?v=4" data-navigate-track />
+    <link rel="stylesheet" href="{{ asset('css/kasir.css') }}?v=6" data-navigate-track />
 
     <div class="kasir-pos">
         <div class="kasir-steps" aria-label="Alur kasir">
@@ -58,31 +58,38 @@
                                 @endphp
                                 <button
                                     type="button"
-                                    class="kasir-product {{ $isOutOfStock ? 'opacity-60 cursor-not-allowed' : '' }}"
+                                    class="kasir-product {{ $isOutOfStock ? 'is-out-of-stock' : '' }}"
                                     wire:click="addToCart({{ $product->id }})"
                                     wire:loading.attr="disabled"
                                     wire:target="addToCart({{ $product->id }})"
                                     title="{{ $product->name }}"
                                     @if ($isOutOfStock) disabled @endif
                                 >
-                                    <span class="kasir-product-content">
-                                        <span class="kasir-product-name">{{ $product->name }}</span>
-                                        @if (! empty($product->description))
-                                            <span class="kasir-product-desc">{{ $product->description }}</span>
-                                        @endif
-                                    </span>
+                                    <div class="kasir-product-top">
+                                        <div class="kasir-product-info">
+                                            <span class="kasir-product-name">{{ $product->name }}</span>
+                                            @if (! empty($product->description))
+                                                <span class="kasir-product-desc">{{ $product->description }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
 
-                                    <span class="kasir-product-footer">
-                                        <span class="kasir-product-price-group">
+                                    <div class="kasir-product-bottom">
+                                        <div class="kasir-product-meta-bottom">
                                             <span class="kasir-product-price">{{ rupiah($product->price) }}</span>
                                             @if ($product->track_stock)
-                                                <span class="kasir-product-stock text-xs font-semibold inline-block {{ (float)$product->stock <= 0 ? 'text-red-500' : ((float)$product->stock <= 5 ? 'text-amber-500' : 'text-emerald-500') }}">
+                                                <span class="kasir-product-stock-badge {{ (float)$product->stock <= 0 ? 'is-danger' : ((float)$product->stock <= 5 ? 'is-warning' : 'is-success') }}">
                                                     {{ $product->stock_label }}
                                                 </span>
                                             @endif
+                                        </div>
+                                        <span class="kasir-product-add-btn">
+                                            @if(! $isOutOfStock)
+                                                <svg class="kasir-add-icon" viewBox="0 0 20 20" fill="currentColor" style="width: 14px; height: 14px; display: inline-block; margin-right: 2px;"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                                            @endif
+                                            {{ $isOutOfStock ? 'Habis' : 'Tambah' }}
                                         </span>
-                                        <span class="kasir-product-add">{{ $isOutOfStock ? 'Habis' : 'Tambah' }}</span>
-                                    </span>
+                                    </div>
                                 </button>
                             @endforeach
                         </div>
