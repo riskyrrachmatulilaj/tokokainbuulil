@@ -22,7 +22,7 @@ class SaleThermalService
         $tempFile = tempnam(sys_get_temp_dir(), 'thermal_').'.pdf';
 
         $itemCount = $sale->items->count();
-        $heightMm = max(110, 85 + ($itemCount * 14));
+        $heightMm = max(120, 100 + ($itemCount * 10));
         $heightPt = $heightMm * 2.83465;
         $widthPt = 204.1;
 
@@ -47,7 +47,7 @@ class SaleThermalService
         ])->render();
 
         $itemCount = $sale->items->count();
-        $heightMm = max(110, 85 + ($itemCount * 14));
+        $heightMm = max(120, 100 + ($itemCount * 10));
         $heightPt = $heightMm * 2.83465;
         $widthPt = 204.1;
 

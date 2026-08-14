@@ -1,6 +1,6 @@
 -- ============================================================
 -- Export Data: Toko Kain Bu Ulil (SQLite → MySQL)
--- Tanggal: 2026-08-14 12:40:18
+-- Tanggal: 2026-08-14 12:45:07
 -- ============================================================
 -- PETUNJUK:
 -- 1. Pastikan sudah menjalankan `php artisan migrate` di server
@@ -423,7 +423,7 @@ INSERT INTO `products` (`id`, `name`, `price`, `description`, `is_active`, `crea
 (219, 'Polywhite GSm 80', 12500, NULL, 1, '2026-08-12 13:12:41', '2026-08-12 13:13:50', 0, NULL);
 
 -- ----------------------------------------------------------
--- Tabel `sales`: 52 baris
+-- Tabel `sales`: 53 baris
 -- ----------------------------------------------------------
 DELETE FROM `sales`;
 INSERT INTO `sales` (`id`, `transaction_number`, `sale_date`, `payment_method`, `receivable_party_id`, `receivable_id`, `total_amount`, `received_amount`, `change_amount`, `description`, `created_by`, `created_at`, `updated_at`, `cash_amount`, `transfer_amount`) VALUES
@@ -480,10 +480,11 @@ INSERT INTO `sales` (`id`, `transaction_number`, `sale_date`, `payment_method`, 
 
 INSERT INTO `sales` (`id`, `transaction_number`, `sale_date`, `payment_method`, `receivable_party_id`, `receivable_id`, `total_amount`, `received_amount`, `change_amount`, `description`, `created_by`, `created_at`, `updated_at`, `cash_amount`, `transfer_amount`) VALUES
 (63, 'SLS-20260814-0010', '2026-08-14 00:00:00', 'transfer', 74, NULL, 5382000, 5382000, 0, NULL, 1, '2026-08-14 11:26:59', '2026-08-14 11:26:59', 0, 5382000),
-(64, 'SLS-20260814-0011', '2026-08-14 00:00:00', 'transfer', 7, NULL, 449500, 449500, 0, NULL, 1, '2026-08-14 12:38:08', '2026-08-14 12:38:08', 0, 449500);
+(64, 'SLS-20260814-0011', '2026-08-14 00:00:00', 'transfer', 7, NULL, 449500, 449500, 0, NULL, 1, '2026-08-14 12:38:08', '2026-08-14 12:38:08', 0, 449500),
+(65, 'SLS-20260814-0012', '2026-08-14 00:00:00', 'cash', 7, NULL, 103500, 105000, 1500, NULL, 1, '2026-08-14 12:40:58', '2026-08-14 12:40:58', 105000, NULL);
 
 -- ----------------------------------------------------------
--- Tabel `sale_items`: 127 baris
+-- Tabel `sale_items`: 129 baris
 -- ----------------------------------------------------------
 DELETE FROM `sale_items`;
 INSERT INTO `sale_items` (`id`, `sale_id`, `product_id`, `product_name`, `price`, `quantity`, `subtotal`, `created_at`, `updated_at`) VALUES
@@ -617,10 +618,12 @@ INSERT INTO `sale_items` (`id`, `sale_id`, `product_id`, `product_name`, `price`
 (151, 64, 201, 'HDP GSM 700 - Ukuran 120', 48500, 1, 48500, '2026-08-14 12:38:08', '2026-08-14 12:38:08'),
 (152, 64, 200, 'HDP GSM 700 - Ukuran 100', 41000, 1, 41000, '2026-08-14 12:38:08', '2026-08-14 12:38:08'),
 (153, 64, 202, 'HDP GSM 700 - Ukuran 140', 56500, 1, 56500, '2026-08-14 12:38:08', '2026-08-14 12:38:08'),
-(154, 64, 203, 'HDP GSM 700 - Ukuran 160', 64000, 1, 64000, '2026-08-14 12:38:08', '2026-08-14 12:38:08');
+(154, 64, 203, 'HDP GSM 700 - Ukuran 160', 64000, 1, 64000, '2026-08-14 12:38:08', '2026-08-14 12:38:08'),
+(155, 65, 197, 'HDP GSM 600 - Ukuran 140', 48500, 1, 48500, '2026-08-14 12:40:58', '2026-08-14 12:40:58'),
+(156, 65, 198, 'HDP GSM 600 - Ukuran 160', 55000, 1, 55000, '2026-08-14 12:40:58', '2026-08-14 12:40:58');
 
 -- ----------------------------------------------------------
--- Tabel `activity_logs`: 5 baris
+-- Tabel `activity_logs`: 6 baris
 -- ----------------------------------------------------------
 DELETE FROM `activity_logs`;
 INSERT INTO `activity_logs` (`id`, `user_id`, `user_name`, `module`, `action`, `description`, `subject_type`, `subject_id`, `properties`, `ip_address`, `created_at`) VALUES
@@ -628,7 +631,8 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `user_name`, `module`, `action`, `
 (2, 1, 'risky', 'Penjualan', 'create', 'Memproses transaksi penjualan SLS-20260814-0010 (Transfer) senilai Rp 5.382.000 untuk pelanggan Bu Alfiyah', 'App\\Models\\Sale', 63, '{\"total\":5382000,\"payment_method\":\"transfer\",\"party\":\"Bu Alfiyah\"}', '127.0.0.1', '2026-08-14 11:26:59'),
 (3, 1, 'risky', 'Produk', 'update', 'Mengubah data produk \'HDP GSM 600 - Ukuran 100\'', 'App\\Models\\Product', 195, NULL, '127.0.0.1', '2026-08-14 12:21:02'),
 (4, 1, 'risky', 'Produk', 'update', 'Mengubah data produk \'HDP GSM 600 - Ukuran 100\'', 'App\\Models\\Product', 195, NULL, '127.0.0.1', '2026-08-14 12:38:08'),
-(5, 1, 'risky', 'Penjualan', 'create', 'Memproses transaksi penjualan SLS-20260814-0011 (Transfer) senilai Rp 449.500 untuk pelanggan Andika <3 Koder', 'App\\Models\\Sale', 64, '{\"total\":449500,\"payment_method\":\"transfer\",\"party\":\"Andika <3 Koder\"}', '127.0.0.1', '2026-08-14 12:38:08');
+(5, 1, 'risky', 'Penjualan', 'create', 'Memproses transaksi penjualan SLS-20260814-0011 (Transfer) senilai Rp 449.500 untuk pelanggan Andika <3 Koder', 'App\\Models\\Sale', 64, '{\"total\":449500,\"payment_method\":\"transfer\",\"party\":\"Andika <3 Koder\"}', '127.0.0.1', '2026-08-14 12:38:08'),
+(6, 1, 'risky', 'Penjualan', 'create', 'Memproses transaksi penjualan SLS-20260814-0012 (Tunai) senilai Rp 103.500 untuk pelanggan Andika <3 Koder', 'App\\Models\\Sale', 65, '{\"total\":103500,\"payment_method\":\"cash\",\"party\":\"Andika <3 Koder\"}', '127.0.0.1', '2026-08-14 12:40:58');
 
 
 SET FOREIGN_KEY_CHECKS = 1;
