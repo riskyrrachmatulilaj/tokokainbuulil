@@ -6,15 +6,14 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-weight: bold; color: #000; }
         body {
-            font-family: 'Arial Narrow', 'Consolas', 'Courier New', monospace;
-            font-size: 10px;
+            font-family: 'Courier New', 'Consolas', 'Arial Narrow', monospace;
+            font-size: 13px;
             font-weight: bold;
-            font-stretch: condensed;
-            letter-spacing: -0.4px;
+            letter-spacing: 0px;
             color: #000;
             width: 72mm;
-            padding: 4mm;
-            line-height: 1.3;
+            padding: 3mm;
+            line-height: 1.35;
         }
         .center { text-align: center; }
         .right { text-align: right; }
@@ -22,21 +21,19 @@
         .separator, .separator-double {
             border: none;
             border-top: 1px dashed #000;
-            margin: 4px 0;
+            margin: 5px 0;
         }
 
         /* Header Toko */
         .shop-name {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
-            letter-spacing: -0.5px;
             text-align: center;
             margin-bottom: 2px;
         }
         .shop-subtitle {
-            font-size: 10px;
+            font-size: 12px;
             font-weight: bold;
-            letter-spacing: -0.3px;
             text-align: center;
             margin-bottom: 6px;
         }
@@ -45,7 +42,7 @@
         .info-row {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
+            font-size: 11px;
             font-weight: bold;
         }
         .info-row .label {
@@ -55,45 +52,56 @@
 
         /* Item table */
         .item-name {
-            font-size: 10px;
+            font-size: 13px;
             font-weight: bold;
             display: block;
+            word-break: break-word;
         }
         .item-detail {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
+            font-size: 12px;
             font-weight: bold;
-            padding-left: 8px;
+            padding-left: 6px;
         }
 
         /* Totals */
         .total-row {
             display: flex;
             justify-content: space-between;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: bold;
         }
         .total-row.grand {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
-            letter-spacing: -0.5px;
-            margin: 3px 0;
+            margin: 4px 0;
         }
 
         /* Footer */
         .footer {
             text-align: center;
-            font-size: 9px;
+            font-size: 11px;
             font-weight: bold;
             color: #000;
             margin-top: 6px;
         }
         .thanks {
             text-align: center;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: bold;
             margin: 6px 0 2px;
+        }
+
+        @media print {
+            @page {
+                margin: 0;
+                size: auto;
+            }
+            body {
+                width: 100% !important;
+                padding: 2mm !important;
+            }
         }
     </style>
 </head>

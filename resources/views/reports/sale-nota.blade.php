@@ -7,44 +7,44 @@
         * { box-sizing: border-box; }
         body {
             font-family: Helvetica, Arial, sans-serif;
-            font-size: 11px;
+            font-size: 13px;
             color: #1f2937;
             margin: 0;
             padding: 20px;
         }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0d9488; padding-bottom: 12px; margin-bottom: 14px; }
-        .brand h1 { margin: 0; font-size: 18px; color: #0d9488; }
-        .brand p { margin: 2px 0 0; font-size: 11px; color: #6b7280; }
+        .brand h1 { margin: 0; font-size: 20px; color: #0d9488; }
+        .brand p { margin: 2px 0 0; font-size: 12px; color: #6b7280; }
         .nota-no { text-align: right; }
-        .nota-no .label { font-size: 9px; text-transform: uppercase; color: #6b7280; }
-        .nota-no .value { font-size: 16px; font-weight: bold; color: #111827; }
+        .nota-no .label { font-size: 10px; text-transform: uppercase; color: #6b7280; }
+        .nota-no .value { font-size: 17px; font-weight: bold; color: #111827; }
 
-        .meta { margin-bottom: 12px; font-size: 11px; }
+        .meta { margin-bottom: 12px; font-size: 12px; }
         .meta table { width: 100%; border-collapse: collapse; }
-        .meta td { padding: 2px 0; vertical-align: top; }
-        .meta .k { color: #6b7280; width: 110px; }
+        .meta td { padding: 3px 0; vertical-align: top; }
+        .meta .k { color: #6b7280; width: 120px; }
 
         table.items { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
         table.items thead th {
             background: #0d9488;
             color: #fff;
-            padding: 7px 6px;
+            padding: 8px 6px;
             text-align: left;
-            font-size: 9px;
+            font-size: 11px;
             text-transform: uppercase;
         }
-        table.items tbody td { padding: 6px; border-bottom: 1px solid #e5e7eb; }
+        table.items tbody td { padding: 7px 6px; font-size: 12px; border-bottom: 1px solid #e5e7eb; }
         table.items tbody tr:nth-child(even) { background: #f9fafb; }
         .right { text-align: right; }
 
-        .total-box { margin-left: auto; width: 260px; }
+        .total-box { margin-left: auto; width: 280px; }
         .total-box table { width: 100%; border-collapse: collapse; }
-        .total-box td { padding: 4px 6px; }
-        .total-box .grand td { font-size: 14px; font-weight: bold; background: #0d9488; color: #fff; border-radius: 4px; }
+        .total-box td { padding: 5px 6px; font-size: 12px; }
+        .total-box .grand td { font-size: 15px; font-weight: bold; background: #0d9488; color: #fff; border-radius: 4px; }
 
-        .footer { margin-top: 24px; font-size: 10px; color: #6b7280; display: flex; justify-content: space-between; }
-        .thanks { text-align: center; margin-top: 18px; font-size: 12px; color: #0d9488; font-weight: bold; }
-        .note { font-size: 9px; color: #9ca3af; margin-top: 8px; }
+        .footer { margin-top: 24px; font-size: 11px; color: #6b7280; display: flex; justify-content: space-between; }
+        .thanks { text-align: center; margin-top: 18px; font-size: 13px; color: #0d9488; font-weight: bold; }
+        .note { font-size: 10px; color: #9ca3af; margin-top: 8px; }
     </style>
 </head>
 <body>
