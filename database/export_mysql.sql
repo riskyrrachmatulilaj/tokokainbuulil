@@ -1,6 +1,6 @@
 -- ============================================================
 -- Export Data: Toko Kain Bu Ulil (SQLite → MySQL)
--- Tanggal: 2026-08-14 12:07:31
+-- Tanggal: 2026-08-14 12:24:32
 -- ============================================================
 -- PETUNJUK:
 -- 1. Pastikan sudah menjalankan `php artisan migrate` di server
@@ -394,7 +394,7 @@ INSERT INTO `products` (`id`, `name`, `price`, `description`, `is_active`, `crea
 (192, 'Resleting Putih 05', 37000, NULL, 1, '2026-08-10 11:18:51', '2026-08-10 11:18:51', 0, NULL),
 (193, 'HDP GSM 600 - Ukuran 80', 28500, 'GSM 600, ukuran 80', 1, '2026-08-10 11:39:08', '2026-08-10 11:39:08', 0, NULL),
 (194, 'HDP GSM 600 - Ukuran 90', 31500, 'GSM 600, ukuran 90', 1, '2026-08-10 11:39:08', '2026-08-10 11:39:08', 0, NULL),
-(195, 'HDP GSM 600 - Ukuran 100', 34500, 'GSM 600, ukuran 100', 1, '2026-08-10 11:39:08', '2026-08-10 11:39:08', 0, NULL),
+(195, 'HDP GSM 600 - Ukuran 100', 34500, 'GSM 600, ukuran 100', 1, '2026-08-10 11:39:08', '2026-08-14 12:21:02', 1, 100),
 (196, 'HDP GSM 600 - Ukuran 120', 41500, 'GSM 600, ukuran 120', 1, '2026-08-10 11:39:08', '2026-08-14 10:03:33', 0, NULL),
 (197, 'HDP GSM 600 - Ukuran 140', 48500, 'GSM 600, ukuran 140', 1, '2026-08-10 11:39:08', '2026-08-10 11:39:08', 0, NULL),
 (198, 'HDP GSM 600 - Ukuran 160', 55000, 'GSM 600, ukuran 160', 1, '2026-08-10 11:39:08', '2026-08-10 11:39:08', 0, NULL),
@@ -609,12 +609,13 @@ INSERT INTO `sale_items` (`id`, `sale_id`, `product_id`, `product_name`, `price`
 (144, 63, 157, 'Spunbound Jombang', 135000, 10, 1350000, '2026-08-14 11:26:59', '2026-08-14 11:26:59');
 
 -- ----------------------------------------------------------
--- Tabel `activity_logs`: 2 baris
+-- Tabel `activity_logs`: 3 baris
 -- ----------------------------------------------------------
 DELETE FROM `activity_logs`;
 INSERT INTO `activity_logs` (`id`, `user_id`, `user_name`, `module`, `action`, `description`, `subject_type`, `subject_id`, `properties`, `ip_address`, `created_at`) VALUES
 (1, 1, 'risky', 'Pelanggan', 'create', 'Menambah data pelanggan piutang baru \'Bu Alfiyah\'', 'App\\Models\\ReceivableParty', 74, '{\"name\":\"Bu Alfiyah\",\"phone\":null}', '127.0.0.1', '2026-08-14 11:25:51'),
-(2, 1, 'risky', 'Penjualan', 'create', 'Memproses transaksi penjualan SLS-20260814-0010 (Transfer) senilai Rp 5.382.000 untuk pelanggan Bu Alfiyah', 'App\\Models\\Sale', 63, '{\"total\":5382000,\"payment_method\":\"transfer\",\"party\":\"Bu Alfiyah\"}', '127.0.0.1', '2026-08-14 11:26:59');
+(2, 1, 'risky', 'Penjualan', 'create', 'Memproses transaksi penjualan SLS-20260814-0010 (Transfer) senilai Rp 5.382.000 untuk pelanggan Bu Alfiyah', 'App\\Models\\Sale', 63, '{\"total\":5382000,\"payment_method\":\"transfer\",\"party\":\"Bu Alfiyah\"}', '127.0.0.1', '2026-08-14 11:26:59'),
+(3, 1, 'risky', 'Produk', 'update', 'Mengubah data produk \'HDP GSM 600 - Ukuran 100\'', 'App\\Models\\Product', 195, NULL, '127.0.0.1', '2026-08-14 12:21:02');
 
 
 SET FOREIGN_KEY_CHECKS = 1;
