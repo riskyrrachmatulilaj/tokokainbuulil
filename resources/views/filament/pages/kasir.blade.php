@@ -65,19 +65,24 @@
                                     title="{{ $product->name }}"
                                     @if ($isOutOfStock) disabled @endif
                                 >
-                                    <span class="kasir-product-meta">
+                                    <span class="kasir-product-content">
                                         <span class="kasir-product-name">{{ $product->name }}</span>
                                         @if (! empty($product->description))
                                             <span class="kasir-product-desc">{{ $product->description }}</span>
                                         @endif
-                                        <span class="kasir-product-price">{{ rupiah($product->price) }}</span>
-                                        @if ($product->track_stock)
-                                            <span class="kasir-product-stock text-xs font-semibold mt-1 inline-block {{ (float)$product->stock <= 0 ? 'text-red-500' : ((float)$product->stock <= 5 ? 'text-amber-500' : 'text-emerald-500') }}">
-                                                {{ $product->stock_label }}
-                                            </span>
-                                        @endif
                                     </span>
-                                    <span class="kasir-product-add">{{ $isOutOfStock ? 'Habis' : 'Tambah' }}</span>
+
+                                    <span class="kasir-product-footer">
+                                        <span class="kasir-product-price-group">
+                                            <span class="kasir-product-price">{{ rupiah($product->price) }}</span>
+                                            @if ($product->track_stock)
+                                                <span class="kasir-product-stock text-xs font-semibold inline-block {{ (float)$product->stock <= 0 ? 'text-red-500' : ((float)$product->stock <= 5 ? 'text-amber-500' : 'text-emerald-500') }}">
+                                                    {{ $product->stock_label }}
+                                                </span>
+                                            @endif
+                                        </span>
+                                        <span class="kasir-product-add">{{ $isOutOfStock ? 'Habis' : 'Tambah' }}</span>
+                                    </span>
                                 </button>
                             @endforeach
                         </div>
@@ -103,22 +108,20 @@
                     @else
                         <div class="kasir-cart-list">
                             @foreach ($this->cart as $index => $row)
-                                <div class="kasir-cart-row" wire:key="cart-{{ $row['product_id'] }}-{{ $index }}-{{ $row['quantity'] }}-{{ $row['price'] }}">
+                                <div class="kasir-cart-row" wire:key="cart-item-{{ $row['product_id'] }}">
                                     <div class="kasir-cart-top">
                                         <div class="kasir-cart-info">
                                             <span class="kasir-cart-name">{{ $row['name'] }}</span>
-                                            <div class="kasir-price-edit" x-data="{ price: @js($row['price']) }">
+                                            <div class="kasir-price-edit" x-data="{ price: @js($row['price']) }" x-effect="price = @js($row['price'])">
                                                 <span class="kasir-price-label">Rp</span>
                                                 <input
                                                     type="number"
                                                     class="kasir-price-input"
                                                     min="0"
-                                                    step="100"
-                                                    inputmode="numeric"
-                                                    x-bind:value="price"
-                                                    x-on:input="price = $event.target.value"
+                                                    step="any"
+                                                    inputmode="decimal"
+                                                    x-model="price"
                                                     x-on:change="$wire.setPrice({{ $index }}, price)"
-                                                    x-on:blur="$wire.setPrice({{ $index }}, price)"
                                                     x-on:keydown.enter.prevent="$wire.setPrice({{ $index }}, price); $event.target.blur()"
                                                     aria-label="Ubah harga {{ $row['name'] }}"
                                                     title="Klik untuk mengubah harga satuan item ini"
@@ -133,7 +136,7 @@
                                     </div>
 
                                     <div class="kasir-cart-bottom">
-                                        <div class="kasir-qty" role="group" aria-label="Jumlah {{ $row['name'] }}">
+                                        <div class="kasir-qty" role="group" aria-label="Jumlah {{ $row['name'] }}" x-data="{ qty: @js($row['quantity']) }" x-effect="qty = @js($row['quantity'])">
                                             <button
                                                 type="button"
                                                 class="kasir-qty-btn"
@@ -146,11 +149,9 @@
                                                 min="0.01"
                                                 step="any"
                                                 inputmode="decimal"
-                                                x-data="{ qty: @js($row['quantity']) }"
-                                                x-bind:value="qty"
-                                                x-on:input="qty = $event.target.value"
+                                                x-model="qty"
                                                 x-on:change="$wire.setQty({{ $index }}, qty)"
-                                                x-on:blur="$wire.setQty({{ $index }}, qty)"
+                                                x-on:keydown.enter.prevent="$wire.setQty({{ $index }}, qty); $event.target.blur()"
                                                 aria-label="Ketik jumlah {{ $row['name'] }}"
                                             />
                                             <button
@@ -310,7 +311,7 @@
                     @if ($this->paymentMethod === Sale::PAYMENT_METHOD_CASH)
                         <div
                             class="kasir-field"
-                            wire:key="payment-cash-{{ count($this->cart) }}-{{ $this->cartTotal() }}"
+                            wire:key="payment-cash-section"
                             x-data="{
                                 received: $wire.entangle('receivedAmount'),
                                 parseNum(val) {
@@ -346,17 +347,17 @@
                                     id="kasir-received-amount"
                                     type="number"
                                     x-model="received"
-                                    wire:model.live.debounce.250ms="receivedAmount"
+                                    wire:model.blur="receivedAmount"
                                     min="0"
-                                    step="1000"
-                                    placeholder="contoh: 100000"
-                                    inputmode="numeric"
+                                    step="any"
+                                    placeholder="contoh: 100000 atau 1.24"
+                                    inputmode="decimal"
                                 />
                             </x-filament::input.wrapper>
 
                             <div class="kasir-change" x-bind:class="change > 0 ? 'is-positive' : ''">
                                 <span class="kasir-change-label">Kembalian</span>
-                                <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(change)"></span>
+                                <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(change)"></span>
                             </div>
                         </div>
                     @endif
@@ -364,7 +365,7 @@
                     @if ($this->paymentMethod === Sale::PAYMENT_METHOD_SPLIT)
                         <div
                             class="kasir-field"
-                            wire:key="payment-split-{{ count($this->cart) }}-{{ $this->cartTotal() }}"
+                            wire:key="payment-split-section"
                             x-data="{
                                 cash: $wire.entangle('cashAmount'),
                                 transfer: $wire.entangle('transferAmount'),
@@ -407,11 +408,11 @@
                                             id="kasir-cash-amount"
                                             type="number"
                                             x-model="cash"
-                                            wire:model.live.debounce.250ms="cashAmount"
+                                            wire:model.blur="cashAmount"
                                             min="0"
-                                            step="1000"
-                                            placeholder="contoh: 50000"
-                                            inputmode="numeric"
+                                            step="any"
+                                            placeholder="contoh: 50000 atau 1.24"
+                                            inputmode="decimal"
                                         />
                                     </x-filament::input.wrapper>
                                 </div>
@@ -422,11 +423,11 @@
                                             id="kasir-transfer-amount"
                                             type="number"
                                             x-model="transfer"
-                                            wire:model.live.debounce.250ms="transferAmount"
+                                            wire:model.blur="transferAmount"
                                             min="0"
-                                            step="1000"
-                                            placeholder="contoh: 50000"
-                                            inputmode="numeric"
+                                            step="any"
+                                            placeholder="contoh: 50000 atau 1.24"
+                                            inputmode="decimal"
                                         />
                                     </x-filament::input.wrapper>
                                 </div>
@@ -435,11 +436,11 @@
                             <div class="kasir-change" x-bind:class="change > 0 ? 'is-positive' : ''" style="margin-top: 0.75rem;">
                                 <div style="display: flex; flex-direction: column;">
                                     <span class="kasir-change-label">Total Dibayar</span>
-                                    <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(totalReceived)"></span>
+                                    <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(totalReceived)"></span>
                                 </div>
                                 <div style="text-align: right; display: flex; flex-direction: column;">
                                     <span class="kasir-change-label">Kembalian</span>
-                                    <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(change)"></span>
+                                    <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(change)"></span>
                                 </div>
                             </div>
                         </div>

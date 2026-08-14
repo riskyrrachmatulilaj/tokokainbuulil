@@ -8,9 +8,11 @@ if (! function_exists('rupiah')) {
     {
         $amount = (float) ($amount ?? 0);
 
-        return $withDecimals
-            ? 'Rp '.number_format($amount, 2, ',', '.')
-            : 'Rp '.number_format($amount, 0, ',', '.');
+        if ($withDecimals || (floor($amount) != $amount && abs($amount - round($amount)) > 0.0001)) {
+            return 'Rp '.number_format($amount, 2, ',', '.');
+        }
+
+        return 'Rp '.number_format($amount, 0, ',', '.');
     }
 }
 
