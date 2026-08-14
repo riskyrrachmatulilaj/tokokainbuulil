@@ -47,6 +47,8 @@ class KasirPage extends Page
 
     public string $partySearch = '';
 
+    public string $quickWaPhone = '';
+
     public function mount(): void
     {
         $this->saleDate = today()->format('Y-m-d');
@@ -425,5 +427,16 @@ class KasirPage extends Page
         $sale = Sale::findOrFail($this->result['sale_id'] ?? 0);
 
         return SaleThermalService::nota($sale);
+    }
+
+    public function getQuickWaLink(): ?string
+    {
+        if (empty($this->result['sale_id'])) {
+            return null;
+        }
+
+        $sale = Sale::find($this->result['sale_id']);
+
+        return $sale?->getWaLinkForPhone($this->quickWaPhone);
     }
 }

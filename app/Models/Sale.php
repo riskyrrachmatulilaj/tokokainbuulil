@@ -76,21 +76,16 @@ class Sale extends Model
         return $this->items->sum('quantity');
     }
 
-    public function getWhatsappMessageTextAttribute(): ?string
+    public function getWhatsappMessageTextAttribute(): string
     {
-        $party = $this->party;
-
-        if (! $party || ! $party->phone) {
-            return null;
-        }
-
+        $partyName = $this->party?->name ?? 'Pelanggan Umum';
         $dateStr = $this->sale_date ? $this->sale_date->format('d M Y') : today()->format('d M Y');
 
         $message = "*NOTA PEMBELIAN - TOKO KAIN BU ULIL*\n";
         $message .= "----------------------------------------\n";
         $message .= "*No. Transaksi:* " . $this->transaction_number . "\n";
         $message .= "*Tanggal:* " . $dateStr . "\n";
-        $message .= "*Pelanggan:* " . $party->name . "\n";
+        $message .= "*Pelanggan:* " . $partyName . "\n";
         $message .= "*Metode Bayar:* " . $this->payment_method_label . "\n";
         $message .= "----------------------------------------\n";
         $message .= "*Rincian Barang:*\n";
@@ -125,6 +120,25 @@ class Sale extends Model
         return $message;
     }
 
+    public function getWaLinkForPhone(?string $phoneInput): ?string
+    {
+        if (empty($phoneInput)) {
+            return null;
+        }
+
+        $phone = preg_replace('/[^0-9]/', '', $phoneInput);
+
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        if (strlen($phone) < 8) {
+            return null;
+        }
+
+        return "https://api.whatsapp.com/send?phone=" . $phone . "&text=" . rawurlencode($this->whatsapp_message_text);
+    }
+
     public function getWhatsappLinkAttribute(): ?string
     {
         $party = $this->party;
@@ -133,12 +147,6 @@ class Sale extends Model
             return null;
         }
 
-        $phone = preg_replace('/[^0-9]/', '', $party->phone);
-
-        if (str_starts_with($phone, '0')) {
-            $phone = '62' . substr($phone, 1);
-        }
-
-        return "https://api.whatsapp.com/send?phone=" . $phone . "&text=" . rawurlencode($this->whatsapp_message_text ?? '');
+        return $this->getWaLinkForPhone($party->phone);
     }
 }

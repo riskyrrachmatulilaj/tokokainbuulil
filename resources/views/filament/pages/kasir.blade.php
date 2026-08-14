@@ -169,6 +169,132 @@
             </div>
         </div>
 
+        @if ($this->result)
+            <div x-init="$el.scrollIntoView({ behavior: 'smooth', block: 'center' })" style="margin-bottom: 1.5rem;">
+                <x-filament::section icon="heroicon-o-check-circle">
+                    <x-slot name="heading">
+                        <span style="color: #10b981; font-weight: 800; font-size: 1.25rem;">✅ Penjualan Berhasil!</span>
+                    </x-slot>
+                    <x-slot name="description">
+                        Transaksi {{ $this->result['transaction_number'] }} selesai.
+                    </x-slot>
+
+                    <div class="kasir-result-grid">
+                        <div class="kasir-stat">
+                            <div class="kasir-stat-label">Total Belanja</div>
+                            <div class="kasir-stat-value" style="color: #4f46e5;">{{ rupiah($this->result['total']) }}</div>
+                        </div>
+                        <div class="kasir-stat">
+                            <div class="kasir-stat-label">Metode Pembayaran</div>
+                            <div class="kasir-stat-value">{{ $this->result['payment_method_label'] }}</div>
+                        </div>
+                        @if ($this->result['party_name'])
+                            <div class="kasir-stat">
+                                <div class="kasir-stat-label">Pelanggan</div>
+                                <div class="kasir-stat-value">{{ $this->result['party_name'] }}</div>
+                            </div>
+                        @endif
+                        @if ($this->result['payment_method'] === Sale::PAYMENT_METHOD_CASH)
+                            <div class="kasir-stat">
+                                <div class="kasir-stat-label">Kembalian</div>
+                                <div class="kasir-stat-value" style="color: #10b981;">{{ rupiah($this->result['change']) }}</div>
+                            </div>
+                        @elseif ($this->result['payment_method'] === Sale::PAYMENT_METHOD_SPLIT)
+                            <div class="kasir-stat">
+                                <div class="kasir-stat-label">Rincian Bayar</div>
+                                <div class="kasir-stat-value" style="font-size: 0.875rem;">
+                                    Tunai: {{ rupiah($this->result['cash_amount']) }}<br>
+                                    Transfer: {{ rupiah($this->result['transfer_amount']) }}
+                                </div>
+                            </div>
+                            <div class="kasir-stat">
+                                <div class="kasir-stat-label">Kembalian</div>
+                                <div class="kasir-stat-value" style="color: #10b981;">{{ rupiah($this->result['change']) }}</div>
+                            </div>
+                        @endif
+                        <div class="kasir-stat">
+                            <div class="kasir-stat-label">Jumlah Item</div>
+                            <div class="kasir-stat-value">{{ $this->result['items_count'] }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Kirim WA Cepat Ke Nomor Mana Saja -->
+                    <div style="margin-top: 1.25rem; padding: 1rem; border-radius: 0.75rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25);">
+                        <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 0.5rem; color: #065f46;">
+                            📱 Kirim Struk / Nota via WhatsApp
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                            @if (!empty($this->result['wa_link']))
+                                <x-filament::button
+                                    tag="a"
+                                    href="{{ $this->result['wa_link'] }}"
+                                    target="_blank"
+                                    color="success"
+                                    size="md"
+                                    icon="heroicon-o-chat-bubble-left-right"
+                                >
+                                    Kirim Ke {{ $this->result['party_name'] }}
+                                </x-filament::button>
+                            @endif
+
+                            <div style="display: flex; gap: 0.4rem; align-items: center; flex: 1; min-width: 240px;">
+                                <x-filament::input.wrapper style="flex: 1;">
+                                    <x-filament::input
+                                        type="tel"
+                                        wire:model.live="quickWaPhone"
+                                        placeholder="Ketik No WA lain (contoh: 08123456789)..."
+                                    />
+                                </x-filament::input.wrapper>
+                                @if (!empty($this->quickWaLink))
+                                    <x-filament::button
+                                        tag="a"
+                                        href="{{ $this->quickWaLink }}"
+                                        target="_blank"
+                                        color="success"
+                                        size="md"
+                                        icon="heroicon-o-paper-airplane"
+                                    >
+                                        Kirim
+                                    </x-filament::button>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kasir-actions" style="margin-top: 1.25rem;">
+                        <x-filament::button
+                            tag="a"
+                            href="{{ route('sales.thermal', ['sale' => $this->result['sale_id']]) }}"
+                            target="_blank"
+                            color="success"
+                            size="lg"
+                            icon="heroicon-o-printer"
+                        >
+                            🖨️ Cetak Struk Thermal (72mm)
+                        </x-filament::button>
+                        <x-filament::button
+                            tag="a"
+                            href="{{ route('sales.nota', ['sale' => $this->result['sale_id']]) }}"
+                            target="_blank"
+                            color="info"
+                            size="lg"
+                            icon="heroicon-o-document-text"
+                        >
+                            📄 Cetak Nota A4
+                        </x-filament::button>
+                        <x-filament::button
+                            type="button"
+                            color="gray"
+                            size="lg"
+                            wire:click="$set('result', null)"
+                        >
+                            ➕ Transaksi Baru
+                        </x-filament::button>
+                    </div>
+                </x-filament::section>
+            </div>
+        @endif
+
         <div class="kasir-layout">
             <div class="kasir-panel">
                 <x-filament::section icon="heroicon-o-shopping-bag">
