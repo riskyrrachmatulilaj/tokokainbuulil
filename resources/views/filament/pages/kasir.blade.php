@@ -3,7 +3,155 @@
 @endphp
 
 <x-filament-panels::page>
-    <link rel="stylesheet" href="{{ asset('css/kasir.css') }}?v=6" data-navigate-track />
+    <style>
+        .kasir-product-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 0.85rem !important;
+            max-height: 560px !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            padding-right: 4px !important;
+        }
+
+        @media (max-width: 640px) {
+            .kasir-product-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        .kasir-product {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+            min-height: 110px !important;
+            padding: 0.9rem 1rem !important;
+            border: 1px solid var(--kasir-border, rgba(128, 128, 128, 0.25)) !important;
+            border-radius: 0.75rem !important;
+            background: var(--kasir-surface-solid, #ffffff) !important;
+            text-align: left !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+        }
+
+        .dark .kasir-product,
+        html.dark .kasir-product {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+        }
+
+        .kasir-product:hover {
+            border-color: var(--primary-500, #6366f1) !important;
+            background: rgba(99, 102, 241, 0.08) !important;
+        }
+
+        .kasir-product.is-out-of-stock {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+        }
+
+        .kasir-product-top {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.25rem !important;
+            width: 100% !important;
+        }
+
+        .kasir-product-info {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.2rem !important;
+            width: 100% !important;
+        }
+
+        .kasir-product-name {
+            display: block !important;
+            font-size: 0.95rem !important;
+            font-weight: 700 !important;
+            color: var(--kasir-text, #111827) !important;
+            line-height: 1.35 !important;
+            word-break: break-word !important;
+            white-space: normal !important;
+        }
+
+        .dark .kasir-product-name,
+        html.dark .kasir-product-name {
+            color: #f9fafb !important;
+        }
+
+        .kasir-product-desc {
+            display: block !important;
+            font-size: 0.775rem !important;
+            color: var(--kasir-muted, #6b7280) !important;
+            line-height: 1.35 !important;
+            word-break: break-word !important;
+            white-space: normal !important;
+        }
+
+        .dark .kasir-product-desc,
+        html.dark .kasir-product-desc {
+            color: #9ca3af !important;
+        }
+
+        .kasir-product-bottom {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 0.5rem !important;
+            width: 100% !important;
+            margin-top: 0.75rem !important;
+            padding-top: 0.5rem !important;
+            border-top: 1px dashed rgba(128, 128, 128, 0.25) !important;
+        }
+
+        .kasir-product-meta-bottom {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.1rem !important;
+        }
+
+        .kasir-product-price {
+            display: block !important;
+            font-size: 0.925rem !important;
+            font-weight: 800 !important;
+            color: var(--primary-600, #4f46e5) !important;
+        }
+
+        .dark .kasir-product-price,
+        html.dark .kasir-product-price {
+            color: #818cf8 !important;
+        }
+
+        .kasir-product-stock-badge {
+            display: inline-block !important;
+            font-size: 0.725rem !important;
+            font-weight: 600 !important;
+            line-height: 1.2 !important;
+        }
+
+        .kasir-product-stock-badge.is-danger { color: #ef4444 !important; }
+        .kasir-product-stock-badge.is-warning { color: #f59e0b !important; }
+        .kasir-product-stock-badge.is-success { color: #10b981 !important; }
+
+        .kasir-product-add-btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0.4rem 0.85rem !important;
+            border-radius: 0.5rem !important;
+            background: var(--primary-600, #4f46e5) !important;
+            color: #ffffff !important;
+            font-size: 0.775rem !important;
+            font-weight: 700 !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+        }
+    </style>
+
+    <link rel="stylesheet" href="{{ asset('css/kasir.css') }}?v=7" data-navigate-track />
 
     <div class="kasir-pos">
         <div class="kasir-steps" aria-label="Alur kasir">
