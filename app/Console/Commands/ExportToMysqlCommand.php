@@ -32,6 +32,7 @@ class ExportToMysqlCommand extends Command
         'products',
         'sales',
         'sale_items',
+        'activity_logs',
     ];
 
     public function handle(): int

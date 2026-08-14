@@ -23,4 +23,5 @@ yarn-error.log
 /.zed
 *.zip
 *.sql
+!database/export_mysql.sql
 
