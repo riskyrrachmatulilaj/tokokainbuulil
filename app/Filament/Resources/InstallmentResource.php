@@ -84,6 +84,21 @@ class InstallmentResource extends Resource
                             ->required()
                             ->minValue(1)
                             ->prefix('Rp')
+                            ->suffixAction(
+                                \Filament\Actions\Action::make('lunasi')
+                                    ->label('Lunasi Nota')
+                                    ->icon('heroicon-m-check-badge')
+                                    ->color('success')
+                                    ->tooltip('Isi otomatis dengan sisa tagihan nota ini (Lunasi Penuh)')
+                                    ->action(function ($set, $get) {
+                                        $debtId = $get('debt_id');
+                                        if ($debtId && ($debt = Debt::find($debtId))) {
+                                            $set('amount', $debt->remaining_amount);
+                                        }
+                                    })
+                                    ->visible(fn ($get) => (bool) $get('debt_id'))
+                            )
+                            ->helperText(fn ($get) => $get('debt_id') ? 'Klik tombol ikon di kanan kolom untuk mengisi sisa hutang nota secara otomatis' : null)
                             ->columnSpan(1),
                         Forms\Components\DatePicker::make('installment_date')
                             ->label('Tanggal Cicilan')

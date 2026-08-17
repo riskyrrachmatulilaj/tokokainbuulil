@@ -84,6 +84,21 @@ class ReceivableInstallmentResource extends Resource
                             ->required()
                             ->minValue(1)
                             ->prefix('Rp')
+                            ->suffixAction(
+                                \Filament\Actions\Action::make('lunasi')
+                                    ->label('Lunasi Nota')
+                                    ->icon('heroicon-m-check-badge')
+                                    ->color('success')
+                                    ->tooltip('Isi otomatis dengan sisa tagihan nota ini (Lunasi Penuh)')
+                                    ->action(function ($set, $get) {
+                                        $receivableId = $get('receivable_id');
+                                        if ($receivableId && ($receivable = Receivable::find($receivableId))) {
+                                            $set('amount', $receivable->remaining_amount);
+                                        }
+                                    })
+                                    ->visible(fn ($get) => (bool) $get('receivable_id'))
+                            )
+                            ->helperText(fn ($get) => $get('receivable_id') ? 'Klik tombol ikon di kanan kolom untuk mengisi sisa piutang nota secara otomatis' : null)
                             ->columnSpan(1),
                         Forms\Components\DatePicker::make('installment_date')
                             ->label('Tanggal Cicilan')

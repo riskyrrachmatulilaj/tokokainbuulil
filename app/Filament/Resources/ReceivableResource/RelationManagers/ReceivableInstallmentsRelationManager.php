@@ -33,6 +33,15 @@ class ReceivableInstallmentsRelationManager extends RelationManager
                     ->required()
                     ->minValue(1)
                     ->prefix('Rp')
+                    ->default(fn () => $this->ownerRecord->remaining_amount)
+                    ->suffixAction(
+                        \Filament\Actions\Action::make('lunasi')
+                            ->label('Lunasi')
+                            ->icon('heroicon-m-check-badge')
+                            ->color('success')
+                            ->tooltip('Isi sisa piutang penuh')
+                            ->action(fn ($set) => $set('amount', $this->ownerRecord->remaining_amount))
+                    )
                     ->helperText(fn () => 'Sisa piutang: '.rupiah($this->ownerRecord->remaining_amount)),
                 Forms\Components\DatePicker::make('installment_date')
                     ->label('Tanggal Cicilan')
@@ -66,6 +75,52 @@ class ReceivableInstallmentsRelationManager extends RelationManager
                     ->placeholder('-'),
             ])
             ->headerActions([
+                Actions\Action::make('payFull')
+                    ->label('Lunasi Nota')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->button()
+                    ->visible(fn () => $this->ownerRecord->status === Receivable::STATUS_UNPAID && auth()->user()?->can('create', ReceivableInstallment::class))
+                    ->requiresConfirmation()
+                    ->modalHeading('Pelunasan Nota Piutang')
+                    ->modalDescription(fn () => "Apakah Anda yakin ingin melunasi nota {$this->ownerRecord->invoice_number} sebesar ".rupiah($this->ownerRecord->remaining_amount).'?')
+                    ->form([
+                        Forms\Components\Placeholder::make('info')
+                            ->label('Sisa Piutang yang Akan Dilunasi')
+                            ->content(fn () => rupiah($this->ownerRecord->remaining_amount)),
+                        Forms\Components\DatePicker::make('installment_date')
+                            ->label('Tanggal Pelunasan')
+                            ->default(today())
+                            ->required(),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Keterangan')
+                            ->default('Pelunasan nota piutang')
+                            ->rows(2),
+                    ])
+                    ->action(function (array $data) {
+                        try {
+                            app(ReceivablePaymentService::class)->recordInstallment([
+                                'receivable_id' => $this->ownerRecord->id,
+                                'amount' => $this->ownerRecord->remaining_amount,
+                                'installment_date' => $data['installment_date'] ?? today(),
+                                'description' => $data['description'] ?? 'Pelunasan nota piutang',
+                            ], auth()->user());
+
+                            Notification::make()
+                                ->success()
+                                ->title('Nota piutang berhasil dilunasi')
+                                ->body('Status nota piutang kini telah Lunas.')
+                                ->send();
+                        } catch (ValidationException $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Gagal melunasi nota')
+                                ->body(collect($e->errors())->flatten()->first())
+                                ->send();
+
+                            throw new Halt;
+                        }
+                    }),
                 Actions\CreateAction::make()
                     ->label('Tambah Cicilan')
                     ->visible(fn () => $this->ownerRecord->status === Receivable::STATUS_UNPAID && auth()->user()?->can('create', ReceivableInstallment::class))

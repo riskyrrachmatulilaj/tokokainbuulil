@@ -160,6 +160,52 @@ class DebtResource extends Resource
             ])
             ->actions([
                 Actions\ViewAction::make(),
+                Actions\Action::make('lunasi')
+                    ->label('Lunasi')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->visible(fn (Debt $record) => $record->status === Debt::STATUS_UNPAID && auth()->user()?->can('create', \App\Models\Installment::class))
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (Debt $record) => "Pelunasan Nota {$record->invoice_number}")
+                    ->form(fn (Debt $record) => [
+                        Forms\Components\Placeholder::make('info')
+                            ->label('Supplier')
+                            ->content($record->customer?->name ?? '-'),
+                        Forms\Components\Placeholder::make('remaining')
+                            ->label('Sisa Hutang yang Akan Dilunasi')
+                            ->content(rupiah($record->remaining_amount)),
+                        Forms\Components\DatePicker::make('installment_date')
+                            ->label('Tanggal Pelunasan')
+                            ->default(today())
+                            ->required(),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Keterangan')
+                            ->default('Pelunasan nota hutang')
+                            ->rows(2),
+                    ])
+                    ->action(function (Debt $record, array $data) {
+                        try {
+                            app(\App\Services\PaymentService::class)->recordInstallment([
+                                'debt_id' => $record->id,
+                                'amount' => $record->remaining_amount,
+                                'installment_date' => $data['installment_date'] ?? today(),
+                                'description' => $data['description'] ?? 'Pelunasan nota hutang',
+                            ], auth()->user());
+
+                            \Filament\Notifications\Notification::make()
+                                ->success()
+                                ->title("Nota {$record->invoice_number} berhasil dilunasi")
+                                ->send();
+                        } catch (\Illuminate\Validation\ValidationException $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Gagal melunasi nota')
+                                ->body(collect($e->errors())->flatten()->first())
+                                ->send();
+
+                            throw new \Filament\Support\Exceptions\Halt;
+                        }
+                    }),
                 Actions\EditAction::make()
                     ->visible(fn (Debt $record) => auth()->user()?->can('update', $record)),
                 Actions\DeleteAction::make()

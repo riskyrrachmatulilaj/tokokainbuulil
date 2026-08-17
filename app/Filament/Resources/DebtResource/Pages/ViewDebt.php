@@ -51,6 +51,52 @@ class ViewDebt extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('lunasi')
+                ->label('Lunasi Nota')
+                ->icon('heroicon-o-check-badge')
+                ->color('success')
+                ->button()
+                ->visible(fn () => $this->record->status === Debt::STATUS_UNPAID && auth()->user()?->can('create', \App\Models\Installment::class))
+                ->requiresConfirmation()
+                ->modalHeading('Pelunasan Nota Hutang')
+                ->modalDescription(fn () => "Lunasi seluruh sisa hutang nota {$this->record->invoice_number} sebesar ".rupiah($this->record->remaining_amount).'?')
+                ->form([
+                    \Filament\Forms\Components\Placeholder::make('info')
+                        ->label('Sisa Hutang yang Akan Dilunasi')
+                        ->content(fn () => rupiah($this->record->remaining_amount)),
+                    \Filament\Forms\Components\DatePicker::make('installment_date')
+                        ->label('Tanggal Pelunasan')
+                        ->default(today())
+                        ->required(),
+                    \Filament\Forms\Components\Textarea::make('description')
+                        ->label('Keterangan')
+                        ->default('Pelunasan nota hutang')
+                        ->rows(2),
+                ])
+                ->action(function (array $data) {
+                    try {
+                        app(\App\Services\PaymentService::class)->recordInstallment([
+                            'debt_id' => $this->record->id,
+                            'amount' => $this->record->remaining_amount,
+                            'installment_date' => $data['installment_date'] ?? today(),
+                            'description' => $data['description'] ?? 'Pelunasan nota hutang',
+                        ], auth()->user());
+
+                        \Filament\Notifications\Notification::make()
+                            ->success()
+                            ->title('Nota hutang berhasil dilunasi')
+                            ->body('Status nota kini telah Lunas.')
+                            ->send();
+                    } catch (\Illuminate\Validation\ValidationException $e) {
+                        \Filament\Notifications\Notification::make()
+                            ->danger()
+                            ->title('Gagal melunasi nota')
+                            ->body(collect($e->errors())->flatten()->first())
+                            ->send();
+
+                        throw new \Filament\Support\Exceptions\Halt;
+                    }
+                }),
             Actions\EditAction::make()
                 ->visible(fn () => auth()->user()?->can('update', $this->record)),
             Actions\DeleteAction::make()

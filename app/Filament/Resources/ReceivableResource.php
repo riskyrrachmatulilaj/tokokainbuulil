@@ -160,6 +160,52 @@ class ReceivableResource extends Resource
             ])
             ->actions([
                 Actions\ViewAction::make(),
+                Actions\Action::make('lunasi')
+                    ->label('Lunasi')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->visible(fn (Receivable $record) => $record->status === Receivable::STATUS_UNPAID && auth()->user()?->can('create', \App\Models\ReceivableInstallment::class))
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (Receivable $record) => "Pelunasan Nota {$record->invoice_number}")
+                    ->form(fn (Receivable $record) => [
+                        Forms\Components\Placeholder::make('info')
+                            ->label('Pelanggan')
+                            ->content($record->party?->name ?? '-'),
+                        Forms\Components\Placeholder::make('remaining')
+                            ->label('Sisa Piutang yang Akan Dilunasi')
+                            ->content(rupiah($record->remaining_amount)),
+                        Forms\Components\DatePicker::make('installment_date')
+                            ->label('Tanggal Pelunasan')
+                            ->default(today())
+                            ->required(),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Keterangan')
+                            ->default('Pelunasan nota piutang')
+                            ->rows(2),
+                    ])
+                    ->action(function (Receivable $record, array $data) {
+                        try {
+                            app(\App\Services\ReceivablePaymentService::class)->recordInstallment([
+                                'receivable_id' => $record->id,
+                                'amount' => $record->remaining_amount,
+                                'installment_date' => $data['installment_date'] ?? today(),
+                                'description' => $data['description'] ?? 'Pelunasan nota piutang',
+                            ], auth()->user());
+
+                            \Filament\Notifications\Notification::make()
+                                ->success()
+                                ->title("Nota {$record->invoice_number} berhasil dilunasi")
+                                ->send();
+                        } catch (\Illuminate\Validation\ValidationException $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Gagal melunasi nota')
+                                ->body(collect($e->errors())->flatten()->first())
+                                ->send();
+
+                            throw new \Filament\Support\Exceptions\Halt;
+                        }
+                    }),
                 Actions\EditAction::make()
                     ->visible(fn (Receivable $record) => auth()->user()?->can('update', $record)),
                 Actions\DeleteAction::make()
