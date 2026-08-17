@@ -267,7 +267,7 @@
                                     <div class="kasir-cart-top">
                                         <div class="kasir-cart-info">
                                             <span class="kasir-cart-name">{{ $row['name'] }}</span>
-                                            <div class="kasir-price-edit" x-data="{ price: @js($row['price']) }" x-effect="price = @js($row['price'])">
+                                            <div class="kasir-price-edit">
                                                 <span class="kasir-price-label">Rp</span>
                                                 <input
                                                     type="number"
@@ -275,9 +275,9 @@
                                                     min="0"
                                                     step="any"
                                                     inputmode="decimal"
-                                                    x-model="price"
-                                                    x-on:change="$wire.setPrice({{ $index }}, price)"
-                                                    x-on:keydown.enter.prevent="$wire.setPrice({{ $index }}, price); $event.target.blur()"
+                                                    value="{{ $row['price'] }}"
+                                                    wire:change="setPrice({{ $index }}, $event.target.value)"
+                                                    x-on:keydown.enter.prevent="$wire.setPrice({{ $index }}, $event.target.value); $event.target.blur()"
                                                     aria-label="Ubah harga {{ $row['name'] }}"
                                                     title="Klik untuk mengubah harga satuan item ini"
                                                 />
@@ -291,7 +291,7 @@
                                     </div>
 
                                     <div class="kasir-cart-bottom">
-                                        <div class="kasir-qty" role="group" aria-label="Jumlah {{ $row['name'] }}" x-data="{ qty: @js($row['quantity']) }" x-effect="qty = @js($row['quantity'])">
+                                        <div class="kasir-qty" role="group" aria-label="Jumlah {{ $row['name'] }}">
                                             <button
                                                 type="button"
                                                 class="kasir-qty-btn"
@@ -304,9 +304,9 @@
                                                 min="0.01"
                                                 step="any"
                                                 inputmode="decimal"
-                                                x-model="qty"
-                                                x-on:change="$wire.setQty({{ $index }}, qty)"
-                                                x-on:keydown.enter.prevent="$wire.setQty({{ $index }}, qty); $event.target.blur()"
+                                                value="{{ $row['quantity'] }}"
+                                                wire:change="setQty({{ $index }}, $event.target.value)"
+                                                x-on:keydown.enter.prevent="$wire.setQty({{ $index }}, $event.target.value); $event.target.blur()"
                                                 aria-label="Ketik jumlah {{ $row['name'] }}"
                                             />
                                             <button
