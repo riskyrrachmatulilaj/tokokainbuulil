@@ -127,14 +127,10 @@ class ViewSale extends ViewRecord
                 ->modalHeading('Batalkan Penjualan')
                 ->modalDescription('Penjualan kredit yang sudah menerima pembayaran piutang tidak dapat dibatalkan.')
                 ->visible(fn () => auth()->user()?->can('delete', $this->record))
+                ->successNotificationTitle('Penjualan dibatalkan')
                 ->action(function () {
                     try {
                         app(SaleService::class)->deleteSale($this->record);
-
-                        Notification::make()
-                            ->success()
-                            ->title('Penjualan dibatalkan')
-                            ->send();
                     } catch (ValidationException $e) {
                         Notification::make()
                             ->danger()

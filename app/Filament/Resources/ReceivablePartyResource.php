@@ -123,14 +123,10 @@ class ReceivablePartyResource extends Resource
                     ->modalHeading('Hapus Pelanggan')
                     ->modalDescription('Pelanggan hanya dapat dihapus apabila tidak memiliki nota piutang yang belum lunas.')
                     ->visible(fn (ReceivableParty $record) => auth()->user()?->can('delete', $record))
+                    ->successNotificationTitle('Pelanggan dihapus')
                     ->action(function (ReceivableParty $record) {
                         try {
                             app(ReceivableService::class)->deleteParty($record);
-
-                            Notification::make()
-                                ->success()
-                                ->title('Pelanggan dihapus')
-                                ->send();
                         } catch (ValidationException $e) {
                             Notification::make()
                                 ->danger()

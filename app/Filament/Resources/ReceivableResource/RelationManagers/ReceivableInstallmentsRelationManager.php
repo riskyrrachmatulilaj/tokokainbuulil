@@ -154,14 +154,10 @@ class ReceivableInstallmentsRelationManager extends RelationManager
                     ->modalHeading('Batalkan Cicilan')
                     ->modalDescription('Cicilan akan dibatalkan, saldo nota dikembalikan, dan riwayat pembayaran terkait dihapus.')
                     ->visible(fn (ReceivableInstallment $record) => auth()->user()?->can('delete', $record))
+                    ->successNotificationTitle('Cicilan dibatalkan')
                     ->action(function (ReceivableInstallment $record) {
                         try {
                             app(ReceivablePaymentService::class)->cancelInstallment($record);
-
-                            Notification::make()
-                                ->success()
-                                ->title('Cicilan dibatalkan')
-                                ->send();
                         } catch (ValidationException $e) {
                             Notification::make()
                                 ->danger()

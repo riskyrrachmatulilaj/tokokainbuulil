@@ -171,14 +171,10 @@ class SaleResource extends Resource
                     ->modalHeading('Batalkan Penjualan')
                     ->modalDescription('Penjualan kredit yang sudah menerima pembayaran piutang tidak dapat dibatalkan.')
                     ->visible(fn (Sale $record) => auth()->user()?->can('delete', $record))
+                    ->successNotificationTitle('Penjualan dibatalkan')
                     ->action(function (Sale $record) {
                         try {
                             app(SaleService::class)->deleteSale($record);
-
-                            Notification::make()
-                                ->success()
-                                ->title('Penjualan dibatalkan')
-                                ->send();
                         } catch (ValidationException $e) {
                             Notification::make()
                                 ->danger()

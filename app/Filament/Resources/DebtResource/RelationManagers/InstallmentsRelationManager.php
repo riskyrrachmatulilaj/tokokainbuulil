@@ -154,14 +154,10 @@ class InstallmentsRelationManager extends RelationManager
                     ->modalHeading('Batalkan Cicilan')
                     ->modalDescription('Cicilan akan dibatalkan, saldo nota dikembalikan, dan riwayat pembayaran terkait dihapus.')
                     ->visible(fn (Installment $record) => auth()->user()?->can('delete', $record))
+                    ->successNotificationTitle('Cicilan dibatalkan')
                     ->action(function (Installment $record) {
                         try {
                             app(PaymentService::class)->cancelInstallment($record);
-
-                            Notification::make()
-                                ->success()
-                                ->title('Cicilan dibatalkan')
-                                ->send();
                         } catch (ValidationException $e) {
                             Notification::make()
                                 ->danger()

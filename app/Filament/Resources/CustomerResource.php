@@ -122,14 +122,10 @@ class CustomerResource extends Resource
                     ->modalHeading('Hapus Supplier')
                     ->modalDescription('Supplier hanya dapat dihapus apabila tidak memiliki nota yang belum lunas.')
                     ->visible(fn (Customer $record) => auth()->user()?->can('delete', $record))
+                    ->successNotificationTitle('Supplier dihapus')
                     ->action(function (Customer $record) {
                         try {
                             app(CustomerService::class)->deleteCustomer($record);
-
-                            Notification::make()
-                                ->success()
-                                ->title('Supplier dihapus')
-                                ->send();
                         } catch (ValidationException $e) {
                             Notification::make()
                                 ->danger()

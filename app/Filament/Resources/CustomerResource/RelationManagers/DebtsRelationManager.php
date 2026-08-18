@@ -119,14 +119,10 @@ class DebtsRelationManager extends RelationManager
                     ->url(fn (Debt $record) => \App\Filament\Resources\DebtResource::getUrl('view', ['record' => $record])),
                 Actions\DeleteAction::make()
                     ->visible(fn (Debt $record) => auth()->user()?->can('delete', $record))
+                    ->successNotificationTitle('Nota dihapus')
                     ->action(function (Debt $record) {
                         try {
                             app(DebtService::class)->deleteDebt($record);
-
-                            Notification::make()
-                                ->success()
-                                ->title('Nota dihapus')
-                                ->send();
                         } catch (ValidationException $e) {
                             Notification::make()
                                 ->danger()

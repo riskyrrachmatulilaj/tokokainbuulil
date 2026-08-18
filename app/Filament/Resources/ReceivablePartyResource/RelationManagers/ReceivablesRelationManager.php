@@ -119,14 +119,10 @@ class ReceivablesRelationManager extends RelationManager
                     ->url(fn (Receivable $record) => \App\Filament\Resources\ReceivableResource::getUrl('view', ['record' => $record])),
                 Actions\DeleteAction::make()
                     ->visible(fn (Receivable $record) => auth()->user()?->can('delete', $record))
+                    ->successNotificationTitle('Nota dihapus')
                     ->action(function (Receivable $record) {
                         try {
                             app(ReceivableService::class)->deleteReceivable($record);
-
-                            Notification::make()
-                                ->success()
-                                ->title('Nota dihapus')
-                                ->send();
                         } catch (ValidationException $e) {
                             Notification::make()
                                 ->danger()
