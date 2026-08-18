@@ -70,7 +70,7 @@ class CustomerResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
-                    ->searchable()
+                    ->searchable(['name', 'phone', 'address'])
                     ->sortable()
                     ->description(fn (Customer $record) => $record->phone ?? 'Tanpa nomor telepon')
                     ->weight('bold'),

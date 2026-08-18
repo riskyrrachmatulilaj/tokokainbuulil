@@ -129,8 +129,19 @@ class Product extends Model
 
     public function scopeSearch($query, string $term)
     {
-        return $query->where(fn ($q) => $q
-            ->where('name', 'like', "%{$term}%")
-            ->orWhere('description', 'like', "%{$term}%"));
+        $words = preg_split('/\s+/', trim($term), -1, PREG_SPLIT_NO_EMPTY);
+
+        if (empty($words)) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($words) {
+            foreach ($words as $word) {
+                $q->where(function ($sub) use ($word) {
+                    $sub->where('name', 'like', "%{$word}%")
+                        ->orWhere('description', 'like', "%{$word}%");
+                });
+            }
+        });
     }
 }

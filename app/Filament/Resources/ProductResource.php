@@ -83,7 +83,7 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama Produk')
-                    ->searchable()
+                    ->searchable(['name', 'description'])
                     ->sortable()
                     ->wrap()
                     ->description(fn (Product $record) => $record->description ?? 'Tanpa keterangan')

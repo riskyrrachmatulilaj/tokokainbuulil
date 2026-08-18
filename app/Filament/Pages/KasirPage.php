@@ -65,8 +65,7 @@ class KasirPage extends Page
         return ReceivableParty::query()
             ->when($this->partySearch !== '', function ($q) {
                 $q->where(function ($sub) {
-                    $sub->where('name', 'like', '%' . $this->partySearch . '%')
-                        ->orWhere('phone', 'like', '%' . $this->partySearch . '%');
+                    $sub->search($this->partySearch);
                 });
                 if ($this->receivablePartyId) {
                     $q->orWhere('id', $this->receivablePartyId);

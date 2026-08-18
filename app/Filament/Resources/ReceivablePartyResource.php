@@ -71,7 +71,7 @@ class ReceivablePartyResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nama')
-                    ->searchable()
+                    ->searchable(['name', 'phone', 'address'])
                     ->sortable()
                     ->description(fn (ReceivableParty $record) => $record->phone ?? 'Tanpa nomor telepon')
                     ->weight('bold'),
