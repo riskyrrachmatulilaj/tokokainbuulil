@@ -99,19 +99,19 @@ class ViewSale extends ViewRecord
                     ->label('Continuous Ringkas (1-Baris)')
                     ->icon('heroicon-o-printer')
                     ->color('success')
-                    ->url(fn () => url("/sales/{$this->record->id}/thermal"))
+                    ->url(fn () => url("/sales/{$this->record->id}/thermal?layout=compact"))
                     ->openUrlInNewTab(),
                 Actions\Action::make('print_continuous_detail')
                     ->label('Continuous Detail (2-Baris)')
                     ->icon('heroicon-o-document-text')
                     ->color('warning')
-                    ->url(fn () => url("/sales/{$this->record->id}/continuous-detail"))
+                    ->url(fn () => url("/sales/{$this->record->id}/thermal?layout=detail"))
                     ->openUrlInNewTab(),
                 Actions\Action::make('print_thermal_roll')
                     ->label('Thermal Roll (72mm)')
                     ->icon('heroicon-o-receipt-percent')
                     ->color('gray')
-                    ->url(fn () => url("/sales/{$this->record->id}/thermal-roll"))
+                    ->url(fn () => url("/sales/{$this->record->id}/thermal?layout=roll"))
                     ->openUrlInNewTab(),
                 Actions\Action::make('print_nota')
                     ->label('Nota Faktur A4')

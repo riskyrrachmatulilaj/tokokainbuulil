@@ -19,21 +19,25 @@ Route::middleware(['auth'])->group(function () {
         return SalePdfService::notaInline($sale);
     })->name('sales.nota');
 
-    // 2. Nota Continuous Ringkas 1-Baris (Layout Sekarang, 9.5x14cm Hemat Kertas)
+    // 2. Nota Struk Thermal / Continuous dengan parameter layout (?layout=compact|detail|roll)
     Route::get('/sales/{sale}/thermal', function (Sale $sale) {
-        return SaleThermalService::continuousCompactInline($sale);
+        $layout = request()->query('layout', 'compact');
+        return match ($layout) {
+            'roll', 'thermal' => SaleThermalService::thermalRollInline($sale),
+            'detail', '2row' => SaleThermalService::continuousDetailInline($sale),
+            default => SaleThermalService::continuousCompactInline($sale),
+        };
     })->name('sales.thermal');
 
+    // Rute alias URL langsung
     Route::get('/sales/{sale}/continuous', function (Sale $sale) {
         return SaleThermalService::continuousCompactInline($sale);
     })->name('sales.continuous');
 
-    // 3. Nota Continuous Detail 2-Baris (Layout Kedua, 9.5x14cm Detail Nama)
     Route::get('/sales/{sale}/continuous-detail', function (Sale $sale) {
         return SaleThermalService::continuousDetailInline($sale);
     })->name('sales.continuous-detail');
 
-    // 4. Struk Thermal Roll 72mm (Layout Pertama / Roll POS Standar)
     Route::get('/sales/{sale}/thermal-roll', function (Sale $sale) {
         return SaleThermalService::thermalRollInline($sale);
     })->name('sales.thermal-roll');

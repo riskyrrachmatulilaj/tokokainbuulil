@@ -681,7 +681,7 @@
                     {{-- Layout 3 (Sekarang): Continuous Ringkas 1-Baris --}}
                     <x-filament::button
                         tag="a"
-                        href="{{ url('/sales/' . $this->result['sale_id'] . '/thermal') }}"
+                        href="{{ url('/sales/' . $this->result['sale_id'] . '/thermal?layout=compact') }}"
                         target="_blank"
                         color="success"
                         size="lg"
@@ -693,7 +693,7 @@
                     {{-- Layout 2: Continuous Detail 2-Baris --}}
                     <x-filament::button
                         tag="a"
-                        href="{{ url('/sales/' . $this->result['sale_id'] . '/continuous-detail') }}"
+                        href="{{ url('/sales/' . $this->result['sale_id'] . '/thermal?layout=detail') }}"
                         target="_blank"
                         color="warning"
                         size="lg"
@@ -705,7 +705,7 @@
                     {{-- Layout 1: Thermal Roll 72mm --}}
                     <x-filament::button
                         tag="a"
-                        href="{{ url('/sales/' . $this->result['sale_id'] . '/thermal-roll') }}"
+                        href="{{ url('/sales/' . $this->result['sale_id'] . '/thermal?layout=roll') }}"
                         target="_blank"
                         color="gray"
                         size="lg"
