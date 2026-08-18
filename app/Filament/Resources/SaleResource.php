@@ -144,25 +144,25 @@ class SaleResource extends Resource
                         ->label('Continuous Ringkas (1-Baris)')
                         ->icon('heroicon-o-printer')
                         ->color('success')
-                        ->url(fn (Sale $record) => route('sales.continuous', ['sale' => $record->id]))
+                        ->url(fn (Sale $record) => url("/sales/{$record->id}/thermal"))
                         ->openUrlInNewTab(),
                     Actions\Action::make('print_continuous_detail')
                         ->label('Continuous Detail (2-Baris)')
                         ->icon('heroicon-o-document-text')
                         ->color('warning')
-                        ->url(fn (Sale $record) => route('sales.continuous-detail', ['sale' => $record->id]))
+                        ->url(fn (Sale $record) => url("/sales/{$record->id}/continuous-detail"))
                         ->openUrlInNewTab(),
                     Actions\Action::make('print_thermal_roll')
                         ->label('Thermal Roll (72mm)')
                         ->icon('heroicon-o-receipt-percent')
                         ->color('gray')
-                        ->url(fn (Sale $record) => route('sales.thermal-roll', ['sale' => $record->id]))
+                        ->url(fn (Sale $record) => url("/sales/{$record->id}/thermal-roll"))
                         ->openUrlInNewTab(),
                     Actions\Action::make('print_nota')
                         ->label('Nota Faktur A4')
                         ->icon('heroicon-o-document-text')
                         ->color('info')
-                        ->url(fn (Sale $record) => route('sales.nota', ['sale' => $record->id]))
+                        ->url(fn (Sale $record) => url("/sales/{$record->id}/nota"))
                         ->openUrlInNewTab(),
                 ])->label('Cetak')->icon('heroicon-o-printer')->color('info'),
                 Actions\DeleteAction::make()

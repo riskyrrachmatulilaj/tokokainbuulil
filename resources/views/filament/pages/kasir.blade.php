@@ -681,7 +681,7 @@
                     {{-- Layout 3 (Sekarang): Continuous Ringkas 1-Baris --}}
                     <x-filament::button
                         tag="a"
-                        href="{{ route('sales.continuous', ['sale' => $this->result['sale_id']]) }}"
+                        href="{{ url('/sales/' . $this->result['sale_id'] . '/thermal') }}"
                         target="_blank"
                         color="success"
                         size="lg"
@@ -693,7 +693,7 @@
                     {{-- Layout 2: Continuous Detail 2-Baris --}}
                     <x-filament::button
                         tag="a"
-                        href="{{ route('sales.continuous-detail', ['sale' => $this->result['sale_id']]) }}"
+                        href="{{ url('/sales/' . $this->result['sale_id'] . '/continuous-detail') }}"
                         target="_blank"
                         color="warning"
                         size="lg"
@@ -705,7 +705,7 @@
                     {{-- Layout 1: Thermal Roll 72mm --}}
                     <x-filament::button
                         tag="a"
-                        href="{{ route('sales.thermal-roll', ['sale' => $this->result['sale_id']]) }}"
+                        href="{{ url('/sales/' . $this->result['sale_id'] . '/thermal-roll') }}"
                         target="_blank"
                         color="gray"
                         size="lg"
@@ -717,7 +717,7 @@
                     {{-- Nota A4 --}}
                     <x-filament::button
                         tag="a"
-                        href="{{ route('sales.nota', ['sale' => $this->result['sale_id']]) }}"
+                        href="{{ url('/sales/' . $this->result['sale_id'] . '/nota') }}"
                         target="_blank"
                         color="info"
                         size="lg"
