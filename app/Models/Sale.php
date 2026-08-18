@@ -96,7 +96,11 @@ class Sale extends Model
         $message .= "*Rincian Barang:*\n";
 
         foreach ($this->items as $item) {
-            $message .= "- " . $item->product_name . " (" . (int)$item->quantity . "x @ Rp " . number_format((float)$item->price, 0, ',', '.') . "): Rp " . number_format((float)$item->subtotal, 0, ',', '.') . "\n";
+            $qtyStr = (float) $item->quantity == (int) $item->quantity ? (int) $item->quantity : number_format((float) $item->quantity, 2, ',', '.');
+            $message .= "- " . $item->product_name . " (" . $qtyStr . "x @ Rp " . number_format((float)$item->price, 0, ',', '.') . "): Rp " . number_format((float)$item->subtotal, 0, ',', '.') . "\n";
+            if (!empty($item->notes)) {
+                $message .= "  ↳ _" . $item->notes . "_\n";
+            }
         }
 
         $message .= "----------------------------------------\n";

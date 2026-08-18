@@ -59,6 +59,7 @@ class ViewSale extends ViewRecord
                                 TextEntry::make('quantity')->label('Jumlah'),
                                 TextEntry::make('price')->label('Harga Satuan')->state(fn ($record) => rupiah($record->price)),
                                 TextEntry::make('subtotal')->label('Subtotal')->state(fn ($record) => rupiah($record->subtotal)),
+                                TextEntry::make('notes')->label('Keterangan / Rincian Roll')->placeholder('-')->columnSpanFull(),
                             ])
                             ->columns(4),
                     ]),

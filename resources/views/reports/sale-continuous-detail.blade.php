@@ -214,11 +214,16 @@
                 <tr>
                     <td class="left item-name" colspan="4">
                         {{ $index + 1 }}. {{ $item->product_name }}
+                        @if (! empty($item->notes))
+                            <div style="font-size: 8px; font-style: italic; font-weight: normal; color: #333; margin-left: 12px; margin-top: 1px;">
+                                ↳ {{ $item->notes }}
+                            </div>
+                        @endif
                     </td>
                 </tr>
                 <tr class="item-sub-row">
                     <td class="left"></td>
-                    <td class="center">{{ $item->quantity }}</td>
+                    <td class="center">{{ (float)$item->quantity == (int)$item->quantity ? (int)$item->quantity : $item->quantity }}</td>
                     <td class="right">{{ number_format($item->price, 0, ',', '.') }}</td>
                     <td class="right">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                 </tr>

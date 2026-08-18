@@ -187,8 +187,15 @@
         <tbody>
             @foreach ($sale->items as $item)
                 <tr>
-                    <td class="left product-col">{{ $item->product_name }}</td>
-                    <td class="center">{{ $item->quantity }}</td>
+                    <td class="left product-col">
+                        {{ $item->product_name }}
+                        @if (! empty($item->notes))
+                            <div style="font-size: 7.5px; font-style: italic; font-weight: normal; color: #222; margin-top: 1px;">
+                                ↳ {{ $item->notes }}
+                            </div>
+                        @endif
+                    </td>
+                    <td class="center">{{ (float)$item->quantity == (int)$item->quantity ? (int)$item->quantity : $item->quantity }}</td>
                     <td class="right">{{ number_format($item->price, 0, ',', '.') }}</td>
                     <td class="right">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                 </tr>

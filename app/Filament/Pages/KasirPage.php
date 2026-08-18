@@ -134,6 +134,7 @@ class KasirPage extends Page
             $this->cart[] = [
                 'product_id' => $product->id,
                 'name' => $product->name,
+                'notes' => '',
                 'original_price' => (float) $product->price,
                 'price' => (float) $product->price,
                 'quantity' => 1,
@@ -229,6 +230,13 @@ class KasirPage extends Page
         $newPrice = max(0, (float) (static::parseNumericAmount($price) ?? 0));
         $this->cart[$index]['price'] = $newPrice;
         $this->cart[$index]['subtotal'] = round($newPrice * (float) $this->cart[$index]['quantity'], 2);
+    }
+
+    public function setNotes(int $index, mixed $value): void
+    {
+        if (isset($this->cart[$index])) {
+            $this->cart[$index]['notes'] = is_string($value) ? trim($value) : (string) $value;
+        }
     }
 
     public function removeFromCart(int $index): void
@@ -354,6 +362,7 @@ class KasirPage extends Page
                     'product_id' => $row['product_id'],
                     'price' => (float) $row['price'],
                     'quantity' => $row['quantity'],
+                    'notes' => isset($row['notes']) && trim((string)$row['notes']) !== '' ? trim((string)$row['notes']) : null,
                 ])->all(),
                 'payment_method' => $this->paymentMethod,
                 'receivable_party_id' => $this->receivablePartyId,

@@ -329,6 +329,24 @@
                                             Hapus
                                         </x-filament::button>
                                     </div>
+
+                                    <div class="kasir-cart-notes" style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(156, 163, 175, 0.3);">
+                                        <div style="display: flex; align-items: center; gap: 4px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 14px; height: 14px; color: #6b7280; flex-shrink: 0;">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                            </svg>
+                                            <input
+                                                type="text"
+                                                class="kasir-notes-input"
+                                                placeholder="Keterangan / rincian roll (cth: kain 1 53m, kain 2 54m total 107m 2 roll)..."
+                                                value="{{ $row['notes'] ?? '' }}"
+                                                wire:change="setNotes({{ $index }}, $event.target.value)"
+                                                x-on:keydown.enter.prevent="$wire.setNotes({{ $index }}, $event.target.value); $event.target.blur()"
+                                                style="width: 100%; font-size: 0.76rem; padding: 3px 6px; border: 1px solid rgba(156, 163, 175, 0.4); border-radius: 4px; background: rgba(0, 0, 0, 0.02); color: inherit;"
+                                                title="Keterangan tambahan untuk dicetak di nota (misal: rincian roll / meteran)"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>

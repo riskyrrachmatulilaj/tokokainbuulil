@@ -76,6 +76,7 @@ class SaleService
                     'product' => $product,
                     'product_id' => $product->id,
                     'product_name' => $product->name,
+                    'notes' => isset($item['notes']) && trim((string) $item['notes']) !== '' ? trim((string) $item['notes']) : null,
                     'price' => $price,
                     'quantity' => $quantity,
                     'subtotal' => $lineTotal,

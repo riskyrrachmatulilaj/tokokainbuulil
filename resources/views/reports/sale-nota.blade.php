@@ -114,9 +114,16 @@
             @foreach ($sale->items as $index => $item)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $item->product_name }}</td>
+                    <td>
+                        <div>{{ $item->product_name }}</div>
+                        @if (! empty($item->notes))
+                            <div style="font-size: 8pt; color: #444; font-style: italic; margin-top: 2px;">
+                                ↳ {{ $item->notes }}
+                            </div>
+                        @endif
+                    </td>
                     <td class="right">{{ number_format($item->price, 0, ',', '.') }}</td>
-                    <td class="right">{{ $item->quantity }}</td>
+                    <td class="right">{{ (float)$item->quantity == (int)$item->quantity ? (int)$item->quantity : $item->quantity }}</td>
                     <td class="right">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                 </tr>
             @endforeach

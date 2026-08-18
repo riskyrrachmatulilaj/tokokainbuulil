@@ -13,6 +13,7 @@ class SaleItem extends Model
         'sale_id',
         'product_id',
         'product_name',
+        'notes',
         'price',
         'quantity',
         'subtotal',

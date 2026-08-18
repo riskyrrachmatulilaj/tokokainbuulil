@@ -132,10 +132,18 @@
 
     {{-- Daftar Item --}}
     @foreach ($sale->items as $item)
+        @php
+            $qtyFormatted = (float)$item->quantity == (int)$item->quantity ? (int)$item->quantity : $item->quantity;
+        @endphp
         <div style="margin-bottom: 3px;">
             <span class="item-name">{{ $item->product_name }}</span>
+            @if (! empty($item->notes))
+                <div style="font-size: 8.5px; font-style: italic; font-weight: normal; padding-left: 6px; color: #333;">
+                    ↳ {{ $item->notes }}
+                </div>
+            @endif
             <div class="item-detail">
-                <span>{{ $item->quantity }} x {{ number_format($item->price, 0, ',', '.') }}</span>
+                <span>{{ $qtyFormatted }} x {{ number_format($item->price, 0, ',', '.') }}</span>
                 <span>{{ number_format($item->subtotal, 0, ',', '.') }}</span>
             </div>
         </div>
