@@ -160,7 +160,7 @@ class SaleResource extends Resource
                         ->openUrlInNewTab(),
                     Actions\Action::make('print_nota')
                         ->label('Nota Faktur A4')
-                        ->icon('heroicon-o-document')
+                        ->icon('heroicon-o-document-text')
                         ->color('info')
                         ->url(fn (Sale $record) => route('sales.nota', ['sale' => $record->id]))
                         ->openUrlInNewTab(),

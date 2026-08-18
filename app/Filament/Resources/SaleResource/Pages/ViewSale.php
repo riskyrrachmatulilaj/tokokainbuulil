@@ -95,14 +95,26 @@ class ViewSale extends ViewRecord
             ->color('warning')
             ->visible(fn () => $this->record->party && $this->record->party->phone),
             Actions\ActionGroup::make([
-                Actions\Action::make('print_thermal')
-                    ->label('Cetak Struk Thermal')
-                    ->icon('heroicon-o-receipt-percent')
+                Actions\Action::make('print_continuous')
+                    ->label('Continuous Ringkas (1-Baris)')
+                    ->icon('heroicon-o-printer')
                     ->color('success')
-                    ->url(fn () => route('sales.thermal', ['sale' => $this->record->id]))
+                    ->url(fn () => route('sales.continuous', ['sale' => $this->record->id]))
+                    ->openUrlInNewTab(),
+                Actions\Action::make('print_continuous_detail')
+                    ->label('Continuous Detail (2-Baris)')
+                    ->icon('heroicon-o-document-text')
+                    ->color('warning')
+                    ->url(fn () => route('sales.continuous-detail', ['sale' => $this->record->id]))
+                    ->openUrlInNewTab(),
+                Actions\Action::make('print_thermal_roll')
+                    ->label('Thermal Roll (72mm)')
+                    ->icon('heroicon-o-receipt-percent')
+                    ->color('gray')
+                    ->url(fn () => route('sales.thermal-roll', ['sale' => $this->record->id]))
                     ->openUrlInNewTab(),
                 Actions\Action::make('print_nota')
-                    ->label('Cetak Nota A4')
+                    ->label('Nota Faktur A4')
                     ->icon('heroicon-o-document-text')
                     ->color('info')
                     ->url(fn () => route('sales.nota', ['sale' => $this->record->id]))

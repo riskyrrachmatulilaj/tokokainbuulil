@@ -721,7 +721,7 @@
                         target="_blank"
                         color="info"
                         size="lg"
-                        icon="heroicon-o-document"
+                        icon="heroicon-o-document-text"
                     >
                         Nota A4
                     </x-filament::button>
