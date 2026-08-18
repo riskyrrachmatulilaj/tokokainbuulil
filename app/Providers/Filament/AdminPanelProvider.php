@@ -57,6 +57,8 @@ class AdminPanelProvider extends PanelProvider
             ->assets([
                 Css::make('kasir', __DIR__.'/../../../public/css/kasir.css')
                     ->relativePublicPath('css/kasir.css'),
+                Css::make('reports', __DIR__.'/../../../public/css/reports.css')
+                    ->relativePublicPath('css/reports.css'),
                 Css::make('daily-sales-report', __DIR__.'/../../../public/css/daily-sales-report.css')
                     ->relativePublicPath('css/daily-sales-report.css'),
             ])
