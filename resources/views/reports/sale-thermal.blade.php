@@ -145,7 +145,7 @@
     {{-- Header Toko --}}
     <div class="header-section">
         <div class="shop-name">TOKO KAIN BU ULIL</div>
-        <div class="shop-subtitle">NOTA PENJUALAN</div>
+        <div class="shop-subtitle">NOTA CONTINUOUS (RINGKAS 1-BARIS)</div>
     </div>
 
     <hr class="divider">

@@ -160,7 +160,7 @@
     {{-- Header Toko --}}
     <div class="header-section">
         <div class="shop-name">TOKO KAIN BU ULIL</div>
-        <div class="shop-subtitle">NOTA PENJUALAN (DETAIL)</div>
+        <div class="shop-subtitle">NOTA CONTINUOUS (DETAIL 2-BARIS)</div>
     </div>
 
     <hr class="divider">

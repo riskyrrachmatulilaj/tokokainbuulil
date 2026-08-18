@@ -100,7 +100,7 @@
 <body>
     {{-- Header Toko --}}
     <div class="shop-name">Toko Kain Bu Ulil</div>
-    <div class="shop-subtitle">NOTA PENJUALAN</div>
+    <div class="shop-subtitle">STRUK THERMAL ROLL (72mm)</div>
 
     <hr class="separator-double">
 

@@ -20,12 +20,18 @@ class SaleThermalService
     public const THERMAL_ROLL_WIDTH_PT = 204.1;  // 72mm * 2.83465
 
     /**
-     * Layout 3 (Default / Sekarang): Continuous Form Ringkas 1-Baris (9.5cm x 14cm)
-     * Sangat hemat kertas, muat 12-15 item dalam 1 lembar 14cm.
+     * Entry point utama cetak thermal / continuous.
+     * Otomatis membaca parameter ?layout=compact|detail|roll dari URL.
      */
     public static function notaInline(Sale $sale): \Illuminate\Http\Response
     {
-        return self::continuousCompactInline($sale);
+        $layout = request()->query('layout', 'compact');
+
+        return match ($layout) {
+            'roll', 'thermal' => self::thermalRollInline($sale),
+            'detail', '2row' => self::continuousDetailInline($sale),
+            default => self::continuousCompactInline($sale),
+        };
     }
 
     public static function continuousCompactInline(Sale $sale): \Illuminate\Http\Response
