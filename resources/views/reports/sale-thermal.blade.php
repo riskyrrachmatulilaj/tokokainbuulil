@@ -13,18 +13,18 @@
 
         @page {
             size: 95mm 140mm;
-            margin: 3mm 4mm 4mm 4mm;
+            margin: 2mm 3mm 3mm 3mm;
         }
 
         body {
             font-family: 'Courier New', Courier, monospace, 'Arial Narrow', sans-serif;
-            font-size: 9px;
+            font-size: 8.5px;
             font-weight: bold;
             color: #000;
             width: 100%;
             margin: 0;
             padding: 0;
-            line-height: 1.25;
+            line-height: 1.15;
         }
 
         .center { text-align: center; }
@@ -34,54 +34,49 @@
 
         .header-section {
             text-align: center;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             page-break-inside: avoid;
         }
 
         .shop-name {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             letter-spacing: -0.3px;
         }
 
         .shop-subtitle {
-            font-size: 8.5px;
+            font-size: 8px;
             font-weight: bold;
-            margin-top: 1px;
         }
 
         .divider {
             border: none;
             border-top: 1px dashed #000;
-            margin: 3px 0;
+            margin: 2px 0;
         }
 
-        /* Meta table */
+        /* Meta compact 2 columns */
         .meta-section {
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             page-break-inside: avoid;
         }
 
         .meta-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8.5px;
+            font-size: 8px;
         }
 
         .meta-table td {
-            padding: 1px 0;
+            padding: 0.5px 0;
             vertical-align: top;
         }
 
-        .meta-table .label-col {
-            width: 65px;
-        }
-
-        /* Items table with multi-page support */
+        /* Items table - 1 line per item */
         table.items-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 3px 0;
+            margin: 2px 0;
             page-break-inside: auto;
         }
 
@@ -92,8 +87,8 @@
         table.items-table th {
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            padding: 2.5px 1px;
-            font-size: 8.5px;
+            padding: 1.5px 1px;
+            font-size: 8px;
             font-weight: bold;
         }
 
@@ -103,56 +98,46 @@
         }
 
         table.items-table td {
-            padding: 1.5px 1px;
+            padding: 1px 1px;
             vertical-align: top;
-            font-size: 8.5px;
+            font-size: 8px;
         }
 
-        .item-name {
-            font-weight: bold;
-            padding-top: 2px !important;
-        }
-
-        .item-sub-row td {
-            padding-bottom: 2px !important;
+        .product-col {
+            word-break: break-word;
+            line-height: 1.1;
         }
 
         /* Totals section */
         .totals-section {
             page-break-inside: avoid;
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         .totals-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8.5px;
+            font-size: 8px;
         }
 
         .totals-table td {
-            padding: 1px 1px;
+            padding: 0.5px 1px;
         }
 
         .totals-table .grand-row td {
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: bold;
-            padding: 2.5px 1px;
+            padding: 2px 1px;
         }
 
         /* Footer section */
         .footer-section {
             text-align: center;
-            margin-top: 5px;
+            margin-top: 3px;
             page-break-inside: avoid;
-            font-size: 8px;
-        }
-
-        .thanks {
-            font-size: 9px;
-            font-weight: bold;
-            margin-bottom: 2px;
+            font-size: 7.5px;
         }
     </style>
 </head>
@@ -165,59 +150,44 @@
 
     <hr class="divider">
 
-    {{-- Info Transaksi --}}
+    {{-- Info Transaksi (Ringkas 2 Kolom) --}}
     <div class="meta-section">
         <table class="meta-table">
             <tr>
-                <td class="label-col">No. Nota</td>
-                <td>: {{ $sale->transaction_number }}</td>
+                <td style="width: 55%;">No: {{ $sale->transaction_number }}</td>
+                <td class="right" style="width: 45%;">{{ $sale->sale_date?->format('d/m/y') }} {{ $sale->created_at?->format('H:i') }}</td>
             </tr>
             <tr>
-                <td class="label-col">Tanggal</td>
-                <td>: {{ $sale->sale_date?->format('d/m/Y') }} {{ $sale->created_at?->format('H:i') }}</td>
-            </tr>
-            <tr>
-                <td class="label-col">Kasir</td>
-                <td>: {{ $sale->creator?->name ?: '-' }}</td>
+                <td>Kasir: {{ Str::limit($sale->creator?->name ?: '-', 14) }}</td>
+                <td class="right">{{ $sale->payment_method_label }}</td>
             </tr>
             @if ($sale->party)
                 <tr>
-                    <td class="label-col">Pelanggan</td>
-                    <td>: {{ $sale->party->name }} {{ $sale->party->phone ? '('.$sale->party->phone.')' : '' }}</td>
+                    <td colspan="2">Plg: {{ Str::limit($sale->party->name, 22) }} {{ $sale->party->phone ? '('.$sale->party->phone.')' : '' }}</td>
                 </tr>
             @endif
-            <tr>
-                <td class="label-col">Pembayaran</td>
-                <td>: {{ $sale->payment_method_label }}</td>
-            </tr>
             @if ($sale->receivable)
                 <tr>
-                    <td class="label-col">No. Piutang</td>
-                    <td>: {{ $sale->receivable->invoice_number }}</td>
+                    <td colspan="2">No. Piutang: {{ $sale->receivable->invoice_number }}</td>
                 </tr>
             @endif
         </table>
     </div>
 
-    {{-- Daftar Item Barang (Format 2-baris per item agar muat di 9.5cm tanpa kepotong) --}}
+    {{-- Daftar Item Barang (Format 1-baris per item hemat kertas) --}}
     <table class="items-table">
         <thead>
             <tr>
-                <th class="left" style="width: 48%;">Nama Produk</th>
-                <th class="center" style="width: 14%;">Qty</th>
-                <th class="right" style="width: 18%;">Harga</th>
-                <th class="right" style="width: 20%;">Total</th>
+                <th class="left" style="width: 46%;">Produk</th>
+                <th class="center" style="width: 10%;">Qty</th>
+                <th class="right" style="width: 22%;">Harga</th>
+                <th class="right" style="width: 22%;">Total</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($sale->items as $index => $item)
+            @foreach ($sale->items as $item)
                 <tr>
-                    <td class="left item-name" colspan="4">
-                        {{ $index + 1 }}. {{ $item->product_name }}
-                    </td>
-                </tr>
-                <tr class="item-sub-row">
-                    <td class="left"></td>
+                    <td class="left product-col">{{ $item->product_name }}</td>
                     <td class="center">{{ $item->quantity }}</td>
                     <td class="right">{{ number_format($item->price, 0, ',', '.') }}</td>
                     <td class="right">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
@@ -228,7 +198,7 @@
 
     <hr class="divider">
 
-    {{-- Bagian Total --}}
+    {{-- Bagian Total Ringkas --}}
     <div class="totals-section">
         <table class="totals-table">
             <tr>
@@ -246,12 +216,8 @@
                 </tr>
             @elseif ($sale->payment_method === 'split')
                 <tr>
-                    <td>Bayar Tunai</td>
-                    <td class="right">{{ number_format($sale->cash_amount, 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td>Bayar Transfer</td>
-                    <td class="right">{{ number_format($sale->transfer_amount, 0, ',', '.') }}</td>
+                    <td>Tunai / Transfer</td>
+                    <td class="right">{{ number_format($sale->cash_amount, 0, ',', '.') }} / {{ number_format($sale->transfer_amount, 0, ',', '.') }}</td>
                 </tr>
                 <tr>
                     <td>Kembalian</td>
@@ -277,8 +243,8 @@
 
     {{-- Footer --}}
     <div class="footer-section">
-        <div class="thanks">-- Terima Kasih Telah Berbelanja --</div>
-        <div>Toko Kain Bu Ulil · Cetak: {{ $printedAt }}</div>
+        <div>-- Terima Kasih Telah Berbelanja --</div>
+        <div>Toko Kain Bu Ulil</div>
     </div>
 </body>
 </html>
