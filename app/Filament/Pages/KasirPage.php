@@ -72,6 +72,7 @@ class KasirPage extends Page
                 }
             })
             ->orderBy('name')
+            ->limit(25)
             ->get();
     }
 
@@ -94,7 +95,7 @@ class KasirPage extends Page
     {
         if ($this->receivablePartyId) {
             $party = ReceivableParty::find($this->receivablePartyId);
-            if ($party && $party->name !== $value) {
+            if ($party && strtolower(trim($party->name)) !== strtolower(trim($value))) {
                 $this->receivablePartyId = null;
             }
         }
@@ -417,6 +418,13 @@ class KasirPage extends Page
                 ->danger()
                 ->title('Penjualan gagal')
                 ->body(collect($e->errors())->flatten()->first())
+                ->send();
+        } catch (\Throwable $e) {
+            logger()->error('Kasir processSale error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Notification::make()
+                ->danger()
+                ->title('Terjadi Kendala')
+                ->body($e->getMessage() ?: 'Gagal memproses transaksi penjualan.')
                 ->send();
         }
     }
