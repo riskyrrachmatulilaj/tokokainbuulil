@@ -141,10 +141,16 @@ class SaleService
                 'created_by' => $user?->id,
             ]);
 
+            $hasNotesCol = \Illuminate\Support\Facades\Schema::hasColumn('sale_items', 'notes');
+
             foreach ($lines as $line) {
                 /** @var Product $prod */
                 $prod = $line['product'];
                 unset($line['product']);
+
+                if (! $hasNotesCol) {
+                    unset($line['notes']);
+                }
 
                 SaleItem::create(array_merge($line, ['sale_id' => $sale->id]));
                 $prod->deductStock($line['quantity']);
