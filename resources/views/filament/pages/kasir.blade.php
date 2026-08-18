@@ -151,8 +151,6 @@
         }
     </style>
 
-    <link rel="stylesheet" href="{{ asset('css/kasir.css') }}?v=7" data-navigate-track />
-
     <div class="kasir-pos">
         <div class="kasir-steps" aria-label="Alur kasir">
             <div class="kasir-step is-active">

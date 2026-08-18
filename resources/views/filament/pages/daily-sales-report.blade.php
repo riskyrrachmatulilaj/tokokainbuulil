@@ -1,6 +1,4 @@
 <x-filament-panels::page>
-    <link rel="stylesheet" href="{{ asset('css/daily-sales-report.css') }}?v=3" data-navigate-track />
-
     <style>
         /* Fallback Critical Styles for Immediate Render */
         .dsr-report { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1.5rem; width: 100%; }

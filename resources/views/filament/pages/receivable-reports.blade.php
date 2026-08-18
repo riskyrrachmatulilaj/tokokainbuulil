@@ -1,6 +1,4 @@
 <x-filament-panels::page>
-    <link rel="stylesheet" href="{{ asset('css/reports.css') }}?v=3" data-navigate-track />
-
     <style>
         /* Fallback Critical Styles for Immediate Render */
         .report-summary-grid { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1rem; width: 100%; }
