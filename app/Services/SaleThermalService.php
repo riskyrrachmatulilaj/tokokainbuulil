@@ -9,11 +9,78 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class SaleThermalService
 {
     /**
-     * Dimensi area cetak kertas continuous (tanpa lubang traktor):
-     * Lebar cetak 9.5cm (95mm) x Tinggi 14cm (140mm) per lembar
+     * Dimensi area cetak kertas continuous (9.5cm x 14cm per lembar)
      */
-    public const PAPER_WIDTH_PT = 269.29;   // 95mm * 2.83465
-    public const PAPER_HEIGHT_PT = 396.85;  // 140mm * 2.83465
+    public const CONTINUOUS_WIDTH_PT = 269.29;   // 95mm * 2.83465
+    public const CONTINUOUS_HEIGHT_PT = 396.85;  // 140mm * 2.83465
+
+    /**
+     * Dimensi lebar thermal roll (72mm)
+     */
+    public const THERMAL_ROLL_WIDTH_PT = 204.1;  // 72mm * 2.83465
+
+    /**
+     * Layout 3 (Default / Sekarang): Continuous Form Ringkas 1-Baris (9.5cm x 14cm)
+     * Sangat hemat kertas, muat 12-15 item dalam 1 lembar 14cm.
+     */
+    public static function notaInline(Sale $sale): \Illuminate\Http\Response
+    {
+        return self::continuousCompactInline($sale);
+    }
+
+    public static function continuousCompactInline(Sale $sale): \Illuminate\Http\Response
+    {
+        $sale->load(['items', 'party', 'creator', 'receivable']);
+
+        $html = view('reports.sale-thermal', [
+            'sale' => $sale,
+            'printedAt' => now()->format('d/m/Y H:i'),
+            'printedBy' => auth()->user()?->name ?? '-',
+        ])->render();
+
+        $pdf = Pdf::loadHTML($html)->setPaper([0, 0, self::CONTINUOUS_WIDTH_PT, self::CONTINUOUS_HEIGHT_PT], 'portrait');
+        return $pdf->stream('Nota-Ringkas-'.$sale->transaction_number.'.pdf');
+    }
+
+    /**
+     * Layout 2: Continuous Form 2-Baris Detail (9.5cm x 14cm)
+     * Format nama barang di baris pertama dan rincian harga di baris kedua.
+     */
+    public static function continuousDetailInline(Sale $sale): \Illuminate\Http\Response
+    {
+        $sale->load(['items', 'party', 'creator', 'receivable']);
+
+        $html = view('reports.sale-continuous-detail', [
+            'sale' => $sale,
+            'printedAt' => now()->format('d/m/Y H:i'),
+            'printedBy' => auth()->user()?->name ?? '-',
+        ])->render();
+
+        $pdf = Pdf::loadHTML($html)->setPaper([0, 0, self::CONTINUOUS_WIDTH_PT, self::CONTINUOUS_HEIGHT_PT], 'portrait');
+        return $pdf->stream('Nota-Detail-'.$sale->transaction_number.'.pdf');
+    }
+
+    /**
+     * Layout 1: Struk Thermal Roll 72mm (Panjang Otomatis)
+     * Format gulungan kasir POS standar (panjang kertas menyesuaikan jumlah item).
+     */
+    public static function thermalRollInline(Sale $sale): \Illuminate\Http\Response
+    {
+        $sale->load(['items', 'party', 'creator', 'receivable']);
+
+        $html = view('reports.sale-thermal-roll', [
+            'sale' => $sale,
+            'printedAt' => now()->format('d M Y H:i'),
+            'printedBy' => auth()->user()?->name ?? '-',
+        ])->render();
+
+        $itemCount = $sale->items->count();
+        $heightMm = max(120, 100 + ($itemCount * 10));
+        $heightPt = $heightMm * 2.83465;
+
+        $pdf = Pdf::loadHTML($html)->setPaper([0, 0, self::THERMAL_ROLL_WIDTH_PT, $heightPt], 'portrait');
+        return $pdf->stream('Struk-Thermal-'.$sale->transaction_number.'.pdf');
+    }
 
     public static function nota(Sale $sale): BinaryFileResponse
     {
@@ -29,26 +96,9 @@ class SaleThermalService
         $tempFile = tempnam(sys_get_temp_dir(), 'thermal_').'.pdf';
 
         file_put_contents($tempFile, Pdf::loadHTML($html)
-            ->setPaper([0, 0, self::PAPER_WIDTH_PT, self::PAPER_HEIGHT_PT], 'portrait')
+            ->setPaper([0, 0, self::CONTINUOUS_WIDTH_PT, self::CONTINUOUS_HEIGHT_PT], 'portrait')
             ->output());
 
         return response()->download($tempFile, $filename, ['Content-Type' => 'application/pdf'])->deleteFileAfterSend(true);
-    }
-
-    /**
-     * Membuat PDF nota penjualan format continuous (12cm x 14cm) yang disajikan langsung di browser.
-     */
-    public static function notaInline(Sale $sale): \Illuminate\Http\Response
-    {
-        $sale->load(['items', 'party', 'creator', 'receivable']);
-
-        $html = view('reports.sale-thermal', [
-            'sale' => $sale,
-            'printedAt' => now()->format('d/m/Y H:i'),
-            'printedBy' => auth()->user()?->name ?? '-',
-        ])->render();
-
-        $pdf = Pdf::loadHTML($html)->setPaper([0, 0, self::PAPER_WIDTH_PT, self::PAPER_HEIGHT_PT], 'portrait');
-        return $pdf->stream('Struk-'.$sale->transaction_number.'.pdf');
     }
 }

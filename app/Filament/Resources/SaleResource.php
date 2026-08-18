@@ -140,15 +140,27 @@ class SaleResource extends Resource
                 ->color('warning')
                 ->visible(fn (Sale $record) => $record->party && $record->party->phone),
                 Actions\ActionGroup::make([
-                    Actions\Action::make('print_thermal')
-                        ->label('Cetak Struk Thermal')
-                        ->icon('heroicon-o-receipt-percent')
+                    Actions\Action::make('print_continuous')
+                        ->label('Continuous Ringkas (1-Baris)')
+                        ->icon('heroicon-o-printer')
                         ->color('success')
-                        ->url(fn (Sale $record) => route('sales.thermal', ['sale' => $record->id]))
+                        ->url(fn (Sale $record) => route('sales.continuous', ['sale' => $record->id]))
+                        ->openUrlInNewTab(),
+                    Actions\Action::make('print_continuous_detail')
+                        ->label('Continuous Detail (2-Baris)')
+                        ->icon('heroicon-o-document-text')
+                        ->color('warning')
+                        ->url(fn (Sale $record) => route('sales.continuous-detail', ['sale' => $record->id]))
+                        ->openUrlInNewTab(),
+                    Actions\Action::make('print_thermal_roll')
+                        ->label('Thermal Roll (72mm)')
+                        ->icon('heroicon-o-receipt-percent')
+                        ->color('gray')
+                        ->url(fn (Sale $record) => route('sales.thermal-roll', ['sale' => $record->id]))
                         ->openUrlInNewTab(),
                     Actions\Action::make('print_nota')
-                        ->label('Cetak Nota A4')
-                        ->icon('heroicon-o-document-text')
+                        ->label('Nota Faktur A4')
+                        ->icon('heroicon-o-document')
                         ->color('info')
                         ->url(fn (Sale $record) => route('sales.nota', ['sale' => $record->id]))
                         ->openUrlInNewTab(),

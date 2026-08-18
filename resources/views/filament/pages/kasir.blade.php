@@ -677,26 +677,53 @@
                     </div>
                 </div>
 
-                <div class="kasir-actions">
+                <div class="kasir-actions" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    {{-- Layout 3 (Sekarang): Continuous Ringkas 1-Baris --}}
                     <x-filament::button
                         tag="a"
-                        href="{{ route('sales.thermal', ['sale' => $this->result['sale_id']]) }}"
+                        href="{{ route('sales.continuous', ['sale' => $this->result['sale_id']]) }}"
                         target="_blank"
                         color="success"
                         size="lg"
                         icon="heroicon-o-printer"
                     >
-                        Cetak Struk Thermal
+                        Continuous Ringkas (1-Baris)
                     </x-filament::button>
+
+                    {{-- Layout 2: Continuous Detail 2-Baris --}}
+                    <x-filament::button
+                        tag="a"
+                        href="{{ route('sales.continuous-detail', ['sale' => $this->result['sale_id']]) }}"
+                        target="_blank"
+                        color="warning"
+                        size="lg"
+                        icon="heroicon-o-document-text"
+                    >
+                        Continuous Detail (2-Baris)
+                    </x-filament::button>
+
+                    {{-- Layout 1: Thermal Roll 72mm --}}
+                    <x-filament::button
+                        tag="a"
+                        href="{{ route('sales.thermal-roll', ['sale' => $this->result['sale_id']]) }}"
+                        target="_blank"
+                        color="gray"
+                        size="lg"
+                        icon="heroicon-o-receipt-percent"
+                    >
+                        Thermal Roll (72mm)
+                    </x-filament::button>
+
+                    {{-- Nota A4 --}}
                     <x-filament::button
                         tag="a"
                         href="{{ route('sales.nota', ['sale' => $this->result['sale_id']]) }}"
                         target="_blank"
                         color="info"
                         size="lg"
-                        icon="heroicon-o-document-text"
+                        icon="heroicon-o-document"
                     >
-                        Cetak Nota A4
+                        Nota A4
                     </x-filament::button>
                     @if (!empty($this->result['wa_link']))
                         <x-filament::button
