@@ -29,11 +29,16 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('Toko Kain Bu Ulil')
+            ->font('Plus Jakarta Sans', 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap')
+            ->sidebarCollapsibleOnDesktop()
+            ->spa()
             ->colors([
                 'primary' => Color::Indigo,
-                'danger' => Color::Rose,
+                'gray' => Color::Slate,
+                'info' => Color::Sky,
                 'success' => Color::Emerald,
                 'warning' => Color::Amber,
+                'danger' => Color::Rose,
             ])
             ->navigationGroups([
                 'Kasir',
@@ -55,6 +60,8 @@ class AdminPanelProvider extends PanelProvider
                 AccountWidget::class,
             ])
             ->assets([
+                Css::make('theme', __DIR__.'/../../../public/css/theme.css')
+                    ->relativePublicPath('css/theme.css'),
                 Css::make('kasir', __DIR__.'/../../../public/css/kasir.css')
                     ->relativePublicPath('css/kasir.css'),
                 Css::make('reports', __DIR__.'/../../../public/css/reports.css')

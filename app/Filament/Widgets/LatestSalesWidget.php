@@ -30,20 +30,31 @@ class LatestSalesWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('transaction_number')
                     ->label('No. Transaksi')
                     ->searchable()
+                    ->fontFamily(\Filament\Support\Enums\FontFamily::Mono)
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('sale_date')
                     ->label('Tanggal')
-                    ->date('d M Y'),
+                    ->date('d M Y')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('payment_method')
                     ->label('Metode')
                     ->badge()
-                    ->color(fn (Sale $record) => $record->payment_method === Sale::PAYMENT_METHOD_CASH ? 'success' : 'warning')
+                    ->color(fn (Sale $record) => match ($record->payment_method) {
+                        Sale::PAYMENT_METHOD_CASH => 'success',
+                        Sale::PAYMENT_METHOD_TRANSFER => 'info',
+                        Sale::PAYMENT_METHOD_SPLIT => 'primary',
+                        default => 'warning',
+                    })
                     ->formatStateUsing(fn (Sale $record) => $record->payment_method_label),
                 Tables\Columns\TextColumn::make('party.name')
                     ->label('Pelanggan')
-                    ->placeholder('-'),
+                    ->placeholder('-')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('total_amount')
                     ->label('Total')
+                    ->alignEnd()
+                    ->fontFamily(\Filament\Support\Enums\FontFamily::Mono)
+                    ->weight('bold')
                     ->formatStateUsing(fn ($state) => rupiah($state)),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Kasir')

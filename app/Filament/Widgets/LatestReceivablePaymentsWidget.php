@@ -30,11 +30,15 @@ class LatestReceivablePaymentsWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('transaction_number')
                     ->label('No. Transaksi')
                     ->searchable()
+                    ->fontFamily(\Filament\Support\Enums\FontFamily::Mono)
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('party.name')
-                    ->label('Debitur'),
+                    ->label('Debitur')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('receivable.invoice_number')
-                    ->label('Nota'),
+                    ->label('Nota')
+                    ->fontFamily(\Filament\Support\Enums\FontFamily::Mono)
+                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('payment_type')
                     ->label('Jenis')
                     ->badge()
@@ -42,10 +46,14 @@ class LatestReceivablePaymentsWidget extends BaseWidget
                     ->formatStateUsing(fn (ReceivablePaymentHistory $record) => $record->payment_type_label),
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Nominal')
+                    ->alignEnd()
+                    ->fontFamily(\Filament\Support\Enums\FontFamily::Mono)
+                    ->weight('bold')
                     ->formatStateUsing(fn ($state) => rupiah($state)),
                 Tables\Columns\TextColumn::make('payment_date')
                     ->label('Tanggal')
-                    ->date('d M Y'),
+                    ->date('d M Y')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Oleh')
                     ->placeholder('-'),

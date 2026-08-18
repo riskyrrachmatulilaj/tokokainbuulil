@@ -1,21 +1,21 @@
 /* Layar Kasir — scoped styles (Filament prebuilt CSS does not include arbitrary Tailwind utilities) */
 .kasir-pos {
-    --kasir-border: rgba(128, 128, 128, 0.22);
-    --kasir-muted: rgba(107, 114, 128, 1);
-    --kasir-surface: rgba(255, 255, 255, 0.72);
-    --kasir-surface-solid: #ffffff;
-    --kasir-text: #111827;
-    --kasir-text-soft: #4b5563;
-    --kasir-primary: var(--primary-600, #4f46e5);
-    --kasir-primary-soft: color-mix(in srgb, var(--kasir-primary) 12%, transparent);
-    --kasir-success: var(--success-600, #059669);
-    --kasir-success-soft: color-mix(in srgb, var(--kasir-success) 14%, transparent);
-    --kasir-warning: var(--warning-600, #d97706);
-    --kasir-warning-soft: color-mix(in srgb, var(--kasir-warning) 14%, transparent);
-    --kasir-danger: var(--danger-600, #e11d48);
-    --kasir-danger-soft: color-mix(in srgb, var(--kasir-danger) 12%, transparent);
-    --kasir-radius: 0.85rem;
-    --kasir-gap: 1rem;
+    --kasir-border: rgba(226, 232, 240, 0.9);
+    --kasir-muted: #64748b;
+    --kasir-surface: #ffffff;
+    --kasir-surface-solid: #f8fafc;
+    --kasir-text: #0f172a;
+    --kasir-text-soft: #475569;
+    --kasir-primary: #4f46e5;
+    --kasir-primary-soft: rgba(79, 70, 229, 0.1);
+    --kasir-success: #059669;
+    --kasir-success-soft: rgba(16, 185, 129, 0.12);
+    --kasir-warning: #d97706;
+    --kasir-warning-soft: rgba(245, 158, 11, 0.12);
+    --kasir-danger: #e11d48;
+    --kasir-danger-soft: rgba(244, 63, 94, 0.12);
+    --kasir-radius: 1rem;
+    --kasir-gap: 1.25rem;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
@@ -23,12 +23,12 @@
 
 .dark .kasir-pos,
 html.dark .kasir-pos {
-    --kasir-border: rgba(255, 255, 255, 0.12);
-    --kasir-muted: rgba(156, 163, 175, 1);
-    --kasir-surface: rgba(255, 255, 255, 0.04);
-    --kasir-surface-solid: rgba(255, 255, 255, 0.04);
-    --kasir-text: #f9fafb;
-    --kasir-text-soft: #d1d5db;
+    --kasir-border: rgba(51, 65, 85, 0.6);
+    --kasir-muted: #94a3b8;
+    --kasir-surface: #111827;
+    --kasir-surface-solid: #1e293b;
+    --kasir-text: #f8fafc;
+    --kasir-text-soft: #cbd5e1;
 }
 
 .kasir-pos * {

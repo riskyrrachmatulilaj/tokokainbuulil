@@ -6,7 +6,7 @@ use App\Services\SalePdfService;
 use App\Services\SaleThermalService;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/admin');
 });
 
 Route::get('/nota/{sale}', function (Sale $sale) {

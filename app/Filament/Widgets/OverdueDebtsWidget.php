@@ -34,11 +34,16 @@ class OverdueDebtsWidget extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('invoice_number')
                     ->label('No. Nota')
+                    ->fontFamily(\Filament\Support\Enums\FontFamily::Mono)
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Supplier'),
+                    ->label('Supplier')
+                    ->weight('medium'),
                 Tables\Columns\TextColumn::make('remaining_amount')
                     ->label('Sisa Hutang')
+                    ->alignEnd()
+                    ->fontFamily(\Filament\Support\Enums\FontFamily::Mono)
+                    ->weight('bold')
                     ->formatStateUsing(fn ($state) => rupiah($state))
                     ->badge()
                     ->color('danger'),
@@ -49,7 +54,8 @@ class OverdueDebtsWidget extends BaseWidget
                     ->color('danger'),
                 Tables\Columns\TextColumn::make('debt_date')
                     ->label('Tanggal Hutang')
-                    ->date('d M Y'),
+                    ->date('d M Y')
+                    ->sortable(),
             ])
             ->actions([
                 Actions\Action::make('view')
