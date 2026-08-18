@@ -8,50 +8,46 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SaleThermalService
 {
+    /**
+     * Dimensi kertas continuous: Lebar 12cm (120mm) x Tinggi 14cm (140mm) per lembar
+     */
+    public const PAPER_WIDTH_PT = 340.16;   // 120mm * 2.83465
+    public const PAPER_HEIGHT_PT = 396.85;  // 140mm * 2.83465
+
     public static function nota(Sale $sale): BinaryFileResponse
     {
-        $sale->load(['items', 'party', 'creator']);
+        $sale->load(['items', 'party', 'creator', 'receivable']);
 
         $html = view('reports.sale-thermal', [
             'sale' => $sale,
-            'printedAt' => now()->format('d M Y H:i'),
+            'printedAt' => now()->format('d/m/Y H:i'),
             'printedBy' => auth()->user()?->name ?? '-',
         ])->render();
 
         $filename = 'Struk-'.$sale->transaction_number.'.pdf';
         $tempFile = tempnam(sys_get_temp_dir(), 'thermal_').'.pdf';
 
-        $itemCount = $sale->items->count();
-        $heightMm = max(120, 100 + ($itemCount * 10));
-        $heightPt = $heightMm * 2.83465;
-        $widthPt = 204.1;
-
         file_put_contents($tempFile, Pdf::loadHTML($html)
-            ->setPaper([0, 0, $widthPt, $heightPt])
+            ->setPaper([0, 0, self::PAPER_WIDTH_PT, self::PAPER_HEIGHT_PT], 'portrait')
             ->output());
 
         return response()->download($tempFile, $filename, ['Content-Type' => 'application/pdf'])->deleteFileAfterSend(true);
     }
 
     /**
-     * Membuat PDF nota penjualan format struk thermal (72mm) yang disajikan langsung di browser.
+     * Membuat PDF nota penjualan format continuous (12cm x 14cm) yang disajikan langsung di browser.
      */
     public static function notaInline(Sale $sale): \Illuminate\Http\Response
     {
-        $sale->load(['items', 'party', 'creator']);
+        $sale->load(['items', 'party', 'creator', 'receivable']);
 
         $html = view('reports.sale-thermal', [
             'sale' => $sale,
-            'printedAt' => now()->format('d M Y H:i'),
+            'printedAt' => now()->format('d/m/Y H:i'),
             'printedBy' => auth()->user()?->name ?? '-',
         ])->render();
 
-        $itemCount = $sale->items->count();
-        $heightMm = max(120, 100 + ($itemCount * 10));
-        $heightPt = $heightMm * 2.83465;
-        $widthPt = 204.1;
-
-        $pdf = Pdf::loadHTML($html)->setPaper([0, 0, $widthPt, $heightPt]);
+        $pdf = Pdf::loadHTML($html)->setPaper([0, 0, self::PAPER_WIDTH_PT, self::PAPER_HEIGHT_PT], 'portrait');
         return $pdf->stream('Struk-'.$sale->transaction_number.'.pdf');
     }
 }
