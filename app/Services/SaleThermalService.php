@@ -9,9 +9,10 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class SaleThermalService
 {
     /**
-     * Dimensi kertas continuous: Lebar 12cm (120mm) x Tinggi 14cm (140mm) per lembar
+     * Dimensi area cetak kertas continuous (tanpa lubang traktor):
+     * Lebar cetak 9.5cm (95mm) x Tinggi 14cm (140mm) per lembar
      */
-    public const PAPER_WIDTH_PT = 340.16;   // 120mm * 2.83465
+    public const PAPER_WIDTH_PT = 269.29;   // 95mm * 2.83465
     public const PAPER_HEIGHT_PT = 396.85;  // 140mm * 2.83465
 
     public static function nota(Sale $sale): BinaryFileResponse
