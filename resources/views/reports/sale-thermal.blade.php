@@ -13,18 +13,18 @@
 
         @page {
             size: 95mm 140mm;
-            margin: 8mm 3mm 3mm 3mm;
+            margin: 10mm 4mm 3mm 4mm;
         }
 
         body {
             font-family: 'Courier New', Courier, monospace, 'Arial Narrow', sans-serif;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
             color: #000;
             width: 100%;
             margin: 0;
-            padding: 4mm 3mm 2mm 3mm;
-            line-height: 1.25;
+            padding: 0;
+            line-height: 1.2;
         }
 
         .center { text-align: center; }
@@ -39,7 +39,7 @@
         }
 
         .shop-name {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             letter-spacing: -0.3px;
         }
@@ -59,7 +59,7 @@
         .meta-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9.5px;
+            font-size: 8.5px;
         }
 
         .meta-table td {
@@ -82,8 +82,8 @@
         table.items-table th {
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            padding: 3px 1px;
-            font-size: 9.5px;
+            padding: 2.5px 1px;
+            font-size: 8.5px;
             font-weight: bold;
         }
 
@@ -93,14 +93,14 @@
         }
 
         table.items-table td {
-            padding: 2px 1px;
+            padding: 1.5px 1px;
             vertical-align: top;
-            font-size: 9.5px;
+            font-size: 8.5px;
         }
 
         .product-col {
             word-break: break-word;
-            line-height: 1.2;
+            line-height: 1.15;
         }
 
         /* Totals section */
@@ -112,7 +112,7 @@
         .totals-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9.5px;
+            font-size: 8.5px;
         }
 
         .totals-table td {
@@ -122,9 +122,9 @@
         .totals-table .grand-row td {
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
-            padding: 3px 1px;
+            padding: 2.5px 1px;
         }
 
         /* Footer section */
@@ -132,7 +132,7 @@
             text-align: center;
             margin-top: 5px;
             page-break-inside: avoid;
-            font-size: 9px;
+            font-size: 8px;
         }
     </style>
 </head>
@@ -148,8 +148,8 @@
     <div class="meta-section">
         <table class="meta-table">
             <tr>
-                <td style="width: 55%;">No: {{ $sale->transaction_number }}</td>
-                <td class="right" style="width: 45%;">{{ $sale->sale_date?->format('d/m/y') }} {{ $sale->created_at?->format('H:i') }}</td>
+                <td style="width: 52%;">No: {{ $sale->transaction_number }}</td>
+                <td class="right" style="width: 48%;">{{ $sale->sale_date?->format('d/m/y') }} {{ $sale->created_at?->format('H:i') }}</td>
             </tr>
             <tr>
                 <td>Kasir: {{ Str::limit($sale->creator?->name ?: '-', 14) }}</td>
@@ -172,10 +172,10 @@
     <table class="items-table">
         <thead>
             <tr>
-                <th class="left" style="width: 46%;">Produk</th>
-                <th class="center" style="width: 10%;">Qty</th>
-                <th class="right" style="width: 22%;">Harga</th>
-                <th class="right" style="width: 22%;">Total</th>
+                <th class="left" style="width: 42%;">Produk</th>
+                <th class="center" style="width: 12%;">Qty</th>
+                <th class="right" style="width: 23%;">Harga</th>
+                <th class="right" style="width: 23%;">Total</th>
             </tr>
         </thead>
         <tbody>
