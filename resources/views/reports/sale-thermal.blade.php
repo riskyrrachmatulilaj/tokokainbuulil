@@ -13,7 +13,7 @@
 
         @page {
             size: 95mm 140mm;
-            margin: 12mm 4mm 3mm 4mm;
+            margin: 8mm 3mm 3mm 3mm;
         }
 
         body {
@@ -23,7 +23,7 @@
             color: #000;
             width: 100%;
             margin: 0;
-            padding: 0;
+            padding: 4mm 3mm 2mm 3mm;
             line-height: 1.25;
         }
 
