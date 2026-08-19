@@ -6,7 +6,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-weight: bold; color: #000; }
         @page {
-            margin: 4mm 3mm;
+            margin: 8mm 3mm 3mm 3mm;
         }
         body {
             font-family: 'Arial Narrow', 'Consolas', 'Courier New', monospace;
@@ -16,7 +16,7 @@
             letter-spacing: -0.4px;
             color: #000;
             width: 72mm;
-            padding: 2mm 3mm;
+            padding: 4mm 3mm 2mm 3mm;
             line-height: 1.3;
         }
         .center { text-align: center; }
