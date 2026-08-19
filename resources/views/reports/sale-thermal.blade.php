@@ -13,7 +13,7 @@
 
         @page {
             size: 95mm 140mm;
-            margin: 2mm 3mm 3mm 3mm;
+            margin: 6mm 4mm 3mm 4mm;
         }
 
         body {
@@ -42,11 +42,6 @@
             font-size: 12px;
             font-weight: bold;
             letter-spacing: -0.3px;
-        }
-
-        .shop-subtitle {
-            font-size: 8px;
-            font-weight: bold;
         }
 
         .divider {
@@ -145,7 +140,6 @@
     {{-- Header Toko --}}
     <div class="header-section">
         <div class="shop-name">TOKO KAIN BU ULIL</div>
-        <div class="shop-subtitle">NOTA CONTINUOUS (RINGKAS 1-BARIS)</div>
     </div>
 
     <hr class="divider">

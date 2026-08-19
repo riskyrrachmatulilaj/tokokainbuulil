@@ -5,6 +5,9 @@
     <title>Struk {{ $sale->transaction_number }}</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-weight: bold; color: #000; }
+        @page {
+            margin: 4mm 3mm;
+        }
         body {
             font-family: 'Arial Narrow', 'Consolas', 'Courier New', monospace;
             font-size: 10px;
@@ -13,7 +16,7 @@
             letter-spacing: -0.4px;
             color: #000;
             width: 72mm;
-            padding: 4mm;
+            padding: 2mm 3mm;
             line-height: 1.3;
         }
         .center { text-align: center; }
@@ -31,14 +34,7 @@
             font-weight: bold;
             letter-spacing: -0.5px;
             text-align: center;
-            margin-bottom: 2px;
-        }
-        .shop-subtitle {
-            font-size: 10px;
-            font-weight: bold;
-            letter-spacing: -0.3px;
-            text-align: center;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         /* Info transaksi */
@@ -100,7 +96,6 @@
 <body>
     {{-- Header Toko --}}
     <div class="shop-name">Toko Kain Bu Ulil</div>
-    <div class="shop-subtitle">STRUK THERMAL ROLL (72mm)</div>
 
     <hr class="separator-double">
 
