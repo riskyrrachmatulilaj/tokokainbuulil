@@ -26,6 +26,11 @@ class DebtsRelationManager extends RelationManager
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('invoice_number')
+                    ->label('No. Nota')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->visible(fn (?Debt $record) => $record !== null),
                 Forms\Components\TextInput::make('amount')
                     ->label('Nominal Hutang')
                     ->numeric()
@@ -41,7 +46,8 @@ class DebtsRelationManager extends RelationManager
                     ->afterOrEqual('debt_date'),
                 Forms\Components\Textarea::make('description')
                     ->label('Keterangan')
-                    ->rows(2),
+                    ->rows(2)
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -117,6 +123,21 @@ class DebtsRelationManager extends RelationManager
             ->actions([
                 Actions\ViewAction::make()
                     ->url(fn (Debt $record) => \App\Filament\Resources\DebtResource::getUrl('view', ['record' => $record])),
+                Actions\EditAction::make()
+                    ->visible(fn (Debt $record) => auth()->user()?->can('update', $record))
+                    ->using(function (Debt $record, array $data): Debt {
+                        try {
+                            return app(DebtService::class)->updateDebt($record, $data);
+                        } catch (ValidationException $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Gagal memperbarui nota')
+                                ->body(collect($e->errors())->flatten()->first())
+                                ->send();
+
+                            throw new Halt;
+                        }
+                    }),
                 Actions\DeleteAction::make()
                     ->visible(fn (Debt $record) => auth()->user()?->can('delete', $record))
                     ->successNotificationTitle('Nota dihapus')

@@ -26,6 +26,11 @@ class ReceivablesRelationManager extends RelationManager
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('invoice_number')
+                    ->label('No. Nota')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->visible(fn (?Receivable $record) => $record !== null),
                 Forms\Components\TextInput::make('amount')
                     ->label('Nominal Piutang')
                     ->numeric()
@@ -41,7 +46,8 @@ class ReceivablesRelationManager extends RelationManager
                     ->afterOrEqual('receivable_date'),
                 Forms\Components\Textarea::make('description')
                     ->label('Keterangan')
-                    ->rows(2),
+                    ->rows(2)
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -117,6 +123,21 @@ class ReceivablesRelationManager extends RelationManager
             ->actions([
                 Actions\ViewAction::make()
                     ->url(fn (Receivable $record) => \App\Filament\Resources\ReceivableResource::getUrl('view', ['record' => $record])),
+                Actions\EditAction::make()
+                    ->visible(fn (Receivable $record) => auth()->user()?->can('update', $record))
+                    ->using(function (Receivable $record, array $data): Receivable {
+                        try {
+                            return app(ReceivableService::class)->updateReceivable($record, $data);
+                        } catch (ValidationException $e) {
+                            Notification::make()
+                                ->danger()
+                                ->title('Gagal memperbarui nota')
+                                ->body(collect($e->errors())->flatten()->first())
+                                ->send();
+
+                            throw new Halt;
+                        }
+                    }),
                 Actions\DeleteAction::make()
                     ->visible(fn (Receivable $record) => auth()->user()?->can('delete', $record))
                     ->successNotificationTitle('Nota dihapus')
