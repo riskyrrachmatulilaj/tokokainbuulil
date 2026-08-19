@@ -117,8 +117,8 @@
                     <td>
                         <div>{{ $item->product_name }}</div>
                         @if (! empty($item->notes))
-                            <div style="font-size: 8pt; color: #444; font-style: italic; margin-top: 2px;">
-                                ↳ {{ $item->notes }}
+                            <div style="font-size: 9.5px; color: #1f2937; font-weight: 600; margin-top: 2px;">
+                                * {{ $item->notes }}
                             </div>
                         @endif
                     </td>

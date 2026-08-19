@@ -208,8 +208,8 @@
                     <td class="left item-name" colspan="4">
                         {{ $index + 1 }}. {{ $item->product_name }}
                         @if (! empty($item->notes))
-                            <div style="font-size: 8px; font-style: italic; font-weight: normal; color: #333; margin-left: 12px; margin-top: 1px;">
-                                ↳ {{ $item->notes }}
+                            <div style="font-size: 8.5px; font-weight: bold; color: #000; margin-left: 12px; margin-top: 1px;">
+                                * {{ $item->notes }}
                             </div>
                         @endif
                     </td>
