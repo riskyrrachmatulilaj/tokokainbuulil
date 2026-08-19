@@ -18,7 +18,7 @@
 
         body {
             font-family: 'Courier New', Courier, monospace, 'Arial Narrow', sans-serif;
-            font-size: 9px;
+            font-size: 10px;
             font-weight: bold;
             color: #000;
             width: 100%;
@@ -39,7 +39,7 @@
         }
 
         .shop-name {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: bold;
             letter-spacing: -0.3px;
         }
@@ -47,7 +47,7 @@
         .divider {
             border: none;
             border-top: 1px dashed #000;
-            margin: 3px 0;
+            margin: 4px 0;
         }
 
         /* Meta table */
@@ -59,16 +59,16 @@
         .meta-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8.5px;
+            font-size: 9.5px;
         }
 
         .meta-table td {
-            padding: 1px 0;
+            padding: 1.5px 0;
             vertical-align: top;
         }
 
         .meta-table .label-col {
-            width: 65px;
+            width: 70px;
         }
 
         /* Items table with multi-page support */
@@ -86,8 +86,8 @@
         table.items-table th {
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            padding: 2.5px 1px;
-            font-size: 8.5px;
+            padding: 3px 1px;
+            font-size: 9.5px;
             font-weight: bold;
         }
 
@@ -99,16 +99,18 @@
         table.items-table td {
             padding: 1.5px 1px;
             vertical-align: top;
-            font-size: 8.5px;
+            font-size: 9.5px;
         }
 
         .item-name {
             font-weight: bold;
-            padding-top: 2px !important;
+            padding-top: 4px !important;
+            padding-bottom: 1px !important;
         }
 
         .item-sub-row td {
-            padding-bottom: 2px !important;
+            padding-top: 1px !important;
+            padding-bottom: 4px !important;
         }
 
         /* Totals section */
@@ -120,7 +122,7 @@
         .totals-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8.5px;
+            font-size: 9.5px;
         }
 
         .totals-table td {
@@ -130,21 +132,21 @@
         .totals-table .grand-row td {
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: bold;
-            padding: 2.5px 1px;
+            padding: 3px 1px;
         }
 
         /* Footer section */
         .footer-section {
             text-align: center;
-            margin-top: 5px;
+            margin-top: 6px;
             page-break-inside: avoid;
-            font-size: 8px;
+            font-size: 9px;
         }
 
         .thanks {
-            font-size: 9px;
+            font-size: 9.5px;
             font-weight: bold;
             margin-bottom: 2px;
         }
@@ -208,7 +210,7 @@
                     <td class="left item-name" colspan="4">
                         {{ $index + 1 }}. {{ $item->product_name }}
                         @if (! empty($item->notes))
-                            <div style="font-size: 8.5px; font-weight: bold; color: #000; margin-left: 12px; margin-top: 1px;">
+                            <div style="font-size: 9px; font-weight: bold; color: #000; margin-left: 12px; margin-top: 1px;">
                                 * {{ $item->notes }}
                             </div>
                         @endif

@@ -18,13 +18,13 @@
 
         body {
             font-family: 'Courier New', Courier, monospace, 'Arial Narrow', sans-serif;
-            font-size: 8.5px;
+            font-size: 10px;
             font-weight: bold;
             color: #000;
             width: 100%;
             margin: 0;
             padding: 0;
-            line-height: 1.15;
+            line-height: 1.25;
         }
 
         .center { text-align: center; }
@@ -34,12 +34,12 @@
 
         .header-section {
             text-align: center;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             page-break-inside: avoid;
         }
 
         .shop-name {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             letter-spacing: -0.3px;
         }
@@ -47,23 +47,23 @@
         .divider {
             border: none;
             border-top: 1px dashed #000;
-            margin: 2px 0;
+            margin: 3px 0;
         }
 
         /* Meta compact 2 columns */
         .meta-section {
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             page-break-inside: avoid;
         }
 
         .meta-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8px;
+            font-size: 9.5px;
         }
 
         .meta-table td {
-            padding: 0.5px 0;
+            padding: 1px 0;
             vertical-align: top;
         }
 
@@ -71,7 +71,7 @@
         table.items-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 2px 0;
+            margin: 3px 0;
             page-break-inside: auto;
         }
 
@@ -82,8 +82,8 @@
         table.items-table th {
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            padding: 1.5px 1px;
-            font-size: 8px;
+            padding: 3px 1px;
+            font-size: 9.5px;
             font-weight: bold;
         }
 
@@ -93,46 +93,46 @@
         }
 
         table.items-table td {
-            padding: 1px 1px;
+            padding: 2px 1px;
             vertical-align: top;
-            font-size: 8px;
+            font-size: 9.5px;
         }
 
         .product-col {
             word-break: break-word;
-            line-height: 1.1;
+            line-height: 1.2;
         }
 
         /* Totals section */
         .totals-section {
             page-break-inside: avoid;
-            margin-top: 2px;
+            margin-top: 3px;
         }
 
         .totals-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8px;
+            font-size: 9.5px;
         }
 
         .totals-table td {
-            padding: 0.5px 1px;
+            padding: 1px 1px;
         }
 
         .totals-table .grand-row td {
             border-top: 1px dashed #000;
             border-bottom: 1px dashed #000;
-            font-size: 9.5px;
+            font-size: 11px;
             font-weight: bold;
-            padding: 2px 1px;
+            padding: 3px 1px;
         }
 
         /* Footer section */
         .footer-section {
             text-align: center;
-            margin-top: 3px;
+            margin-top: 5px;
             page-break-inside: avoid;
-            font-size: 7.5px;
+            font-size: 9px;
         }
     </style>
 </head>
