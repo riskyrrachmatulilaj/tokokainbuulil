@@ -47,9 +47,47 @@ class KasirPage extends Page
 
     public string $partySearch = '';
 
+    public bool $showPreviewModal = false;
+
     public function mount(): void
     {
         $this->saleDate = today()->format('Y-m-d');
+    }
+
+    public function openPreviewModal(): void
+    {
+        if (empty($this->cart)) {
+            Notification::make()
+                ->warning()
+                ->title('Keranjang Kosong')
+                ->body('Tambahkan produk ke keranjang terlebih dahulu sebelum melihat pratinjau nota.')
+                ->send();
+
+            return;
+        }
+
+        $this->showPreviewModal = true;
+    }
+
+    public function closePreviewModal(): void
+    {
+        $this->showPreviewModal = false;
+    }
+
+    public function getSelectedParty(): ?ReceivableParty
+    {
+        return $this->receivablePartyId ? ReceivableParty::find($this->receivablePartyId) : null;
+    }
+
+    public function getPaymentMethodLabel(): string
+    {
+        return match ($this->paymentMethod) {
+            Sale::PAYMENT_METHOD_CASH => 'Tunai',
+            Sale::PAYMENT_METHOD_TRANSFER => 'Transfer',
+            Sale::PAYMENT_METHOD_SPLIT => 'Tunai + Transfer',
+            Sale::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang)',
+            default => ucfirst($this->paymentMethod),
+        };
     }
 
     public function products(): Collection
@@ -324,6 +362,7 @@ class KasirPage extends Page
         $this->transferAmount = null;
         $this->receivablePartyId = null;
         $this->partySearch = '';
+        $this->showPreviewModal = false;
     }
 
     public function cartTotal(): float
@@ -407,6 +446,7 @@ class KasirPage extends Page
             $this->transferAmount = null;
             $this->receivablePartyId = null;
             $this->partySearch = '';
+            $this->showPreviewModal = false;
 
             Notification::make()
                 ->success()

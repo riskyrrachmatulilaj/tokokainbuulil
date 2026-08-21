@@ -149,6 +149,266 @@
             white-space: nowrap !important;
             flex-shrink: 0 !important;
         }
+
+        /* Modal Backdrop & Container */
+        .kasir-modal-backdrop {
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 9999 !important;
+            background: rgba(15, 23, 42, 0.75) !important;
+            backdrop-filter: blur(4px) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 1rem !important;
+            overflow-y: auto !important;
+            animation: kasirModalFade 0.18s ease !important;
+        }
+
+        @keyframes kasirModalFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .kasir-modal-container {
+            background: #ffffff !important;
+            width: 100% !important;
+            max-width: 440px !important;
+            border-radius: 1rem !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            border: 1px solid rgba(226, 232, 240, 0.8) !important;
+            animation: kasirModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .dark .kasir-modal-container,
+        html.dark .kasir-modal-container {
+            background: #1e293b !important;
+            border-color: rgba(51, 65, 85, 0.8) !important;
+            color: #f8fafc !important;
+        }
+
+        @keyframes kasirModalPop {
+            from { transform: scale(0.95) translateY(10px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .kasir-modal-header {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 0.85rem 1.15rem !important;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+            background: rgba(248, 250, 252, 0.9) !important;
+        }
+
+        .dark .kasir-modal-header,
+        html.dark .kasir-modal-header {
+            background: rgba(15, 23, 42, 0.6) !important;
+            border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+
+        .kasir-modal-icon-badge {
+            width: 2.25rem !important;
+            height: 2.25rem !important;
+            border-radius: 0.6rem !important;
+            background: rgba(99, 102, 241, 0.12) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+        }
+
+        .kasir-modal-title {
+            font-size: 0.95rem !important;
+            font-weight: 700 !important;
+            margin: 0 !important;
+            line-height: 1.25 !important;
+            color: #0f172a !important;
+        }
+
+        .dark .kasir-modal-title,
+        html.dark .kasir-modal-title {
+            color: #f8fafc !important;
+        }
+
+        .kasir-modal-subtitle {
+            font-size: 0.75rem !important;
+            color: #64748b !important;
+            display: block !important;
+        }
+
+        .dark .kasir-modal-subtitle,
+        html.dark .kasir-modal-subtitle {
+            color: #94a3b8 !important;
+        }
+
+        .kasir-draft-badge {
+            display: inline-block !important;
+            padding: 0.15rem 0.5rem !important;
+            border-radius: 9999px !important;
+            font-size: 0.6875rem !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.05em !important;
+            background: #fef3c7 !important;
+            color: #b45309 !important;
+            border: 1px solid #fde68a !important;
+        }
+
+        .kasir-modal-close-btn {
+            border: none !important;
+            background: transparent !important;
+            cursor: pointer !important;
+            padding: 0.35rem !important;
+            border-radius: 0.5rem !important;
+            color: #64748b !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.15s !important;
+        }
+
+        .kasir-modal-close-btn:hover {
+            background: rgba(0, 0, 0, 0.06) !important;
+            color: #0f172a !important;
+        }
+
+        .dark .kasir-modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #f8fafc !important;
+        }
+
+        .kasir-modal-body {
+            padding: 1rem !important;
+            max-height: 62vh !important;
+            overflow-y: auto !important;
+            background: #f1f5f9 !important;
+        }
+
+        .dark .kasir-modal-body,
+        html.dark .kasir-modal-body {
+            background: #0f172a !important;
+        }
+
+        /* Realistic Receipt Paper Simulation */
+        .kasir-receipt-paper {
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-family: 'Courier New', Courier, monospace !important;
+            font-size: 11px !important;
+            font-weight: bold !important;
+            padding: 1.25rem 1rem !important;
+            border-radius: 6px !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+            border: 1px dashed #cbd5e1 !important;
+            line-height: 1.25 !important;
+        }
+
+        .kasir-receipt-paper * {
+            color: #000000 !important;
+        }
+
+        .receipt-header {
+            text-align: center !important;
+            margin-bottom: 6px !important;
+        }
+
+        .receipt-brand {
+            font-size: 14px !important;
+            font-weight: 900 !important;
+            letter-spacing: -0.3px !important;
+        }
+
+        .receipt-sub {
+            font-size: 9.5px !important;
+            font-weight: normal !important;
+            color: #4b5563 !important;
+            margin-top: 1px !important;
+        }
+
+        .receipt-draft-banner {
+            display: inline-block !important;
+            margin-top: 4px !important;
+            padding: 1px 6px !important;
+            border: 1px dashed #000000 !important;
+            font-size: 9px !important;
+            font-weight: bold !important;
+        }
+
+        .receipt-divider {
+            border-top: 1px dashed #000000 !important;
+            margin: 6px 0 !important;
+        }
+
+        .receipt-meta-table,
+        .receipt-items-table,
+        .receipt-totals-table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 10.5px !important;
+        }
+
+        .receipt-meta-table td {
+            padding: 1.5px 0 !important;
+            vertical-align: top !important;
+        }
+
+        .receipt-items-table th {
+            border-top: 1px dashed #000000 !important;
+            border-bottom: 1px dashed #000000 !important;
+            padding: 3px 0 !important;
+            font-size: 10.5px !important;
+            font-weight: bold !important;
+        }
+
+        .receipt-items-table td {
+            padding: 2.5px 0 !important;
+            vertical-align: top !important;
+        }
+
+        .receipt-item-name {
+            word-break: break-word !important;
+        }
+
+        .receipt-item-notes {
+            font-size: 9.5px !important;
+            font-style: italic !important;
+            color: #374151 !important;
+            margin-top: 1px !important;
+        }
+
+        .receipt-totals-table td {
+            padding: 1.5px 0 !important;
+        }
+
+        .receipt-grand-total td {
+            border-top: 1px dashed #000000 !important;
+            border-bottom: 1px dashed #000000 !important;
+            font-size: 12px !important;
+            font-weight: 900 !important;
+            padding: 4px 0 !important;
+        }
+
+        .receipt-footer {
+            text-align: center !important;
+            margin-top: 8px !important;
+            font-size: 9.5px !important;
+            line-height: 1.3 !important;
+        }
+
+        .kasir-modal-footer {
+            padding: 0.85rem 1.15rem !important;
+            border-top: 1px solid rgba(226, 232, 240, 0.8) !important;
+            background: rgba(248, 250, 252, 0.9) !important;
+        }
+
+        .dark .kasir-modal-footer,
+        html.dark .kasir-modal-footer {
+            background: rgba(15, 23, 42, 0.6) !important;
+            border-color: rgba(51, 65, 85, 0.6) !important;
+        }
     </style>
 
     <div class="kasir-pos">
@@ -352,6 +612,20 @@
                         <div class="kasir-total">
                             <span class="kasir-total-label">Total Belanja</span>
                             <span class="kasir-total-value">{{ rupiah($this->cartTotal()) }}</span>
+                        </div>
+
+                        <div style="margin-top: 0.75rem;">
+                            <x-filament::button
+                                type="button"
+                                color="info"
+                                size="sm"
+                                outlined
+                                icon="heroicon-o-document-magnifying-glass"
+                                wire:click="openPreviewModal"
+                                style="width: 100%;"
+                            >
+                                Lihat Pratinjau Nota
+                            </x-filament::button>
                         </div>
                     @endif
                 </x-filament::section>
@@ -632,6 +906,16 @@
                         @if (! empty($this->cart))
                             <x-filament::button
                                 type="button"
+                                color="info"
+                                size="lg"
+                                icon="heroicon-o-document-magnifying-glass"
+                                wire:click="openPreviewModal"
+                            >
+                                Preview Nota
+                            </x-filament::button>
+
+                            <x-filament::button
+                                type="button"
                                 color="gray"
                                 size="lg"
                                 icon="heroicon-o-x-mark"
@@ -775,5 +1059,271 @@
                 </div>
             </x-filament::section>
         @endif
+
+        {{-- MODAL PREVIEW NOTA SEBELUM TRANSAKSI DIBUAT --}}
+        @if ($this->showPreviewModal && ! empty($this->cart))
+            <div
+                class="kasir-modal-backdrop"
+                wire:keydown.escape="closePreviewModal"
+                tabindex="-1"
+            >
+                <div class="kasir-modal-container" x-on:click.outside="$wire.closePreviewModal()">
+                    {{-- Modal Header --}}
+                    <div class="kasir-modal-header">
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <div class="kasir-modal-icon-badge">
+                                <x-filament::icon icon="heroicon-o-document-magnifying-glass" class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                            </div>
+                            <div>
+                                <h3 class="kasir-modal-title">Pratinjau Nota Penjualan</h3>
+                                <span class="kasir-modal-subtitle">Periksa rincian sebelum nota dibuat</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="kasir-draft-badge">DRAFT</span>
+                            <button
+                                type="button"
+                                wire:click="closePreviewModal"
+                                class="kasir-modal-close-btn"
+                                title="Tutup (Esc)"
+                            >
+                                <x-filament::icon icon="heroicon-m-x-mark" class="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Modal Body: Realistic Receipt Paper --}}
+                    <div class="kasir-modal-body">
+                        <div class="kasir-receipt-paper" id="kasir-receipt-paper-printable">
+                            {{-- Header Toko --}}
+                            <div class="receipt-header">
+                                <div class="receipt-brand">TOKO KAIN BU ULIL</div>
+                                <div class="receipt-sub">Pusat Grosir & Eceran Kain</div>
+                                <div class="receipt-draft-banner">[ DRAFT - BELUM DISIMPAN ]</div>
+                            </div>
+
+                            <div class="receipt-divider"></div>
+
+                            {{-- Info Transaksi --}}
+                            <table class="receipt-meta-table">
+                                <tr>
+                                    <td style="width: 50%;">No: [DRAFT]</td>
+                                    <td style="text-align: right; width: 50%;">{{ $this->saleDate ? date('d/m/Y', strtotime($this->saleDate)) : date('d/m/Y') }} {{ date('H:i') }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Kasir: {{ auth()->user()?->name ?: '-' }}</td>
+                                    <td style="text-align: right;">{{ $this->getPaymentMethodLabel() }}</td>
+                                </tr>
+                                @php
+                                    $selectedParty = $this->getSelectedParty();
+                                @endphp
+                                <tr>
+                                    <td colspan="2">
+                                        Plg: {{ $selectedParty ? $selectedParty->name : 'Pelanggan Umum' }}
+                                        @if($selectedParty && $selectedParty->phone)
+                                            ({{ $selectedParty->phone }})
+                                        @endif
+                                    </td>
+                                </tr>
+                                @if($this->paymentMethod === Sale::PAYMENT_METHOD_RECEIVABLE)
+                                    <tr>
+                                        <td colspan="2" style="font-weight: bold; padding-top: 2px;">
+                                            * Otomatis tercatat Piutang Pelanggan
+                                        </td>
+                                    </tr>
+                                @endif
+                            </table>
+
+                            <div class="receipt-divider"></div>
+
+                            {{-- Daftar Item Barang --}}
+                            <table class="receipt-items-table">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; width: 44%;">Produk</th>
+                                        <th style="text-align: center; width: 14%;">Qty</th>
+                                        <th style="text-align: right; width: 21%;">Harga</th>
+                                        <th style="text-align: right; width: 21%;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($this->cart as $item)
+                                        <tr>
+                                            <td style="text-align: left;">
+                                                <div class="receipt-item-name">{{ $item['name'] }}</div>
+                                                @if (! empty($item['notes']))
+                                                    <div class="receipt-item-notes">
+                                                        * {{ $item['notes'] }}
+                                                    </div>
+                                                @endif
+                                            </td>
+                                            <td style="text-align: center; vertical-align: top;">
+                                                {{ (float)$item['quantity'] == (int)$item['quantity'] ? (int)$item['quantity'] : $item['quantity'] }}
+                                            </td>
+                                            <td style="text-align: right; vertical-align: top;">
+                                                {{ number_format((float)$item['price'], 0, ',', '.') }}
+                                            </td>
+                                            <td style="text-align: right; vertical-align: top;">
+                                                {{ number_format((float)$item['subtotal'], 0, ',', '.') }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+
+                            <div class="receipt-divider"></div>
+
+                            {{-- Total & Pembayaran --}}
+                            <table class="receipt-totals-table">
+                                <tr>
+                                    <td>Total Item ({{ (float) collect($this->cart)->sum('quantity') == (int) collect($this->cart)->sum('quantity') ? (int) collect($this->cart)->sum('quantity') : collect($this->cart)->sum('quantity') }})</td>
+                                    <td style="text-align: right;">{{ number_format($this->cartTotal(), 0, ',', '.') }}</td>
+                                </tr>
+                                <tr class="receipt-grand-total">
+                                    <td>TOTAL</td>
+                                    <td style="text-align: right;">Rp {{ number_format($this->cartTotal(), 0, ',', '.') }}</td>
+                                </tr>
+                                @if ($this->paymentMethod === Sale::PAYMENT_METHOD_CASH)
+                                    @php
+                                        $received = static::parseNumericAmount($this->receivedAmount) ?? 0.0;
+                                        $change = $this->changeAmount();
+                                    @endphp
+                                    <tr>
+                                        <td>Tunai Diterima</td>
+                                        <td style="text-align: right;">Rp {{ number_format($received, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Kembalian</td>
+                                        <td style="text-align: right; font-weight: bold;">
+                                            Rp {{ number_format($change, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                @elseif ($this->paymentMethod === Sale::PAYMENT_METHOD_SPLIT)
+                                    @php
+                                        $cash = static::parseNumericAmount($this->cashAmount) ?? 0.0;
+                                        $transfer = static::parseNumericAmount($this->transferAmount) ?? 0.0;
+                                        $change = $this->changeAmount();
+                                    @endphp
+                                    <tr>
+                                        <td>Tunai / Transfer</td>
+                                        <td style="text-align: right;">
+                                            {{ number_format($cash, 0, ',', '.') }} / {{ number_format($transfer, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Kembalian</td>
+                                        <td style="text-align: right; font-weight: bold;">
+                                            Rp {{ number_format($change, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                @elseif ($this->paymentMethod === Sale::PAYMENT_METHOD_TRANSFER)
+                                    <tr>
+                                        <td>Status Bayar</td>
+                                        <td style="text-align: right;">LUNAS (Transfer)</td>
+                                    </tr>
+                                @elseif ($this->paymentMethod === Sale::PAYMENT_METHOD_RECEIVABLE)
+                                    <tr>
+                                        <td>Status Bayar</td>
+                                        <td style="text-align: right;">KREDIT (Piutang)</td>
+                                    </tr>
+                                @endif
+                            </table>
+
+                            <div class="receipt-divider"></div>
+
+                            {{-- Footer --}}
+                            <div class="receipt-footer">
+                                <div>-- Terima Kasih Telah Berbelanja --</div>
+                                <div>Toko Kain Bu Ulil</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Modal Footer --}}
+                    <div class="kasir-modal-footer">
+                        <div style="display: flex; gap: 0.5rem; width: 100%; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                            <x-filament::button
+                                type="button"
+                                color="gray"
+                                size="md"
+                                icon="heroicon-o-arrow-left"
+                                wire:click="closePreviewModal"
+                            >
+                                Tutup & Ubah
+                            </x-filament::button>
+
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <x-filament::button
+                                    type="button"
+                                    color="info"
+                                    size="md"
+                                    icon="heroicon-o-printer"
+                                    onclick="printReceiptPreviewDraft()"
+                                >
+                                    Cetak Draft
+                                </x-filament::button>
+
+                                <x-filament::button
+                                    type="button"
+                                    color="primary"
+                                    size="md"
+                                    icon="heroicon-o-check-circle"
+                                    wire:click="processSale"
+                                    wire:loading.attr="disabled"
+                                >
+                                    Proses Penjualan
+                                </x-filament::button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <script>
+            function printReceiptPreviewDraft() {
+                const printElem = document.getElementById('kasir-receipt-paper-printable');
+                if (!printElem) return;
+
+                const printWindow = window.open('', '_blank', 'width=420,height=600');
+                if (!printWindow) {
+                    alert('Popup terblokir oleh browser. Izinkan popup untuk mencetak pratinjau nota.');
+                    return;
+                }
+
+                printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Preview Nota Draft - Toko Kain Bu Ulil</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; color: #000 !important; }
+        @page { size: 95mm 140mm; margin: 6mm 4mm 3mm 4mm; }
+        body { font-family: 'Courier New', Courier, monospace; font-size: 9.5px; font-weight: bold; width: 100%; padding: 4px; line-height: 1.2; }
+        .receipt-header { text-align: center; margin-bottom: 3px; }
+        .receipt-brand { font-size: 13px; font-weight: bold; }
+        .receipt-sub { font-size: 8px; font-weight: normal; }
+        .receipt-draft-banner { display: inline-block; margin-top: 3px; padding: 1px 4px; border: 1px dashed #000; font-size: 8.5px; }
+        .receipt-divider { border-top: 1px dashed #000; margin: 3px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 9px; }
+        td, th { padding: 1.5px 0; vertical-align: top; }
+        .receipt-items-table th { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 2.5px 0; }
+        .receipt-item-notes { font-size: 8px; font-style: italic; }
+        .receipt-grand-total td { border-top: 1px dashed #000; border-bottom: 1px dashed #000; font-size: 10.5px; font-weight: bold; padding: 2.5px 0; }
+        .receipt-footer { text-align: center; margin-top: 5px; font-size: 8px; }
+    </style>
+</head>
+<body>
+    \${printElem.innerHTML}
+</body>
+</html>`);
+                printWindow.document.close();
+                printWindow.focus();
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                }, 300);
+            }
+        </script>
     </div>
 </x-filament-panels::page>
