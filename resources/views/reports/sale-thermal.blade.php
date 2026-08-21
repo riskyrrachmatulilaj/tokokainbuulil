@@ -13,7 +13,7 @@
 
         @page {
             size: 95mm 140mm;
-            margin: 10mm 4mm 3mm 4mm;
+            margin: 15mm 4mm 3mm 4mm;
         }
 
         body {
