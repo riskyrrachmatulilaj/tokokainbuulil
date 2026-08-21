@@ -659,20 +659,6 @@
                             <span class="kasir-total-label">Total Belanja</span>
                             <span class="kasir-total-value">{{ rupiah($this->cartTotal()) }}</span>
                         </div>
-
-                        <div style="margin-top: 0.75rem;">
-                            <x-filament::button
-                                type="button"
-                                color="info"
-                                size="sm"
-                                outlined
-                                icon="heroicon-o-document-magnifying-glass"
-                                wire:click="openPreviewModal"
-                                style="width: 100%;"
-                            >
-                                Lihat Pratinjau Nota
-                            </x-filament::button>
-                        </div>
                     @endif
                 </x-filament::section>
 
@@ -1308,15 +1294,20 @@
                             </x-filament::button>
 
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <x-filament::button
+                                <button
                                     type="button"
-                                    color="info"
-                                    size="md"
-                                    icon="heroicon-o-printer"
-                                    onclick="printReceiptPreviewDraft()"
+                                    id="btn-cetak-draft-a4"
+                                    x-on:click="window.printReceiptPreviewDraft()"
+                                    onclick="window.printReceiptPreviewDraft()"
+                                    style="background-color: #0284c7; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.875rem; cursor: pointer; border: none; transition: background 0.15s ease;"
+                                    onmouseover="this.style.backgroundColor='#0369a1'"
+                                    onmouseout="this.style.backgroundColor='#0284c7'"
                                 >
-                                    Cetak Draft A4
-                                </x-filament::button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 1.15rem; height: 1.15rem;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z" />
+                                    </svg>
+                                    <span>Cetak Draft A4</span>
+                                </button>
 
                                 <x-filament::button
                                     type="button"
@@ -1336,23 +1327,36 @@
         @endif
 
         <script>
-            function printReceiptPreviewDraft() {
+            window.printReceiptPreviewDraft = function() {
                 const printElem = document.getElementById('kasir-receipt-paper-printable');
-                if (!printElem) return;
-
-                const printWindow = window.open('', '_blank', 'width=850,height=950');
-                if (!printWindow) {
-                    alert('Popup terblokir oleh browser. Izinkan popup untuk mencetak pratinjau nota.');
+                if (!printElem) {
+                    alert('Konten nota tidak ditemukan.');
                     return;
                 }
 
-                printWindow.document.write(`<!DOCTYPE html>
+                let printFrame = document.getElementById('kasir-print-iframe');
+                if (!printFrame) {
+                    printFrame = document.createElement('iframe');
+                    printFrame.id = 'kasir-print-iframe';
+                    printFrame.style.position = 'fixed';
+                    printFrame.style.right = '0';
+                    printFrame.style.bottom = '0';
+                    printFrame.style.width = '0';
+                    printFrame.style.height = '0';
+                    printFrame.style.border = '0';
+                    document.body.appendChild(printFrame);
+                }
+
+                const doc = printFrame.contentWindow || printFrame.contentDocument;
+                const frameDoc = doc.document || doc;
+                frameDoc.open();
+                frameDoc.write(`<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
     <title>Nota Penjualan (Draft) - Toko Kain Bu Ulil</title>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         @page {
             margin: 12mm 15mm;
             size: a4 portrait;
@@ -1361,11 +1365,10 @@
             font-family: Helvetica, Arial, sans-serif;
             font-size: 11px;
             color: #1f2937;
-            margin: 0;
-            padding: 0;
+            padding: 10px;
         }
         .a4-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0d9488; padding-bottom: 12px; margin-bottom: 14px; }
-        .a4-brand h1 { margin: 0; font-size: 18px; color: #0d9488; }
+        .a4-brand h1 { margin: 0; font-size: 18px; color: #0d9488; font-weight: bold; }
         .a4-brand p { margin: 2px 0 0; font-size: 11px; color: #6b7280; }
         .a4-nota-no { text-align: right; }
         .a4-nota-no .label { font-size: 9px; text-transform: uppercase; color: #6b7280; font-weight: 600; }
@@ -1403,13 +1406,18 @@
     \${printElem.innerHTML}
 </body>
 </html>`);
-                printWindow.document.close();
-                printWindow.focus();
+                frameDoc.close();
+
                 setTimeout(() => {
-                    printWindow.print();
-                    printWindow.close();
-                }, 300);
-            }
+                    try {
+                        printFrame.contentWindow.focus();
+                        printFrame.contentWindow.print();
+                    } catch (e) {
+                        console.error('Print iframe failed, fallback to window.print', e);
+                        window.print();
+                    }
+                }, 250);
+            };
         </script>
     </div>
 </x-filament-panels::page>
