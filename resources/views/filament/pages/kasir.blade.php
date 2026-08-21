@@ -173,7 +173,7 @@
         .kasir-modal-container {
             background: #ffffff !important;
             width: 100% !important;
-            max-width: 440px !important;
+            max-width: 680px !important;
             border-radius: 1rem !important;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
             display: flex !important;
@@ -199,7 +199,7 @@
             display: flex !important;
             align-items: center !important;
             justify-content: space-between !important;
-            padding: 0.85rem 1.15rem !important;
+            padding: 0.85rem 1.25rem !important;
             border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
             background: rgba(248, 250, 252, 0.9) !important;
         }
@@ -214,7 +214,7 @@
             width: 2.25rem !important;
             height: 2.25rem !important;
             border-radius: 0.6rem !important;
-            background: rgba(99, 102, 241, 0.12) !important;
+            background: rgba(13, 148, 136, 0.12) !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -281,8 +281,8 @@
         }
 
         .kasir-modal-body {
-            padding: 1rem !important;
-            max-height: 62vh !important;
+            padding: 1.25rem !important;
+            max-height: 68vh !important;
             overflow-y: auto !important;
             background: #f1f5f9 !important;
         }
@@ -292,114 +292,160 @@
             background: #0f172a !important;
         }
 
-        /* Realistic Receipt Paper Simulation */
-        .kasir-receipt-paper {
+        /* Authentic A4 Document Paper Simulation */
+        .kasir-a4-paper {
             background: #ffffff !important;
-            color: #000000 !important;
-            font-family: 'Courier New', Courier, monospace !important;
+            color: #1f2937 !important;
+            font-family: Helvetica, Arial, sans-serif !important;
             font-size: 11px !important;
-            font-weight: bold !important;
-            padding: 1.25rem 1rem !important;
+            padding: 1.75rem 1.5rem !important;
             border-radius: 6px !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-            border: 1px dashed #cbd5e1 !important;
-            line-height: 1.25 !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+            border: 1px solid #e2e8f0 !important;
+            line-height: 1.35 !important;
         }
 
-        .kasir-receipt-paper * {
-            color: #000000 !important;
+        .kasir-a4-paper * {
+            box-sizing: border-box !important;
         }
 
-        .receipt-header {
-            text-align: center !important;
-            margin-bottom: 6px !important;
+        .a4-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            border-bottom: 3px solid #0d9488 !important;
+            padding-bottom: 10px !important;
+            margin-bottom: 12px !important;
         }
 
-        .receipt-brand {
-            font-size: 14px !important;
-            font-weight: 900 !important;
-            letter-spacing: -0.3px !important;
-        }
-
-        .receipt-sub {
-            font-size: 9.5px !important;
-            font-weight: normal !important;
-            color: #4b5563 !important;
-            margin-top: 1px !important;
-        }
-
-        .receipt-draft-banner {
-            display: inline-block !important;
-            margin-top: 4px !important;
-            padding: 1px 6px !important;
-            border: 1px dashed #000000 !important;
-            font-size: 9px !important;
+        .a4-brand h1 {
+            margin: 0 !important;
+            font-size: 18px !important;
+            color: #0d9488 !important;
             font-weight: bold !important;
         }
 
-        .receipt-divider {
-            border-top: 1px dashed #000000 !important;
-            margin: 6px 0 !important;
+        .a4-brand p {
+            margin: 2px 0 0 !important;
+            font-size: 11px !important;
+            color: #6b7280 !important;
         }
 
-        .receipt-meta-table,
-        .receipt-items-table,
-        .receipt-totals-table {
+        .a4-nota-no {
+            text-align: right !important;
+        }
+
+        .a4-nota-no .label {
+            font-size: 9px !important;
+            text-transform: uppercase !important;
+            color: #6b7280 !important;
+            font-weight: 600 !important;
+        }
+
+        .a4-nota-no .value {
+            font-size: 15px !important;
+            font-weight: bold !important;
+            color: #111827 !important;
+        }
+
+        .a4-meta {
+            margin-bottom: 12px !important;
+            font-size: 11px !important;
+        }
+
+        .a4-meta table {
             width: 100% !important;
             border-collapse: collapse !important;
-            font-size: 10.5px !important;
         }
 
-        .receipt-meta-table td {
-            padding: 1.5px 0 !important;
+        .a4-meta td {
+            padding: 2.5px 0 !important;
             vertical-align: top !important;
+            color: #1f2937 !important;
         }
 
-        .receipt-items-table th {
-            border-top: 1px dashed #000000 !important;
-            border-bottom: 1px dashed #000000 !important;
-            padding: 3px 0 !important;
-            font-size: 10.5px !important;
+        .a4-meta .k {
+            color: #6b7280 !important;
+            width: 130px !important;
+            font-weight: 500 !important;
+        }
+
+        table.a4-items {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin-bottom: 12px !important;
+        }
+
+        table.a4-items thead th {
+            background: #0d9488 !important;
+            color: #ffffff !important;
+            padding: 7px 6px !important;
+            text-align: left !important;
+            font-size: 9.5px !important;
+            text-transform: uppercase !important;
             font-weight: bold !important;
         }
 
-        .receipt-items-table td {
-            padding: 2.5px 0 !important;
-            vertical-align: top !important;
+        table.a4-items tbody td {
+            padding: 6px !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            color: #1f2937 !important;
+            font-size: 11px !important;
         }
 
-        .receipt-item-name {
-            word-break: break-word !important;
+        table.a4-items tbody tr:nth-child(even) {
+            background: #f9fafb !important;
         }
 
-        .receipt-item-notes {
-            font-size: 9.5px !important;
-            font-style: italic !important;
-            color: #374151 !important;
-            margin-top: 1px !important;
+        .a4-total-box {
+            margin-left: auto !important;
+            width: 270px !important;
         }
 
-        .receipt-totals-table td {
-            padding: 1.5px 0 !important;
+        .a4-total-box table {
+            width: 100% !important;
+            border-collapse: collapse !important;
         }
 
-        .receipt-grand-total td {
-            border-top: 1px dashed #000000 !important;
-            border-bottom: 1px dashed #000000 !important;
-            font-size: 12px !important;
-            font-weight: 900 !important;
-            padding: 4px 0 !important;
+        .a4-total-box td {
+            padding: 3.5px 6px !important;
+            font-size: 11px !important;
+            color: #1f2937 !important;
         }
 
-        .receipt-footer {
+        .a4-total-box .grand td {
+            font-size: 13px !important;
+            font-weight: bold !important;
+            background: #0d9488 !important;
+            color: #ffffff !important;
+            border-radius: 4px !important;
+            padding: 5px 6px !important;
+        }
+
+        .a4-thanks {
             text-align: center !important;
-            margin-top: 8px !important;
+            margin-top: 18px !important;
+            font-size: 11.5px !important;
+            color: #0d9488 !important;
+            font-weight: bold !important;
+        }
+
+        .a4-footer {
+            margin-top: 18px !important;
             font-size: 9.5px !important;
-            line-height: 1.3 !important;
+            color: #6b7280 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+        }
+
+        .a4-note {
+            font-size: 9px !important;
+            color: #9ca3af !important;
+            margin-top: 6px !important;
         }
 
         .kasir-modal-footer {
-            padding: 0.85rem 1.15rem !important;
+            padding: 0.85rem 1.25rem !important;
             border-top: 1px solid rgba(226, 232, 240, 0.8) !important;
             background: rgba(248, 250, 252, 0.9) !important;
         }
@@ -1092,149 +1138,158 @@
                         </div>
                     </div>
 
-                    {{-- Modal Body: Realistic Receipt Paper --}}
+                    {{-- Modal Body: Authentic A4 Document Simulation --}}
                     <div class="kasir-modal-body">
-                        <div class="kasir-receipt-paper" id="kasir-receipt-paper-printable">
-                            {{-- Header Toko --}}
-                            <div class="receipt-header">
-                                <div class="receipt-brand">TOKO KAIN BU ULIL</div>
-                                <div class="receipt-sub">Pusat Grosir & Eceran Kain</div>
-                                <div class="receipt-draft-banner">[ DRAFT - BELUM DISIMPAN ]</div>
+                        <div class="kasir-a4-paper" id="kasir-receipt-paper-printable">
+                            {{-- Header --}}
+                            <div class="a4-header">
+                                <div class="a4-brand">
+                                    <h1>Toko Kain Bu Ulil</h1>
+                                    <p>Nota Penjualan</p>
+                                </div>
+                                <div class="a4-nota-no">
+                                    <div class="label">No. Transaksi</div>
+                                    <div class="value">[DRAFT]</div>
+                                </div>
                             </div>
 
-                            <div class="receipt-divider"></div>
-
-                            {{-- Info Transaksi --}}
-                            <table class="receipt-meta-table">
-                                <tr>
-                                    <td style="width: 50%;">No: [DRAFT]</td>
-                                    <td style="text-align: right; width: 50%;">{{ $this->saleDate ? date('d/m/Y', strtotime($this->saleDate)) : date('d/m/Y') }} {{ date('H:i') }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Kasir: {{ auth()->user()?->name ?: '-' }}</td>
-                                    <td style="text-align: right;">{{ $this->getPaymentMethodLabel() }}</td>
-                                </tr>
-                                @php
-                                    $selectedParty = $this->getSelectedParty();
-                                @endphp
-                                <tr>
-                                    <td colspan="2">
-                                        Plg: {{ $selectedParty ? $selectedParty->name : 'Pelanggan Umum' }}
-                                        @if($selectedParty && $selectedParty->phone)
-                                            ({{ $selectedParty->phone }})
-                                        @endif
-                                    </td>
-                                </tr>
-                                @if($this->paymentMethod === Sale::PAYMENT_METHOD_RECEIVABLE)
+                            {{-- Meta Transaksi --}}
+                            <div class="a4-meta">
+                                <table>
                                     <tr>
-                                        <td colspan="2" style="font-weight: bold; padding-top: 2px;">
-                                            * Otomatis tercatat Piutang Pelanggan
-                                        </td>
+                                        <td class="k">Tanggal</td>
+                                        <td>: {{ $this->saleDate ? date('d M Y', strtotime($this->saleDate)) : date('d M Y') }} ({{ date('H:i') }})</td>
                                     </tr>
-                                @endif
-                            </table>
+                                    @php
+                                        $selectedParty = $this->getSelectedParty();
+                                    @endphp
+                                    @if ($selectedParty)
+                                        <tr>
+                                            <td class="k">Pelanggan</td>
+                                            <td>: {{ $selectedParty->name }} {{ $selectedParty->phone ? '('.$selectedParty->phone.')' : '' }}</td>
+                                        </tr>
+                                    @else
+                                        <tr>
+                                            <td class="k">Pelanggan</td>
+                                            <td>: Pelanggan Umum</td>
+                                        </tr>
+                                    @endif
+                                    <tr>
+                                        <td class="k">Metode Pembayaran</td>
+                                        <td>: {{ $this->getPaymentMethodLabel() }}</td>
+                                    </tr>
+                                    @if($this->paymentMethod === Sale::PAYMENT_METHOD_RECEIVABLE)
+                                        <tr>
+                                            <td class="k">Nota Piutang</td>
+                                            <td>: [Otomatis dicatat ke Piutang Pelanggan]</td>
+                                        </tr>
+                                    @endif
+                                    <tr>
+                                        <td class="k">Kasir</td>
+                                        <td>: {{ auth()->user()?->name ?: '-' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
 
-                            <div class="receipt-divider"></div>
-
-                            {{-- Daftar Item Barang --}}
-                            <table class="receipt-items-table">
+                            {{-- Tabel Daftar Item --}}
+                            <table class="a4-items">
                                 <thead>
                                     <tr>
-                                        <th style="text-align: left; width: 44%;">Produk</th>
-                                        <th style="text-align: center; width: 14%;">Qty</th>
-                                        <th style="text-align: right; width: 21%;">Harga</th>
-                                        <th style="text-align: right; width: 21%;">Total</th>
+                                        <th style="width: 5%;">No</th>
+                                        <th style="width: 44%;">Produk</th>
+                                        <th style="width: 17%; text-align: right;">Harga</th>
+                                        <th style="width: 14%; text-align: right;">Jumlah</th>
+                                        <th style="width: 20%; text-align: right;">Subtotal</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($this->cart as $item)
+                                    @foreach ($this->cart as $index => $item)
                                         <tr>
-                                            <td style="text-align: left;">
-                                                <div class="receipt-item-name">{{ $item['name'] }}</div>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>
+                                                <div style="font-weight: 600;">{{ $item['name'] }}</div>
                                                 @if (! empty($item['notes']))
-                                                    <div class="receipt-item-notes">
+                                                    <div style="font-size: 9.5px; color: #4b5563; font-weight: normal; margin-top: 2px;">
                                                         * {{ $item['notes'] }}
                                                     </div>
                                                 @endif
                                             </td>
-                                            <td style="text-align: center; vertical-align: top;">
-                                                {{ (float)$item['quantity'] == (int)$item['quantity'] ? (int)$item['quantity'] : $item['quantity'] }}
-                                            </td>
-                                            <td style="text-align: right; vertical-align: top;">
-                                                {{ number_format((float)$item['price'], 0, ',', '.') }}
-                                            </td>
-                                            <td style="text-align: right; vertical-align: top;">
-                                                {{ number_format((float)$item['subtotal'], 0, ',', '.') }}
-                                            </td>
+                                            <td style="text-align: right;">{{ number_format((float)$item['price'], 0, ',', '.') }}</td>
+                                            <td style="text-align: right;">{{ (float)$item['quantity'] == (int)$item['quantity'] ? (int)$item['quantity'] : $item['quantity'] }}</td>
+                                            <td style="text-align: right;">{{ number_format((float)$item['subtotal'], 0, ',', '.') }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
 
-                            <div class="receipt-divider"></div>
+                            {{-- Bagian Total --}}
+                            <div class="a4-total-box">
+                                <table>
+                                    <tr>
+                                        <td>Total Belanja</td>
+                                        <td style="text-align: right;">{{ number_format($this->cartTotal(), 0, ',', '.') }}</td>
+                                    </tr>
+                                    @if ($this->paymentMethod === Sale::PAYMENT_METHOD_CASH)
+                                        @php
+                                            $received = static::parseNumericAmount($this->receivedAmount) ?? 0.0;
+                                            $change = $this->changeAmount();
+                                        @endphp
+                                        <tr>
+                                            <td>Uang Diterima</td>
+                                            <td style="text-align: right;">{{ number_format($received, 0, ',', '.') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Kembalian</td>
+                                            <td style="text-align: right;">{{ number_format($change, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @elseif ($this->paymentMethod === Sale::PAYMENT_METHOD_SPLIT)
+                                        @php
+                                            $cash = static::parseNumericAmount($this->cashAmount) ?? 0.0;
+                                            $transfer = static::parseNumericAmount($this->transferAmount) ?? 0.0;
+                                            $change = $this->changeAmount();
+                                        @endphp
+                                        <tr>
+                                            <td>Bayar Tunai</td>
+                                            <td style="text-align: right;">{{ number_format($cash, 0, ',', '.') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bayar Transfer</td>
+                                            <td style="text-align: right;">{{ number_format($transfer, 0, ',', '.') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Dibayar</td>
+                                            <td style="text-align: right;">{{ number_format($cash + $transfer, 0, ',', '.') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Kembalian</td>
+                                            <td style="text-align: right;">{{ number_format($change, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @elseif ($this->paymentMethod === Sale::PAYMENT_METHOD_TRANSFER)
+                                        <tr>
+                                            <td>Status</td>
+                                            <td style="text-align: right;">Transfer (LUNAS)</td>
+                                        </tr>
+                                    @else
+                                        <tr>
+                                            <td>Status</td>
+                                            <td style="text-align: right;">Kredit (Piutang)</td>
+                                        </tr>
+                                    @endif
+                                    <tr class="grand">
+                                        <td>TOTAL</td>
+                                        <td style="text-align: right;">{{ number_format($this->cartTotal(), 0, ',', '.') }}</td>
+                                    </tr>
+                                </table>
+                            </div>
 
-                            {{-- Total & Pembayaran --}}
-                            <table class="receipt-totals-table">
-                                <tr>
-                                    <td>Total Item ({{ (float) collect($this->cart)->sum('quantity') == (int) collect($this->cart)->sum('quantity') ? (int) collect($this->cart)->sum('quantity') : collect($this->cart)->sum('quantity') }})</td>
-                                    <td style="text-align: right;">{{ number_format($this->cartTotal(), 0, ',', '.') }}</td>
-                                </tr>
-                                <tr class="receipt-grand-total">
-                                    <td>TOTAL</td>
-                                    <td style="text-align: right;">Rp {{ number_format($this->cartTotal(), 0, ',', '.') }}</td>
-                                </tr>
-                                @if ($this->paymentMethod === Sale::PAYMENT_METHOD_CASH)
-                                    @php
-                                        $received = static::parseNumericAmount($this->receivedAmount) ?? 0.0;
-                                        $change = $this->changeAmount();
-                                    @endphp
-                                    <tr>
-                                        <td>Tunai Diterima</td>
-                                        <td style="text-align: right;">Rp {{ number_format($received, 0, ',', '.') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Kembalian</td>
-                                        <td style="text-align: right; font-weight: bold;">
-                                            Rp {{ number_format($change, 0, ',', '.') }}
-                                        </td>
-                                    </tr>
-                                @elseif ($this->paymentMethod === Sale::PAYMENT_METHOD_SPLIT)
-                                    @php
-                                        $cash = static::parseNumericAmount($this->cashAmount) ?? 0.0;
-                                        $transfer = static::parseNumericAmount($this->transferAmount) ?? 0.0;
-                                        $change = $this->changeAmount();
-                                    @endphp
-                                    <tr>
-                                        <td>Tunai / Transfer</td>
-                                        <td style="text-align: right;">
-                                            {{ number_format($cash, 0, ',', '.') }} / {{ number_format($transfer, 0, ',', '.') }}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Kembalian</td>
-                                        <td style="text-align: right; font-weight: bold;">
-                                            Rp {{ number_format($change, 0, ',', '.') }}
-                                        </td>
-                                    </tr>
-                                @elseif ($this->paymentMethod === Sale::PAYMENT_METHOD_TRANSFER)
-                                    <tr>
-                                        <td>Status Bayar</td>
-                                        <td style="text-align: right;">LUNAS (Transfer)</td>
-                                    </tr>
-                                @elseif ($this->paymentMethod === Sale::PAYMENT_METHOD_RECEIVABLE)
-                                    <tr>
-                                        <td>Status Bayar</td>
-                                        <td style="text-align: right;">KREDIT (Piutang)</td>
-                                    </tr>
-                                @endif
-                            </table>
+                            <div class="a4-thanks">Terima kasih telah berbelanja di Toko Kain Bu Ulil</div>
 
-                            <div class="receipt-divider"></div>
-
-                            {{-- Footer --}}
-                            <div class="receipt-footer">
-                                <div>-- Terima Kasih Telah Berbelanja --</div>
-                                <div>Toko Kain Bu Ulil</div>
+                            <div class="a4-footer">
+                                <span>Dicetak pada: {{ date('d M Y H:i') }}</span>
+                                <span>Oleh: {{ auth()->user()?->name ?: 'Kasir' }}</span>
+                            </div>
+                            <div class="a4-note">
+                                * Nota ini adalah pratinjau (draft) sebelum transaksi resmi disimpan. Jumlah tercantum dalam Rupiah.
                             </div>
                         </div>
                     </div>
@@ -1260,7 +1315,7 @@
                                     icon="heroicon-o-printer"
                                     onclick="printReceiptPreviewDraft()"
                                 >
-                                    Cetak Draft
+                                    Cetak Draft A4
                                 </x-filament::button>
 
                                 <x-filament::button
@@ -1285,32 +1340,63 @@
                 const printElem = document.getElementById('kasir-receipt-paper-printable');
                 if (!printElem) return;
 
-                const printWindow = window.open('', '_blank', 'width=420,height=600');
+                const printWindow = window.open('', '_blank', 'width=850,height=950');
                 if (!printWindow) {
                     alert('Popup terblokir oleh browser. Izinkan popup untuk mencetak pratinjau nota.');
                     return;
                 }
 
                 printWindow.document.write(`<!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Preview Nota Draft - Toko Kain Bu Ulil</title>
+    <title>Nota Penjualan (Draft) - Toko Kain Bu Ulil</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; color: #000 !important; }
-        @page { size: 95mm 140mm; margin: 6mm 4mm 3mm 4mm; }
-        body { font-family: 'Courier New', Courier, monospace; font-size: 9.5px; font-weight: bold; width: 100%; padding: 4px; line-height: 1.2; }
-        .receipt-header { text-align: center; margin-bottom: 3px; }
-        .receipt-brand { font-size: 13px; font-weight: bold; }
-        .receipt-sub { font-size: 8px; font-weight: normal; }
-        .receipt-draft-banner { display: inline-block; margin-top: 3px; padding: 1px 4px; border: 1px dashed #000; font-size: 8.5px; }
-        .receipt-divider { border-top: 1px dashed #000; margin: 3px 0; }
-        table { width: 100%; border-collapse: collapse; font-size: 9px; }
-        td, th { padding: 1.5px 0; vertical-align: top; }
-        .receipt-items-table th { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 2.5px 0; }
-        .receipt-item-notes { font-size: 8px; font-style: italic; }
-        .receipt-grand-total td { border-top: 1px dashed #000; border-bottom: 1px dashed #000; font-size: 10.5px; font-weight: bold; padding: 2.5px 0; }
-        .receipt-footer { text-align: center; margin-top: 5px; font-size: 8px; }
+        * { box-sizing: border-box; }
+        @page {
+            margin: 12mm 15mm;
+            size: a4 portrait;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+        }
+        .a4-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0d9488; padding-bottom: 12px; margin-bottom: 14px; }
+        .a4-brand h1 { margin: 0; font-size: 18px; color: #0d9488; }
+        .a4-brand p { margin: 2px 0 0; font-size: 11px; color: #6b7280; }
+        .a4-nota-no { text-align: right; }
+        .a4-nota-no .label { font-size: 9px; text-transform: uppercase; color: #6b7280; font-weight: 600; }
+        .a4-nota-no .value { font-size: 16px; font-weight: bold; color: #111827; }
+
+        .a4-meta { margin-bottom: 12px; font-size: 11px; }
+        .a4-meta table { width: 100%; border-collapse: collapse; }
+        .a4-meta td { padding: 2.5px 0; vertical-align: top; }
+        .a4-meta .k { color: #6b7280; width: 130px; }
+
+        table.a4-items { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+        table.a4-items thead th {
+            background: #0d9488;
+            color: #fff;
+            padding: 7px 6px;
+            text-align: left;
+            font-size: 9.5px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        table.a4-items tbody td { padding: 6px; border-bottom: 1px solid #e5e7eb; font-size: 11px; }
+        table.a4-items tbody tr:nth-child(even) { background: #f9fafb; }
+
+        .a4-total-box { margin-left: auto; width: 270px; }
+        .a4-total-box table { width: 100%; border-collapse: collapse; }
+        .a4-total-box td { padding: 4px 6px; font-size: 11px; }
+        .a4-total-box .grand td { font-size: 13px; font-weight: bold; background: #0d9488; color: #fff; border-radius: 4px; padding: 5px 6px; }
+
+        .a4-footer { margin-top: 24px; font-size: 10px; color: #6b7280; display: flex; justify-content: space-between; }
+        .a4-thanks { text-align: center; margin-top: 18px; font-size: 12px; color: #0d9488; font-weight: bold; }
+        .a4-note { font-size: 9px; color: #9ca3af; margin-top: 8px; }
     </style>
 </head>
 <body>
