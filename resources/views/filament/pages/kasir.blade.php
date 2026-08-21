@@ -1099,75 +1099,7 @@
                 wire:keydown.escape="closePreviewModal"
                 tabindex="-1"
             >
-                <div
-                    class="kasir-modal-container"
-                    x-data="{
-                        doPrint() {
-                            const printElem = document.getElementById('kasir-receipt-paper-printable');
-                            if (!printElem) {
-                                alert('Konten nota tidak ditemukan.');
-                                return;
-                            }
-
-                            let printFrame = document.getElementById('kasir-print-iframe');
-                            if (!printFrame) {
-                                printFrame = document.createElement('iframe');
-                                printFrame.id = 'kasir-print-iframe';
-                                printFrame.style.position = 'fixed';
-                                printFrame.style.right = '0';
-                                printFrame.style.bottom = '0';
-                                printFrame.style.width = '0';
-                                printFrame.style.height = '0';
-                                printFrame.style.border = '0';
-                                document.body.appendChild(printFrame);
-                            }
-
-                            const doc = printFrame.contentWindow || printFrame.contentDocument;
-                            const frameDoc = doc.document || doc;
-                            frameDoc.open();
-                            frameDoc.write("<!DOCTYPE html><html lang='id'><head><meta charset='utf-8'><title>Nota Penjualan (Draft) - Toko Kain Bu Ulil</title><style>" +
-                                "* { box-sizing: border-box; margin: 0; padding: 0; }" +
-                                "@page { margin: 12mm 15mm; size: a4 portrait; }" +
-                                "body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #1f2937; padding: 10px; }" +
-                                ".a4-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0d9488; padding-bottom: 12px; margin-bottom: 14px; }" +
-                                ".a4-brand h1 { margin: 0; font-size: 18px; color: #0d9488; font-weight: bold; }" +
-                                ".a4-brand p { margin: 2px 0 0; font-size: 11px; color: #6b7280; }" +
-                                ".a4-nota-no { text-align: right; }" +
-                                ".a4-nota-no .label { font-size: 9px; text-transform: uppercase; color: #6b7280; font-weight: 600; }" +
-                                ".a4-nota-no .value { font-size: 16px; font-weight: bold; color: #111827; }" +
-                                ".a4-meta { margin-bottom: 12px; font-size: 11px; }" +
-                                ".a4-meta table { width: 100%; border-collapse: collapse; }" +
-                                ".a4-meta td { padding: 2.5px 0; vertical-align: top; }" +
-                                ".a4-meta .k { color: #6b7280; width: 130px; }" +
-                                "table.a4-items { width: 100%; border-collapse: collapse; margin-bottom: 12px; }" +
-                                "table.a4-items thead th { background: #0d9488; color: #fff; padding: 7px 6px; text-align: left; font-size: 9.5px; text-transform: uppercase; font-weight: bold; }" +
-                                "table.a4-items tbody td { padding: 6px; border-bottom: 1px solid #e5e7eb; font-size: 11px; }" +
-                                "table.a4-items tbody tr:nth-child(even) { background: #f9fafb; }" +
-                                ".a4-total-box { margin-left: auto; width: 270px; }" +
-                                ".a4-total-box table { width: 100%; border-collapse: collapse; }" +
-                                ".a4-total-box td { padding: 4px 6px; font-size: 11px; }" +
-                                ".a4-total-box .grand td { font-size: 13px; font-weight: bold; background: #0d9488; color: #fff; border-radius: 4px; padding: 5px 6px; }" +
-                                ".a4-footer { margin-top: 24px; font-size: 10px; color: #6b7280; display: flex; justify-content: space-between; }" +
-                                ".a4-thanks { text-align: center; margin-top: 18px; font-size: 12px; color: #0d9488; font-weight: bold; }" +
-                                ".a4-note { font-size: 9px; color: #9ca3af; margin-top: 8px; }" +
-                                "</style></head><body>" +
-                                printElem.innerHTML +
-                                "</body></html>");
-                            frameDoc.close();
-
-                            setTimeout(() => {
-                                try {
-                                    printFrame.contentWindow.focus();
-                                    printFrame.contentWindow.print();
-                                } catch (e) {
-                                    console.error('Print iframe failed, fallback to window.print', e);
-                                    window.print();
-                                }
-                            }, 250);
-                        }
-                    }"
-                    x-on:click.outside="$wire.closePreviewModal()"
-                >
+                <div class="kasir-modal-container" x-on:click.outside="$wire.closePreviewModal()">
                     {{-- Modal Header --}}
                     <div class="kasir-modal-header">
                         <div style="display: flex; align-items: center; gap: 0.6rem;">
@@ -1365,7 +1297,7 @@
                                 <button
                                     type="button"
                                     id="btn-cetak-draft-a4"
-                                    x-on:click="doPrint()"
+                                    onclick="printDraftA4Nota()"
                                     style="background-color: #0284c7; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.875rem; cursor: pointer; border: none; transition: background 0.15s ease;"
                                     onmouseover="this.style.backgroundColor='#0369a1'"
                                     onmouseout="this.style.backgroundColor='#0284c7'"
@@ -1392,5 +1324,71 @@
                 </div>
             </div>
         @endif
+
+        <script>
+            function printDraftA4Nota() {
+                const printElem = document.getElementById('kasir-receipt-paper-printable');
+                if (!printElem) {
+                    alert('Konten nota tidak ditemukan.');
+                    return;
+                }
+
+                let printFrame = document.getElementById('kasir-print-iframe');
+                if (!printFrame) {
+                    printFrame = document.createElement('iframe');
+                    printFrame.id = 'kasir-print-iframe';
+                    printFrame.style.position = 'fixed';
+                    printFrame.style.right = '0';
+                    printFrame.style.bottom = '0';
+                    printFrame.style.width = '0';
+                    printFrame.style.height = '0';
+                    printFrame.style.border = '0';
+                    document.body.appendChild(printFrame);
+                }
+
+                const doc = printFrame.contentWindow || printFrame.contentDocument;
+                const frameDoc = doc.document || doc;
+                frameDoc.open();
+                frameDoc.write("<!DOCTYPE html><html lang='id'><head><meta charset='utf-8'><title>Nota Penjualan (Draft) - Toko Kain Bu Ulil</title><style>" +
+                    "* { box-sizing: border-box; margin: 0; padding: 0; }" +
+                    "@page { margin: 12mm 15mm; size: a4 portrait; }" +
+                    "body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #1f2937; padding: 10px; }" +
+                    ".a4-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0d9488; padding-bottom: 12px; margin-bottom: 14px; }" +
+                    ".a4-brand h1 { margin: 0; font-size: 18px; color: #0d9488; font-weight: bold; }" +
+                    ".a4-brand p { margin: 2px 0 0; font-size: 11px; color: #6b7280; }" +
+                    ".a4-nota-no { text-align: right; }" +
+                    ".a4-nota-no .label { font-size: 9px; text-transform: uppercase; color: #6b7280; font-weight: 600; }" +
+                    ".a4-nota-no .value { font-size: 16px; font-weight: bold; color: #111827; }" +
+                    ".a4-meta { margin-bottom: 12px; font-size: 11px; }" +
+                    ".a4-meta table { width: 100%; border-collapse: collapse; }" +
+                    ".a4-meta td { padding: 2.5px 0; vertical-align: top; }" +
+                    ".a4-meta .k { color: #6b7280; width: 130px; }" +
+                    "table.a4-items { width: 100%; border-collapse: collapse; margin-bottom: 12px; }" +
+                    "table.a4-items thead th { background: #0d9488; color: #fff; padding: 7px 6px; text-align: left; font-size: 9.5px; text-transform: uppercase; font-weight: bold; }" +
+                    "table.a4-items tbody td { padding: 6px; border-bottom: 1px solid #e5e7eb; font-size: 11px; }" +
+                    "table.a4-items tbody tr:nth-child(even) { background: #f9fafb; }" +
+                    ".a4-total-box { margin-left: auto; width: 270px; }" +
+                    ".a4-total-box table { width: 100%; border-collapse: collapse; }" +
+                    ".a4-total-box td { padding: 4px 6px; font-size: 11px; }" +
+                    ".a4-total-box .grand td { font-size: 13px; font-weight: bold; background: #0d9488; color: #fff; border-radius: 4px; padding: 5px 6px; }" +
+                    ".a4-footer { margin-top: 24px; font-size: 10px; color: #6b7280; display: flex; justify-content: space-between; }" +
+                    ".a4-thanks { text-align: center; margin-top: 18px; font-size: 12px; color: #0d9488; font-weight: bold; }" +
+                    ".a4-note { font-size: 9px; color: #9ca3af; margin-top: 8px; }" +
+                    "</style></head><body>" +
+                    printElem.innerHTML +
+                    "</body></html>");
+                frameDoc.close();
+
+                setTimeout(function() {
+                    try {
+                        printFrame.contentWindow.focus();
+                        printFrame.contentWindow.print();
+                    } catch (e) {
+                        console.error('Print iframe failed, fallback to window.print', e);
+                        window.print();
+                    }
+                }, 250);
+            }
+        </script>
     </div>
 </x-filament-panels::page>
