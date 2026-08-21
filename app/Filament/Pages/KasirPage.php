@@ -74,6 +74,11 @@ class KasirPage extends Page
         $this->showPreviewModal = false;
     }
 
+    public function printDraftNota(): void
+    {
+        $this->dispatch('do-print-draft-nota');
+    }
+
     public function getSelectedParty(): ?ReceivableParty
     {
         return $this->receivablePartyId ? ReceivableParty::find($this->receivablePartyId) : null;

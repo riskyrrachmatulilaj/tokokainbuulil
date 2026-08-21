@@ -1297,7 +1297,8 @@
                                 <button
                                     type="button"
                                     id="btn-cetak-draft-a4"
-                                    onclick="printDraftA4Nota()"
+                                    wire:click="printDraftNota"
+                                    onclick="if (window.printDraftA4Nota) { window.printDraftA4Nota(); }"
                                     style="background-color: #0284c7; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.875rem; cursor: pointer; border: none; transition: background 0.15s ease;"
                                     onmouseover="this.style.backgroundColor='#0369a1'"
                                     onmouseout="this.style.backgroundColor='#0284c7'"
@@ -1325,8 +1326,9 @@
             </div>
         @endif
 
+        @script
         <script>
-            function printDraftA4Nota() {
+            window.printDraftA4Nota = function() {
                 const printElem = document.getElementById('kasir-receipt-paper-printable');
                 if (!printElem) {
                     alert('Konten nota tidak ditemukan.');
@@ -1388,7 +1390,12 @@
                         window.print();
                     }
                 }, 250);
-            }
+            };
+
+            $wire.on('do-print-draft-nota', () => {
+                window.printDraftA4Nota();
+            });
         </script>
+        @endscript
     </div>
 </x-filament-panels::page>
