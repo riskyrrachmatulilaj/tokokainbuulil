@@ -88,62 +88,101 @@ class DebtResource extends Resource
                     ->sortable()
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Supplier')
-                    ->searchable()
+                    ->label('Supplier / Pihak Terkait')
+                    ->searchable(['name', 'phone'])
                     ->sortable()
-                    ->description(fn (Debt $record) => $record->customer?->phone ?? ''),
+                    ->description(fn (Debt $record) => $record->customer?->phone ?: 'Tanpa no. telepon'),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Nominal')
+                    ->label('Total Hutang')
                     ->formatStateUsing(fn ($state) => rupiah($state))
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Total Hutang')
+                            ->formatStateUsing(fn ($state) => rupiah($state))
+                    ),
                 Tables\Columns\TextColumn::make('paid_amount')
-                    ->label('Dibayar')
+                    ->label('Sudah Dibayar')
                     ->formatStateUsing(fn ($state) => rupiah($state))
-                    ->sortable(),
+                    ->color('success')
+                    ->sortable()
+                    ->summarize(
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Total Dibayar')
+                            ->formatStateUsing(fn ($state) => rupiah($state))
+                    ),
                 Tables\Columns\TextColumn::make('remaining_amount')
-                    ->label('Sisa')
+                    ->label('Sisa Tagihan')
                     ->formatStateUsing(fn ($state) => rupiah($state))
                     ->badge()
-                    ->color(fn ($state) => (float) $state > 0 ? 'warning' : 'success')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('progress')
-                    ->label('Progres')
-                    ->formatStateUsing(fn (Debt $record) => $record->progress.'%')
-                    ->description(fn (Debt $record) => rupiah($record->paid_amount).' dari '.rupiah($record->amount))
+                    ->color(fn ($state, Debt $record) => (float) $state <= 0 ? 'success' : ((float) $record->paid_amount > 0 ? 'warning' : 'danger'))
                     ->sortable()
-                    ->numeric(),
+                    ->summarize(
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Total Sisa')
+                            ->formatStateUsing(fn ($state) => rupiah($state))
+                    ),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (Debt $record) => $record->status === Debt::STATUS_PAID ? 'success' : 'danger')
-                    ->formatStateUsing(fn (Debt $record) => $record->status_label),
+                    ->color(function (Debt $record) {
+                        if ($record->status === Debt::STATUS_PAID) {
+                            return 'success';
+                        }
+                        return (float) $record->paid_amount > 0 ? 'warning' : 'danger';
+                    })
+                    ->formatStateUsing(function (Debt $record) {
+                        if ($record->status === Debt::STATUS_PAID) {
+                            return 'Lunas';
+                        }
+                        if ((float) $record->paid_amount > 0) {
+                            return 'Dicicil (' . $record->progress . '%)';
+                        }
+                        return 'Belum Bayar';
+                    }),
                 Tables\Columns\TextColumn::make('debt_date')
-                    ->label('Tanggal Hutang')
+                    ->label('Tgl Bon')
                     ->date('d M Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('due_date')
                     ->label('Jatuh Tempo')
-                    ->date('d M Y')
+                    ->formatStateUsing(function (Debt $record) {
+                        if (! $record->due_date) {
+                            return '-';
+                        }
+                        if ($record->is_overdue) {
+                            return $record->due_date->format('d M Y') . ' (Lewat)';
+                        }
+                        return $record->due_date->format('d M Y');
+                    })
                     ->badge()
                     ->color(fn (Debt $record) => $record->is_overdue ? 'danger' : 'gray')
-                    ->placeholder('-')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('progress')
+                    ->label('Rincian Progres')
+                    ->formatStateUsing(fn (Debt $record) => $record->progress.'% ('.rupiah($record->paid_amount).' / '.rupiah($record->amount).')')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('customer_id')
                     ->label('Supplier')
-                    ->options(fn () => Customer::query()->pluck('name', 'id')),
+                    ->options(fn () => Customer::query()->orderBy('name')->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
+                    ->label('Status Pembayaran')
                     ->options([
                         Debt::STATUS_UNPAID => 'Belum Lunas',
                         Debt::STATUS_PAID => 'Lunas',
                     ]),
                 Tables\Filters\TernaryFilter::make('overdue')
-                    ->label('Jatuh Tempo')
+                    ->label('Status Jatuh Tempo')
+                    ->placeholder('Semua')
+                    ->trueLabel('Hanya yang lewat jatuh tempo')
+                    ->falseLabel('Belum lewat jatuh tempo')
                     ->queries(
                         true: fn ($query) => $query->overdue(),
-                        false: fn ($query) => $query->whereNull('due_date')->orWhere('due_date', '>=', today()),
+                        false: fn ($query) => $query->where(fn ($q) => $q->whereNull('due_date')->orWhere('due_date', '>=', today())),
                     ),
                 Tables\Filters\Filter::make('debt_date')
                     ->form([
@@ -159,7 +198,68 @@ class DebtResource extends Resource
                     }),
             ])
             ->actions([
-                Actions\ViewAction::make(),
+                Actions\ViewAction::make()
+                    ->label('Lihat'),
+                Actions\Action::make('payInstallment')
+                    ->label('Bayar Cicilan')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('warning')
+                    ->visible(fn (Debt $record) => $record->status === Debt::STATUS_UNPAID && auth()->user()?->can('create', \App\Models\Installment::class))
+                    ->modalHeading(fn (Debt $record) => "Bayar Cicilan Nota {$record->invoice_number}")
+                    ->form(fn (Debt $record) => [
+                        Forms\Components\Placeholder::make('info_customer')
+                            ->label('Supplier')
+                            ->content($record->customer?->name ?? '-'),
+                        Forms\Components\Placeholder::make('info_total')
+                            ->label('Total Hutang Awal')
+                            ->content(rupiah($record->amount)),
+                        Forms\Components\Placeholder::make('info_paid')
+                            ->label('Sudah Dibayar Sebelumnya')
+                            ->content(rupiah($record->paid_amount)),
+                        Forms\Components\Placeholder::make('info_remaining')
+                            ->label('Sisa Tagihan Saat Ini')
+                            ->content(rupiah($record->remaining_amount)),
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Jumlah Pembayaran Cicilan (Rp)')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1)
+                            ->maxValue($record->remaining_amount)
+                            ->prefix('Rp')
+                            ->default($record->remaining_amount)
+                            ->helperText('Masukkan nominal uang yang Anda bayarkan ke supplier.'),
+                        Forms\Components\DatePicker::make('installment_date')
+                            ->label('Tanggal Pembayaran')
+                            ->default(today())
+                            ->required(),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Catatan (opsional)')
+                            ->default('Pembayaran cicilan')
+                            ->rows(2),
+                    ])
+                    ->action(function (Debt $record, array $data) {
+                        try {
+                            app(\App\Services\PaymentService::class)->recordInstallment([
+                                'debt_id' => $record->id,
+                                'amount' => $data['amount'],
+                                'installment_date' => $data['installment_date'] ?? today(),
+                                'description' => $data['description'] ?? 'Pembayaran cicilan',
+                            ], auth()->user());
+
+                            \Filament\Notifications\Notification::make()
+                                ->success()
+                                ->title("Pembayaran cicilan nota {$record->invoice_number} berhasil dicatat")
+                                ->send();
+                        } catch (\Illuminate\Validation\ValidationException $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Gagal mencatat cicilan')
+                                ->body(collect($e->errors())->flatten()->first())
+                                ->send();
+
+                            throw new \Filament\Support\Exceptions\Halt;
+                        }
+                    }),
                 Actions\Action::make('lunasi')
                     ->label('Lunasi')
                     ->icon('heroicon-o-check-badge')
@@ -167,6 +267,7 @@ class DebtResource extends Resource
                     ->visible(fn (Debt $record) => $record->status === Debt::STATUS_UNPAID && auth()->user()?->can('create', \App\Models\Installment::class))
                     ->requiresConfirmation()
                     ->modalHeading(fn (Debt $record) => "Pelunasan Nota {$record->invoice_number}")
+                    ->modalDescription(fn (Debt $record) => "Apakah Anda yakin ingin melunasi seluruh sisa hutang nota {$record->invoice_number} sebesar ".rupiah($record->remaining_amount).'?')
                     ->form(fn (Debt $record) => [
                         Forms\Components\Placeholder::make('info')
                             ->label('Supplier')
@@ -207,8 +308,10 @@ class DebtResource extends Resource
                         }
                     }),
                 Actions\EditAction::make()
+                    ->label('Ubah')
                     ->visible(fn (Debt $record) => auth()->user()?->can('update', $record)),
                 Actions\DeleteAction::make()
+                    ->label('Hapus')
                     ->requiresConfirmation()
                     ->modalHeading('Hapus Nota')
                     ->modalDescription('Nota yang sudah memiliki pembayaran tidak dapat dihapus.')

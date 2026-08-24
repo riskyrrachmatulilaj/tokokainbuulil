@@ -70,18 +70,19 @@ class ReceivablePartyResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nama')
+                    ->label('Nama Pelanggan')
                     ->searchable(['name', 'phone', 'address'])
                     ->sortable()
-                    ->description(fn (ReceivableParty $record) => $record->phone ?? 'Tanpa nomor telepon')
+                    ->description(fn (ReceivableParty $record) => $record->phone ?: 'Tanpa nomor telepon')
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('phone')
-                    ->label('Telepon')
+                    ->label('No. Telepon / WA')
                     ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('address')
                     ->label('Alamat')
-                    ->limit(30)
+                    ->limit(35)
+                    ->placeholder('-')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('receivables_count')
                     ->label('Jumlah Nota')
@@ -94,31 +95,34 @@ class ReceivablePartyResource extends Resource
                     ->sum('receivables', 'remaining_amount')
                     ->formatStateUsing(fn ($state) => rupiah($state))
                     ->badge()
-                    ->color(fn ($state) => (float) $state > 0 ? 'warning' : 'success')
+                    ->color(fn ($state) => (float) $state > 0 ? 'danger' : 'success')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d M Y H:i')
+                    ->label('Terdaftar Sejak')
+                    ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('has_unpaid_receivables')
-                    ->label('Status Piutang')
-                    ->placeholder('Semua')
-                    ->trueLabel('Memiliki piutang belum lunas')
-                    ->falseLabel('Tidak memiliki piutang'),
+                    ->label('Filter Status Piutang')
+                    ->placeholder('Semua Pelanggan')
+                    ->trueLabel('Hanya yang punya sisa tagihan belum lunas')
+                    ->falseLabel('Pelanggan lunas / tanpa tagihan'),
             ])
             ->actions([
-                Actions\ViewAction::make(),
+                Actions\ViewAction::make()
+                    ->label('Lihat'),
                 Actions\Action::make('share_pdf')
-                    ->label('PDF Rincian Piutang')
+                    ->label('Cetak PDF / Rincian')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
                     ->action(fn (ReceivableParty $record) => ReceivableStatementPdfService::generate($record)),
                 Actions\EditAction::make()
+                    ->label('Ubah')
                     ->visible(fn (ReceivableParty $record) => auth()->user()?->can('update', $record)),
                 Actions\DeleteAction::make()
+                    ->label('Hapus')
                     ->requiresConfirmation()
                     ->modalHeading('Hapus Pelanggan')
                     ->modalDescription('Pelanggan hanya dapat dihapus apabila tidak memiliki nota piutang yang belum lunas.')

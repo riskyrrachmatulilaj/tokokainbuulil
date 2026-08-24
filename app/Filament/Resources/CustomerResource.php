@@ -69,18 +69,19 @@ class CustomerResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nama')
+                    ->label('Nama Supplier')
                     ->searchable(['name', 'phone', 'address'])
                     ->sortable()
-                    ->description(fn (Customer $record) => $record->phone ?? 'Tanpa nomor telepon')
+                    ->description(fn (Customer $record) => $record->phone ?: 'Tanpa nomor telepon')
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('phone')
-                    ->label('Telepon')
+                    ->label('No. Telepon / WA')
                     ->searchable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('address')
                     ->label('Alamat')
-                    ->limit(30)
+                    ->limit(35)
+                    ->placeholder('-')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('debts_count')
                     ->label('Jumlah Nota')
@@ -93,31 +94,34 @@ class CustomerResource extends Resource
                     ->sum('debts', 'remaining_amount')
                     ->formatStateUsing(fn ($state) => rupiah($state))
                     ->badge()
-                    ->color(fn ($state) => (float) $state > 0 ? 'warning' : 'success')
+                    ->color(fn ($state) => (float) $state > 0 ? 'danger' : 'success')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dibuat')
-                    ->dateTime('d M Y H:i')
+                    ->label('Terdaftar Sejak')
+                    ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('has_unpaid_debts')
-                    ->label('Status Hutang')
-                    ->placeholder('Semua')
-                    ->trueLabel('Memiliki hutang belum lunas')
-                    ->falseLabel('Tidak memiliki hutang'),
+                    ->label('Filter Status Hutang')
+                    ->placeholder('Semua Supplier')
+                    ->trueLabel('Hanya yang punya sisa hutang belum lunas')
+                    ->falseLabel('Supplier lunas / tanpa hutang'),
             ])
             ->actions([
-                Actions\ViewAction::make(),
+                Actions\ViewAction::make()
+                    ->label('Lihat'),
                 Actions\Action::make('share_pdf')
-                    ->label('PDF Rincian Hutang')
+                    ->label('Cetak PDF / Rincian')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
                     ->action(fn (Customer $record) => \App\Services\DebtStatementPdfService::generate($record)),
                 Actions\EditAction::make()
+                    ->label('Ubah')
                     ->visible(fn (Customer $record) => auth()->user()?->can('update', $record)),
                 Actions\DeleteAction::make()
+                    ->label('Hapus')
                     ->requiresConfirmation()
                     ->modalHeading('Hapus Supplier')
                     ->modalDescription('Supplier hanya dapat dihapus apabila tidak memiliki nota yang belum lunas.')

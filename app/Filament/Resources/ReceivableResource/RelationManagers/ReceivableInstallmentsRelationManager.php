@@ -59,19 +59,26 @@ class ReceivableInstallmentsRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('installment_date')
-                    ->label('Tanggal')
+                    ->label('Tanggal Bayar')
                     ->date('d M Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Nominal')
+                    ->label('Jumlah Dibayar')
                     ->formatStateUsing(fn ($state) => rupiah($state))
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->color('success')
+                    ->summarize(
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Total Terbayar')
+                            ->formatStateUsing(fn ($state) => rupiah($state))
+                    ),
                 Tables\Columns\TextColumn::make('description')
-                    ->label('Keterangan')
-                    ->limit(40),
+                    ->label('Keterangan / Catatan')
+                    ->limit(40)
+                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('creator.name')
-                    ->label('Oleh')
+                    ->label('Diterima Oleh')
                     ->placeholder('-'),
             ])
             ->headerActions([

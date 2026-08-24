@@ -8,6 +8,8 @@ use App\Filament\Resources\ReceivablePartyResource;
 use App\Models\ReceivableParty;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 
 class ListReceivableParties extends ListRecords
@@ -37,7 +39,24 @@ class ListReceivableParties extends ListRecords
                 PartyImportTemplateExport::TYPE_DEBITUR,
                 'Pelanggan',
             ),
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Tambah Pelanggan'),
+        ];
+    }
+
+    public function getTabs(): array
+    {
+        return [
+            'all' => Tab::make('Semua Pelanggan')
+                ->badge(fn () => ReceivableParty::count()),
+            'with_debt' => Tab::make('Ada Sisa Tagihan')
+                ->badge(fn () => ReceivableParty::whereHas('receivables', fn ($q) => $q->unpaid())->count())
+                ->badgeColor('danger')
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereHas('receivables', fn ($q) => $q->unpaid())),
+            'clear' => Tab::make('Lunas / Bebas Tagihan')
+                ->badge(fn () => ReceivableParty::whereDoesntHave('receivables', fn ($q) => $q->unpaid())->count())
+                ->badgeColor('success')
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereDoesntHave('receivables', fn ($q) => $q->unpaid())),
         ];
     }
 }

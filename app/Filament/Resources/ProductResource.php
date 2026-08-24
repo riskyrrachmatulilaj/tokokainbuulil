@@ -43,7 +43,7 @@ class ProductResource extends Resource
                             ->label('Harga Jual')
                             ->numeric()
                             ->required()
-                            ->minValue(0.01)
+                            ->minValue(0)
                             ->step('0.01')
                             ->prefix('Rp')
                             ->columnSpan(1),

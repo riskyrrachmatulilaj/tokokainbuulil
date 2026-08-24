@@ -33,7 +33,7 @@ class ReceivableResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Schemas\Components\Section::make('Detail Nota')
+                \Filament\Schemas\Components\Section::make('Detail Nota Piutang')
                     ->schema([
                         Forms\Components\TextInput::make('invoice_number')
                             ->label('Nomor Nota')
@@ -41,19 +41,19 @@ class ReceivableResource extends Resource
                             ->dehydrated(false)
                             ->columnSpan(1),
                         Forms\Components\Select::make('receivable_party_id')
-                            ->label('Debitur')
+                            ->label('Pelanggan')
                             ->relationship('party', 'name')
                             ->searchable()
                             ->preload()
                             ->required()
                             ->createOptionForm([
-                                Forms\Components\TextInput::make('name')->label('Nama')->required()->maxLength(255),
-                                Forms\Components\TextInput::make('phone')->label('Nomor Telepon')->tel()->maxLength(30),
+                                Forms\Components\TextInput::make('name')->label('Nama Pelanggan')->required()->maxLength(255),
+                                Forms\Components\TextInput::make('phone')->label('Nomor Telepon / WhatsApp')->tel()->maxLength(30),
                                 Forms\Components\Textarea::make('address')->label('Alamat')->rows(2),
                             ])
                             ->columnSpan(1),
                         Forms\Components\TextInput::make('amount')
-                            ->label('Nominal Piutang')
+                            ->label('Total Piutang (Nominal Bon)')
                             ->numeric()
                             ->required()
                             ->minValue(1)
@@ -69,8 +69,9 @@ class ReceivableResource extends Resource
                             ->afterOrEqual('receivable_date')
                             ->columnSpan(1),
                         Forms\Components\Textarea::make('description')
-                            ->label('Keterangan')
+                            ->label('Catatan / Keterangan')
                             ->rows(3)
+                            ->placeholder('Contoh: Pengambilan kain katun 2 roll')
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
@@ -88,62 +89,101 @@ class ReceivableResource extends Resource
                     ->sortable()
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('party.name')
-                    ->label('Debitur')
-                    ->searchable()
+                    ->label('Pelanggan')
+                    ->searchable(['name', 'phone'])
                     ->sortable()
-                    ->description(fn (Receivable $record) => $record->party?->phone ?? ''),
+                    ->description(fn (Receivable $record) => $record->party?->phone ?: 'Tanpa no. telepon'),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Nominal')
+                    ->label('Total Piutang')
                     ->formatStateUsing(fn ($state) => rupiah($state))
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Total Piutang')
+                            ->formatStateUsing(fn ($state) => rupiah($state))
+                    ),
                 Tables\Columns\TextColumn::make('paid_amount')
-                    ->label('Diterima')
+                    ->label('Sudah Dibayar')
                     ->formatStateUsing(fn ($state) => rupiah($state))
-                    ->sortable(),
+                    ->color('success')
+                    ->sortable()
+                    ->summarize(
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Total Masuk')
+                            ->formatStateUsing(fn ($state) => rupiah($state))
+                    ),
                 Tables\Columns\TextColumn::make('remaining_amount')
-                    ->label('Sisa')
+                    ->label('Sisa Tagihan')
                     ->formatStateUsing(fn ($state) => rupiah($state))
                     ->badge()
-                    ->color(fn ($state) => (float) $state > 0 ? 'warning' : 'success')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('progress')
-                    ->label('Progres')
-                    ->formatStateUsing(fn (Receivable $record) => $record->progress.'%')
-                    ->description(fn (Receivable $record) => rupiah($record->paid_amount).' dari '.rupiah($record->amount))
+                    ->color(fn ($state, Receivable $record) => (float) $state <= 0 ? 'success' : ((float) $record->paid_amount > 0 ? 'warning' : 'danger'))
                     ->sortable()
-                    ->numeric(),
+                    ->summarize(
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Total Sisa')
+                            ->formatStateUsing(fn ($state) => rupiah($state))
+                    ),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (Receivable $record) => $record->status === Receivable::STATUS_PAID ? 'success' : 'danger')
-                    ->formatStateUsing(fn (Receivable $record) => $record->status_label),
+                    ->color(function (Receivable $record) {
+                        if ($record->status === Receivable::STATUS_PAID) {
+                            return 'success';
+                        }
+                        return (float) $record->paid_amount > 0 ? 'warning' : 'danger';
+                    })
+                    ->formatStateUsing(function (Receivable $record) {
+                        if ($record->status === Receivable::STATUS_PAID) {
+                            return 'Lunas';
+                        }
+                        if ((float) $record->paid_amount > 0) {
+                            return 'Dicicil (' . $record->progress . '%)';
+                        }
+                        return 'Belum Bayar';
+                    }),
                 Tables\Columns\TextColumn::make('receivable_date')
-                    ->label('Tanggal Piutang')
+                    ->label('Tgl Nota')
                     ->date('d M Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('due_date')
                     ->label('Jatuh Tempo')
-                    ->date('d M Y')
+                    ->formatStateUsing(function (Receivable $record) {
+                        if (! $record->due_date) {
+                            return '-';
+                        }
+                        if ($record->is_overdue) {
+                            return $record->due_date->format('d M Y') . ' (Lewat)';
+                        }
+                        return $record->due_date->format('d M Y');
+                    })
                     ->badge()
                     ->color(fn (Receivable $record) => $record->is_overdue ? 'danger' : 'gray')
-                    ->placeholder('-')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('progress')
+                    ->label('Rincian Progres')
+                    ->formatStateUsing(fn (Receivable $record) => $record->progress.'% ('.rupiah($record->paid_amount).' / '.rupiah($record->amount).')')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('receivable_party_id')
-                    ->label('Debitur')
-                    ->options(fn () => ReceivableParty::query()->pluck('name', 'id')),
+                    ->label('Pilih Pelanggan')
+                    ->options(fn () => ReceivableParty::query()->orderBy('name')->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
+                    ->label('Status Lunas')
                     ->options([
                         Receivable::STATUS_UNPAID => 'Belum Lunas',
                         Receivable::STATUS_PAID => 'Lunas',
                     ]),
                 Tables\Filters\TernaryFilter::make('overdue')
-                    ->label('Jatuh Tempo')
+                    ->label('Status Jatuh Tempo')
+                    ->placeholder('Semua')
+                    ->trueLabel('Hanya yang lewat jatuh tempo')
+                    ->falseLabel('Belum lewat jatuh tempo')
                     ->queries(
                         true: fn ($query) => $query->overdue(),
-                        false: fn ($query) => $query->whereNull('due_date')->orWhere('due_date', '>=', today()),
+                        false: fn ($query) => $query->where(fn ($q) => $q->whereNull('due_date')->orWhere('due_date', '>=', today())),
                     ),
                 Tables\Filters\Filter::make('receivable_date')
                     ->form([
@@ -159,7 +199,68 @@ class ReceivableResource extends Resource
                     }),
             ])
             ->actions([
-                Actions\ViewAction::make(),
+                Actions\ViewAction::make()
+                    ->label('Lihat'),
+                Actions\Action::make('payInstallment')
+                    ->label('Bayar Cicilan')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('warning')
+                    ->visible(fn (Receivable $record) => $record->status === Receivable::STATUS_UNPAID && auth()->user()?->can('create', \App\Models\ReceivableInstallment::class))
+                    ->modalHeading(fn (Receivable $record) => "Bayar Cicilan Nota {$record->invoice_number}")
+                    ->form(fn (Receivable $record) => [
+                        Forms\Components\Placeholder::make('info_party')
+                            ->label('Pelanggan')
+                            ->content($record->party?->name ?? '-'),
+                        Forms\Components\Placeholder::make('info_total')
+                            ->label('Total Piutang Awal')
+                            ->content(rupiah($record->amount)),
+                        Forms\Components\Placeholder::make('info_paid')
+                            ->label('Sudah Dibayar Sebelumnya')
+                            ->content(rupiah($record->paid_amount)),
+                        Forms\Components\Placeholder::make('info_remaining')
+                            ->label('Sisa Tagihan Saat Ini')
+                            ->content(rupiah($record->remaining_amount)),
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Jumlah Pembayaran Cicilan (Rp)')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1)
+                            ->maxValue($record->remaining_amount)
+                            ->prefix('Rp')
+                            ->default($record->remaining_amount)
+                            ->helperText('Masukkan nominal uang yang dibayarkan pelanggan.'),
+                        Forms\Components\DatePicker::make('installment_date')
+                            ->label('Tanggal Pembayaran')
+                            ->default(today())
+                            ->required(),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Catatan (opsional)')
+                            ->default('Pembayaran cicilan')
+                            ->rows(2),
+                    ])
+                    ->action(function (Receivable $record, array $data) {
+                        try {
+                            app(\App\Services\ReceivablePaymentService::class)->recordInstallment([
+                                'receivable_id' => $record->id,
+                                'amount' => $data['amount'],
+                                'installment_date' => $data['installment_date'] ?? today(),
+                                'description' => $data['description'] ?? 'Pembayaran cicilan',
+                            ], auth()->user());
+
+                            \Filament\Notifications\Notification::make()
+                                ->success()
+                                ->title("Pembayaran cicilan nota {$record->invoice_number} berhasil dicatat")
+                                ->send();
+                        } catch (\Illuminate\Validation\ValidationException $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Gagal mencatat cicilan')
+                                ->body(collect($e->errors())->flatten()->first())
+                                ->send();
+
+                            throw new \Filament\Support\Exceptions\Halt;
+                        }
+                    }),
                 Actions\Action::make('lunasi')
                     ->label('Lunasi')
                     ->icon('heroicon-o-check-badge')
@@ -167,6 +268,7 @@ class ReceivableResource extends Resource
                     ->visible(fn (Receivable $record) => $record->status === Receivable::STATUS_UNPAID && auth()->user()?->can('create', \App\Models\ReceivableInstallment::class))
                     ->requiresConfirmation()
                     ->modalHeading(fn (Receivable $record) => "Pelunasan Nota {$record->invoice_number}")
+                    ->modalDescription(fn (Receivable $record) => "Apakah Anda yakin ingin melunasi seluruh sisa piutang nota {$record->invoice_number} sebesar ".rupiah($record->remaining_amount).'?')
                     ->form(fn (Receivable $record) => [
                         Forms\Components\Placeholder::make('info')
                             ->label('Pelanggan')
@@ -180,7 +282,7 @@ class ReceivableResource extends Resource
                             ->required(),
                         Forms\Components\Textarea::make('description')
                             ->label('Keterangan')
-                            ->default('Pelunasan nota piutang')
+                            ->default('Pelunasan penuh nota piutang')
                             ->rows(2),
                     ])
                     ->action(function (Receivable $record, array $data) {
@@ -189,7 +291,7 @@ class ReceivableResource extends Resource
                                 'receivable_id' => $record->id,
                                 'amount' => $record->remaining_amount,
                                 'installment_date' => $data['installment_date'] ?? today(),
-                                'description' => $data['description'] ?? 'Pelunasan nota piutang',
+                                'description' => $data['description'] ?? 'Pelunasan penuh nota piutang',
                             ], auth()->user());
 
                             \Filament\Notifications\Notification::make()
@@ -207,8 +309,10 @@ class ReceivableResource extends Resource
                         }
                     }),
                 Actions\EditAction::make()
+                    ->label('Ubah')
                     ->visible(fn (Receivable $record) => auth()->user()?->can('update', $record)),
                 Actions\DeleteAction::make()
+                    ->label('Hapus')
                     ->requiresConfirmation()
                     ->modalHeading('Hapus Nota')
                     ->modalDescription('Nota yang sudah memiliki pembayaran tidak dapat dihapus.')

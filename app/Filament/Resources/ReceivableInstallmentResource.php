@@ -125,38 +125,48 @@ class ReceivableInstallmentResource extends Resource
                     ->weight('bold')
                     ->url(fn (ReceivableInstallment $record) => $record->receivable ? ReceivableResource::getUrl('view', ['record' => $record->receivable]) : null),
                 Tables\Columns\TextColumn::make('receivable.party.name')
-                    ->label('Pelanggan')
+                    ->label('Nama Pelanggan')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('installment_date')
-                    ->label('Tanggal')
+                    ->label('Tanggal Bayar')
                     ->date('d M Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Nominal')
+                    ->label('Jumlah Cicilan')
                     ->formatStateUsing(fn ($state) => rupiah($state))
-                    ->sortable(),
+                    ->color('success')
+                    ->weight('bold')
+                    ->sortable()
+                    ->summarize(
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Total Cicilan')
+                            ->formatStateUsing(fn ($state) => rupiah($state))
+                    ),
                 Tables\Columns\TextColumn::make('description')
-                    ->label('Keterangan')
-                    ->limit(40),
+                    ->label('Keterangan / Catatan')
+                    ->limit(40)
+                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('creator.name')
-                    ->label('Oleh')
+                    ->label('Diterima Oleh')
                     ->placeholder('-')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Dicatat')
+                    ->label('Waktu Dicatat')
                     ->dateTime('d M Y H:i')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('receivable.receivable_party_id')
-                    ->label('Pelanggan')
+                    ->label('Filter Pelanggan')
                     ->relationship('receivable.party', 'name')
-                    ->searchable(),
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\Filter::make('installment_date')
                     ->form([
-                        Forms\Components\DatePicker::make('from')->label('Dari'),
-                        Forms\Components\DatePicker::make('until')->label('Sampai'),
+                        Forms\Components\DatePicker::make('from')->label('Dari Tanggal'),
+                        Forms\Components\DatePicker::make('until')->label('Sampai Tanggal'),
                     ])
                     ->query(function ($query, array $data) {
                         return $query
@@ -165,10 +175,13 @@ class ReceivableInstallmentResource extends Resource
                     }),
             ])
             ->actions([
-                Actions\ViewAction::make(),
+                Actions\ViewAction::make()
+                    ->label('Lihat'),
                 Actions\DeleteAction::make()
                     ->label('Batalkan')
                     ->requiresConfirmation()
+                    ->modalHeading('Batalkan Pembayaran Cicilan')
+                    ->modalDescription('Apakah Anda yakin ingin membatalkan cicilan ini? Saldo sisa tagihan nota akan dikembalikan.')
                     ->visible(fn (ReceivableInstallment $record) => auth()->user()?->can('delete', $record)),
             ])
             ->defaultSort('installment_date', 'desc');
