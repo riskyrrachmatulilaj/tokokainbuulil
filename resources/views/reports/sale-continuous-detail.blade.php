@@ -13,7 +13,7 @@
 
         @page {
             size: 95mm 140mm;
-            margin: 15mm 4mm 4mm 4mm;
+            margin: 22mm 6.5mm 4mm 6.5mm;
         }
 
         body {
@@ -107,6 +107,41 @@
             padding-top: 3px !important;
             padding-bottom: 1px !important;
             font-size: 9px;
+        }
+
+        .item-title-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .item-title-table td {
+            padding: 0 !important;
+            vertical-align: top;
+            border: none !important;
+        }
+
+        .item-num {
+            width: 20px;
+            font-weight: bold;
+            font-size: 9px;
+            text-align: left;
+        }
+
+        .item-text {
+            font-weight: bold;
+            font-size: 9px;
+            text-align: left;
+            word-break: break-word;
+        }
+
+        .item-notes {
+            font-size: 8.5px;
+            font-weight: bold;
+            color: #000;
+            margin-top: 1px;
         }
 
         .item-sub-row td {
@@ -210,12 +245,19 @@
             @foreach ($sale->items as $index => $item)
                 <tr>
                     <td class="left item-name" colspan="4">
-                        {{ $index + 1 }}. {{ $item->product_name }}
-                        @if (! empty($item->notes))
-                            <div style="font-size: 9px; font-weight: bold; color: #000; margin-left: 12px; margin-top: 1px;">
-                                * {{ $item->notes }}
-                            </div>
-                        @endif
+                        <table class="item-title-table">
+                            <tr>
+                                <td class="item-num">{{ $index + 1 }}.</td>
+                                <td class="item-text">
+                                    {{ $item->product_name }}
+                                    @if (! empty($item->notes))
+                                        <div class="item-notes">
+                                            * {{ $item->notes }}
+                                        </div>
+                                    @endif
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
                 <tr class="item-sub-row">

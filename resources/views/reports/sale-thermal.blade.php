@@ -13,7 +13,7 @@
 
         @page {
             size: 95mm 140mm;
-            margin: 15mm 4mm 3mm 4mm;
+            margin: 22mm 6.5mm 4mm 6.5mm;
         }
 
         body {
@@ -103,6 +103,41 @@
             line-height: 1.15;
         }
 
+        .item-title-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .item-title-table td {
+            padding: 0 !important;
+            vertical-align: top;
+            border: none !important;
+        }
+
+        .item-num {
+            width: 16px;
+            font-weight: bold;
+            font-size: 8.5px;
+            text-align: left;
+        }
+
+        .item-text {
+            font-weight: bold;
+            font-size: 8.5px;
+            text-align: left;
+            word-break: break-word;
+        }
+
+        .item-notes {
+            font-size: 7.5px;
+            font-weight: bold;
+            color: #000;
+            margin-top: 1px;
+        }
+
         /* Totals section */
         .totals-section {
             page-break-inside: avoid;
@@ -172,22 +207,29 @@
     <table class="items-table">
         <thead>
             <tr>
-                <th class="left" style="width: 42%;">Produk</th>
+                <th class="left" style="width: 44%;">Produk</th>
                 <th class="center" style="width: 12%;">Qty</th>
-                <th class="right" style="width: 23%;">Harga</th>
-                <th class="right" style="width: 23%;">Total</th>
+                <th class="right" style="width: 22%;">Harga</th>
+                <th class="right" style="width: 22%;">Total</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($sale->items as $item)
+            @foreach ($sale->items as $index => $item)
                 <tr>
                     <td class="left product-col">
-                        {{ $item->product_name }}
-                        @if (! empty($item->notes))
-                            <div style="font-size: 8px; font-weight: bold; color: #000; margin-top: 1px;">
-                                * {{ $item->notes }}
-                            </div>
-                        @endif
+                        <table class="item-title-table">
+                            <tr>
+                                <td class="item-num">{{ $index + 1 }}.</td>
+                                <td class="item-text">
+                                    {{ $item->product_name }}
+                                    @if (! empty($item->notes))
+                                        <div class="item-notes">
+                                            * {{ $item->notes }}
+                                        </div>
+                                    @endif
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                     <td class="center">{{ (float)$item->quantity == (int)$item->quantity ? (int)$item->quantity : $item->quantity }}</td>
                     <td class="right">{{ number_format($item->price, 0, ',', '.') }}</td>
