@@ -12,7 +12,7 @@
         }
 
         @page {
-            size: 95mm 140mm;
+            size: 120mm 140mm;
             margin: 0;
         }
 
@@ -22,9 +22,9 @@
             font-weight: bold;
             color: #000;
             margin: 0;
-            padding-top: 20mm;
-            padding-left: 7mm;
-            padding-right: 7mm;
+            padding-top: 6mm;
+            padding-left: 12.5mm;
+            padding-right: 12.5mm;
             padding-bottom: 4mm;
             line-height: 1.25;
         }
