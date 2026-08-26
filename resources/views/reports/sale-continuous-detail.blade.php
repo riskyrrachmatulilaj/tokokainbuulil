@@ -104,11 +104,9 @@
             font-size: 8.5px;
         }
 
-        .item-name {
-            font-weight: bold;
-            padding-top: 3px !important;
-            padding-bottom: 1px !important;
-            font-size: 9px;
+        .product-col {
+            word-break: break-word;
+            line-height: 1.2;
         }
 
         .item-title-table {
@@ -126,7 +124,7 @@
         }
 
         .item-num {
-            width: 20px;
+            width: 18px;
             font-weight: bold;
             font-size: 9px;
             text-align: left;
@@ -144,12 +142,6 @@
             font-weight: bold;
             color: #000;
             margin-top: 1px;
-        }
-
-        .item-sub-row td {
-            padding-top: 1px !important;
-            padding-bottom: 3px !important;
-            font-size: 8.5px;
         }
 
         /* Totals section */
@@ -233,20 +225,20 @@
         </table>
     </div>
 
-    {{-- Daftar Item Barang (Format 2-baris per item) --}}
+    {{-- Daftar Item Barang (Format 1-baris sejajar) --}}
     <table class="items-table">
         <thead>
             <tr>
-                <th class="left" style="width: 48%;">Nama Produk</th>
-                <th class="center" style="width: 14%;">Qty</th>
-                <th class="right" style="width: 18%;">Harga</th>
-                <th class="right" style="width: 20%;">Total</th>
+                <th class="left" style="width: 44%;">Nama Produk</th>
+                <th class="center" style="width: 12%;">Qty</th>
+                <th class="right" style="width: 20%;">Harga</th>
+                <th class="right" style="width: 24%;">Total</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($sale->items as $index => $item)
                 <tr>
-                    <td class="left item-name" colspan="4">
+                    <td class="left product-col">
                         <table class="item-title-table">
                             <tr>
                                 <td class="item-num">{{ $index + 1 }}.</td>
@@ -261,12 +253,9 @@
                             </tr>
                         </table>
                     </td>
-                </tr>
-                <tr class="item-sub-row">
-                    <td class="left"></td>
-                    <td class="center">{{ (float)$item->quantity == (int)$item->quantity ? (int)$item->quantity : $item->quantity }}</td>
-                    <td class="right">{{ number_format($item->price, 0, ',', '.') }}</td>
-                    <td class="right">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                    <td class="center" style="vertical-align: top; padding-top: 1.5px;">{{ (float)$item->quantity == (int)$item->quantity ? (int)$item->quantity : $item->quantity }}</td>
+                    <td class="right" style="vertical-align: top; padding-top: 1.5px;">{{ number_format($item->price, 0, ',', '.') }}</td>
+                    <td class="right" style="vertical-align: top; padding-top: 1.5px;">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
         </tbody>
