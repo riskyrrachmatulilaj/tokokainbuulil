@@ -458,18 +458,38 @@
     </style>
 
     <div class="kasir-pos">
-        <div class="kasir-steps" aria-label="Alur kasir">
-            <div class="kasir-step is-active">
-                <span class="kasir-step-num">1</span>
-                Pilih produk
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem;">
+            <div class="kasir-steps" aria-label="Alur kasir" style="margin-bottom: 0;">
+                <div class="kasir-step is-active">
+                    <span class="kasir-step-num">1</span>
+                    Pilih produk
+                </div>
+                <div class="kasir-step {{ ! empty($this->cart) ? 'is-active' : '' }}">
+                    <span class="kasir-step-num">2</span>
+                    Keranjang
+                </div>
+                <div class="kasir-step {{ ! empty($this->cart) ? 'is-active' : '' }}">
+                    <span class="kasir-step-num">3</span>
+                    Pembayaran
+                </div>
             </div>
-            <div class="kasir-step {{ ! empty($this->cart) ? 'is-active' : '' }}">
-                <span class="kasir-step-num">2</span>
-                Keranjang
-            </div>
-            <div class="kasir-step {{ ! empty($this->cart) ? 'is-active' : '' }}">
-                <span class="kasir-step-num">3</span>
-                Pembayaran
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <button
+                    type="button"
+                    wire:click="openDraftListModal"
+                    style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.9rem; border-radius: 0.6rem; font-size: 0.825rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; border: 1px solid rgba(217, 119, 6, 0.4); background: rgba(245, 158, 11, 0.1); color: #d97706;"
+                    class="hover:bg-amber-500/20 dark:border-amber-500/40 dark:text-amber-400"
+                    title="Buka daftar transaksi draft yang tersimpan"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 17px; height: 17px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                    </svg>
+                    <span>Draft Tersimpan</span>
+                    <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; height: 1.25rem; padding: 0 0.35rem; border-radius: 9999px; background: #d97706; color: #ffffff; font-size: 0.725rem; font-weight: 800;">
+                        {{ $this->activeDraftsCount }}
+                    </span>
+                </button>
             </div>
         </div>
 
@@ -938,6 +958,16 @@
                         @if (! empty($this->cart))
                             <x-filament::button
                                 type="button"
+                                color="warning"
+                                size="lg"
+                                icon="heroicon-o-bookmark"
+                                wire:click="openSaveDraftModal"
+                            >
+                                Simpan Draft
+                            </x-filament::button>
+
+                            <x-filament::button
+                                type="button"
                                 color="info"
                                 size="lg"
                                 icon="heroicon-o-document-magnifying-glass"
@@ -1321,6 +1351,217 @@
                                 </x-filament::button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- MODAL SIMPAN DRAFT --}}
+        @if ($this->showSaveDraftModal)
+            <div
+                class="kasir-modal-backdrop"
+                wire:keydown.escape="closeSaveDraftModal"
+                tabindex="-1"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="kasir-save-draft-title"
+            >
+                <div class="kasir-modal-container" style="max-width: 480px;" x-on:click.outside="$wire.closeSaveDraftModal()">
+                    <div class="kasir-modal-header">
+                        <div style="display: flex; align-items: center; gap: 0.65rem;">
+                            <div class="kasir-modal-icon-badge" style="background: rgba(245, 158, 11, 0.15); color: #d97706;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width: 1.25rem; height: 1.25rem;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="kasir-modal-title" id="kasir-save-draft-title">Simpan Draft Transaksi</h3>
+                                <span class="kasir-modal-subtitle">Tahan transaksi untuk dilanjutkan nanti</span>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            wire:click="closeSaveDraftModal"
+                            class="kasir-modal-close-btn"
+                            aria-label="Tutup modal"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 1.15rem; height: 1.15rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label class="kasir-label" for="draft-reference-input" style="margin-bottom: 0.35rem; display: block;">Nama / Keterangan Draft</label>
+                            <x-filament::input.wrapper>
+                                <x-filament::input
+                                    id="draft-reference-input"
+                                    type="text"
+                                    wire:model="draftReferenceName"
+                                    placeholder="Contoh: Mas Rahmat, Meja 1, dll..."
+                                    x-on:keydown.enter.prevent="$wire.saveDraft()"
+                                    autofocus
+                                />
+                            </x-filament::input.wrapper>
+                            <p style="font-size: 0.75rem; color: var(--kasir-muted); margin-top: 0.25rem;">
+                                Nama atau keterangan untuk memudahkan menemukan transaksi ini kembali.
+                            </p>
+                        </div>
+
+                        <div style="padding: 0.75rem; border-radius: 0.5rem; background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(128, 128, 128, 0.15); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                            <span>Ringkasan Keranjang:</span>
+                            <span style="font-weight: 700; color: var(--primary-600);">
+                                {{ count($this->cart) }} item · {{ rupiah($this->cartTotal()) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="kasir-modal-footer" style="padding: 0.85rem 1.25rem; border-top: 1px solid rgba(226, 232, 240, 0.8); display: flex; justify-content: flex-end; gap: 0.5rem;">
+                        <x-filament::button
+                            type="button"
+                            color="gray"
+                            size="md"
+                            wire:click="closeSaveDraftModal"
+                        >
+                            Batal
+                        </x-filament::button>
+
+                        <x-filament::button
+                            type="button"
+                            color="warning"
+                            size="md"
+                            icon="heroicon-o-check"
+                            wire:click="saveDraft"
+                        >
+                            Simpan Draft
+                        </x-filament::button>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- MODAL DAFTAR DRAFT TERSIMPAN --}}
+        @if ($this->showDraftListModal)
+            <div
+                class="kasir-modal-backdrop"
+                wire:keydown.escape="closeDraftListModal"
+                tabindex="-1"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="kasir-draft-list-title"
+            >
+                <div class="kasir-modal-container" style="max-width: 640px;" x-on:click.outside="$wire.closeDraftListModal()">
+                    <div class="kasir-modal-header">
+                        <div style="display: flex; align-items: center; gap: 0.65rem;">
+                            <div class="kasir-modal-icon-badge" style="background: rgba(245, 158, 11, 0.15); color: #d97706;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width: 1.25rem; height: 1.25rem;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="kasir-modal-title" id="kasir-draft-list-title">Draft Transaksi Tersimpan</h3>
+                                <span class="kasir-modal-subtitle">Pilih draft untuk melanjutkan transaksi di kasir</span>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            wire:click="closeDraftListModal"
+                            class="kasir-modal-close-btn"
+                            aria-label="Tutup modal"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 1.15rem; height: 1.15rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div style="padding: 1rem; max-height: 480px; overflow-y: auto;">
+                        @if ($this->activeDrafts->isEmpty())
+                            <div style="padding: 2.5rem 1rem; text-align: center; color: var(--kasir-muted);">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 2.5rem; height: 2.5rem; margin: 0 auto 0.5rem; opacity: 0.6;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                </svg>
+                                <p style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem;">Tidak Ada Draft Tersimpan</p>
+                                <p style="font-size: 0.8rem;">Ketika ada transaksi yang ditahan di keranjang, draft akan muncul di sini.</p>
+                            </div>
+                        @else
+                            <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+                                @foreach ($this->activeDrafts as $draft)
+                                    @php
+                                        $itemCount = is_array($draft->cart_data) ? count($draft->cart_data) : 0;
+                                        $qtySum = is_array($draft->cart_data) ? collect($draft->cart_data)->sum('quantity') : 0;
+                                    @endphp
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem; border: 1px solid var(--kasir-border, rgba(128, 128, 128, 0.25)); border-radius: 0.75rem; background: var(--kasir-surface-solid, #ffffff); gap: 0.75rem;"
+                                        class="dark:bg-white/5 dark:border-white/10"
+                                    >
+                                        <div style="display: flex; flex-direction: column; gap: 0.2rem; min-width: 0;">
+                                            <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                                                <span style="font-weight: 700; font-size: 0.925rem; color: var(--kasir-text, #111827);" class="dark:text-white">
+                                                    {{ $draft->reference_name }}
+                                                </span>
+                                                @if ($draft->party)
+                                                    <span style="font-size: 0.75rem; padding: 0.1rem 0.45rem; border-radius: 0.35rem; background: rgba(99, 102, 241, 0.12); color: #4f46e5; font-weight: 600;" class="dark:text-indigo-400">
+                                                        {{ $draft->party->name }}
+                                                    </span>
+                                                @endif
+                                            </div>
+
+                                            <div style="font-size: 0.775rem; color: var(--kasir-muted, #6b7280);">
+                                                {{ $itemCount }} jenis produk ({{ $qtySum }} qty) · Disimpan {{ $draft->updated_at?->diffForHumans() ?: '-' }}
+                                            </div>
+
+                                            <div style="font-size: 0.875rem; font-weight: 800; color: var(--primary-600, #4f46e5); margin-top: 0.15rem;">
+                                                {{ rupiah($draft->total_amount) }}
+                                            </div>
+                                        </div>
+
+                                        <div style="display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0;">
+                                            <x-filament::button
+                                                type="button"
+                                                color="primary"
+                                                size="sm"
+                                                icon="heroicon-o-arrow-up-tray"
+                                                wire:click="loadDraft({{ $draft->id }})"
+                                                title="Muat draft ini ke keranjang"
+                                            >
+                                                Buka
+                                            </x-filament::button>
+
+                                            <x-filament::button
+                                                type="button"
+                                                color="danger"
+                                                size="sm"
+                                                outlined
+                                                icon="heroicon-o-trash"
+                                                wire:click="deleteDraft({{ $draft->id }})"
+                                                wire:confirm="Yakin ingin menghapus draft ini?"
+                                                title="Hapus draft"
+                                            >
+                                            </x-filament::button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="kasir-modal-footer" style="padding: 0.85rem 1.25rem; border-top: 1px solid rgba(226, 232, 240, 0.8); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.775rem; color: var(--kasir-muted);">
+                            * Membuka draft akan memuat item ke keranjang kasir.
+                        </span>
+
+                        <x-filament::button
+                            type="button"
+                            color="gray"
+                            size="md"
+                            wire:click="closeDraftListModal"
+                        >
+                            Tutup
+                        </x-filament::button>
                     </div>
                 </div>
             </div>

@@ -182,6 +182,203 @@ class SaleService
     }
 
     /**
+     * Memperbarui transaksi penjualan beserta rincian item, stok, dan piutang.
+     */
+    public function updateSale(Sale $sale, array $data, ?User $user = null): Sale
+    {
+        $items = $data['items'] ?? [];
+
+        if (empty($items)) {
+            throw ValidationException::withMessages([
+                'items' => 'Rincian barang penjualan tidak boleh kosong.',
+            ]);
+        }
+
+        $method = $data['payment_method'] ?? $sale->payment_method;
+        $saleDate = $data['sale_date'] ?? $sale->sale_date;
+
+        return DB::transaction(function () use ($sale, $data, $items, $method, $saleDate, $user) {
+            $sale->load(['items.product', 'receivable']);
+
+            // 1. Restore old items stock
+            foreach ($sale->items as $oldItem) {
+                if ($oldItem->product) {
+                    $oldItem->product->restoreStock($oldItem->quantity);
+                }
+            }
+
+            // 2. Validate and calculate new items
+            $lines = [];
+            $total = 0.0;
+
+            foreach ($items as $item) {
+                $product = Product::active()->whereKey($item['product_id'] ?? null)->first()
+                    ?? Product::whereKey($item['product_id'] ?? null)->first();
+
+                if (! $product) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Produk tidak ditemukan.',
+                    ]);
+                }
+
+                $quantity = max(0.001, round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($item['quantity'] ?? 1) ?? 1), 3));
+
+                if (! $product->fresh()->hasEnoughStock($quantity)) {
+                    $stockText = (float) $product->stock == (int) $product->stock ? (int) $product->stock : number_format((float) $product->stock, 2, ',', '.');
+                    throw ValidationException::withMessages([
+                        'items' => "Stok produk \"{$product->name}\" tidak mencukupi (Tersedia: {$stockText}).",
+                    ]);
+                }
+
+                $price = isset($item['price']) && is_numeric($item['price']) && (float) $item['price'] >= 0
+                    ? (float) $item['price']
+                    : (float) $product->price;
+
+                $lineTotal = round($price * $quantity, 2);
+                $total = round($total + $lineTotal, 2);
+
+                $lines[] = [
+                    'product' => $product,
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'notes' => isset($item['notes']) && trim((string) $item['notes']) !== '' ? trim((string) $item['notes']) : null,
+                    'price' => $price,
+                    'quantity' => $quantity,
+                    'subtotal' => $lineTotal,
+                ];
+            }
+
+            $party = ReceivableParty::find($data['receivable_party_id'] ?? $sale->receivable_party_id);
+
+            if (! $party) {
+                throw ValidationException::withMessages([
+                    'receivable_party_id' => 'Pilih pelanggan terlebih dahulu.',
+                ]);
+            }
+
+            $received = null;
+            $change = null;
+            $cashAmount = null;
+            $transferAmount = null;
+
+            if ($method === Sale::PAYMENT_METHOD_CASH) {
+                $cashAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['received_amount'] ?? null) ?? 0), 2);
+                $received = $cashAmount;
+
+                if ($received < $total) {
+                    throw ValidationException::withMessages([
+                        'received_amount' => 'Uang yang diterima kurang dari total belanja ('.number_format($total, 2).').',
+                    ]);
+                }
+
+                $change = round($received - $total, 2);
+            } elseif ($method === Sale::PAYMENT_METHOD_TRANSFER) {
+                $cashAmount = 0;
+                $transferAmount = $total;
+                $received = $total;
+                $change = 0;
+            } elseif ($method === Sale::PAYMENT_METHOD_SPLIT) {
+                $cashAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['cash_amount'] ?? null) ?? 0), 2);
+                $transferAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['transfer_amount'] ?? null) ?? 0), 2);
+                $received = round($cashAmount + $transferAmount, 2);
+
+                if ($received < $total) {
+                    throw ValidationException::withMessages([
+                        'cash_amount' => 'Jumlah pembayaran (Tunai + Transfer) kurang dari total belanja ('.number_format($total, 2).').',
+                    ]);
+                }
+
+                $change = round($received - $total, 2);
+            }
+
+            // 3. Deduct new stock and replace sale items
+            $sale->items()->delete();
+
+            $hasNotesCol = \Illuminate\Support\Facades\Schema::hasColumn('sale_items', 'notes');
+
+            foreach ($lines as $line) {
+                /** @var Product $prod */
+                $prod = $line['product'];
+                unset($line['product']);
+
+                if (! $hasNotesCol) {
+                    unset($line['notes']);
+                }
+
+                SaleItem::create(array_merge($line, ['sale_id' => $sale->id]));
+                $prod->deductStock($line['quantity']);
+            }
+
+            // 4. Handle Receivable sync
+            $oldReceivableId = $sale->receivable_id;
+            $newReceivableId = $oldReceivableId;
+
+            if ($method === Sale::PAYMENT_METHOD_RECEIVABLE) {
+                if ($oldReceivableId && $sale->receivable) {
+                    // Update existing receivable
+                    $receivable = $sale->receivable;
+                    if ($receivable->receivable_party_id !== $party->id) {
+                        $receivable->update(['receivable_party_id' => $party->id]);
+                    }
+                    app(ReceivableService::class)->updateReceivable($receivable, [
+                        'amount' => $total,
+                        'receivable_date' => $saleDate,
+                        'description' => 'Penjualan kredit '.$sale->transaction_number,
+                    ]);
+                } else {
+                    // Create new receivable
+                    $receivable = app(ReceivableService::class)->createReceivable([
+                        'receivable_party_id' => $party->id,
+                        'amount' => $total,
+                        'receivable_date' => $saleDate,
+                        'due_date' => null,
+                        'description' => 'Penjualan kredit '.$sale->transaction_number,
+                    ], $user);
+
+                    $newReceivableId = $receivable->id;
+                }
+            } else {
+                // Not receivable anymore
+                if ($oldReceivableId && $sale->receivable) {
+                    $receivable = $sale->receivable;
+                    if ($receivable->paymentHistories()->exists()) {
+                        throw ValidationException::withMessages([
+                            'payment_method' => 'Penjualan kredit ini sudah memiliki pembayaran piutang dan tidak dapat diubah ke metode non-kredit.',
+                        ]);
+                    }
+                    app(ReceivableService::class)->deleteReceivable($receivable);
+                    $newReceivableId = null;
+                }
+            }
+
+            // 5. Update Sale record
+            $sale->update([
+                'sale_date' => $saleDate,
+                'payment_method' => $method,
+                'receivable_party_id' => $party->id,
+                'receivable_id' => $newReceivableId,
+                'total_amount' => $total,
+                'cash_amount' => $cashAmount,
+                'transfer_amount' => $transferAmount,
+                'received_amount' => $received,
+                'change_amount' => $change,
+                'description' => $data['description'] ?? $sale->description,
+            ]);
+
+            app(\App\Services\ActivityLogService::class)->log(
+                'Penjualan',
+                'update',
+                "Memperbarui transaksi penjualan {$sale->transaction_number} ({$sale->payment_method_label}) senilai Rp " . number_format($total, 0, ',', '.') . " untuk pelanggan {$party->name}",
+                $sale,
+                ['total' => $total, 'payment_method' => $method, 'party' => $party->name],
+                $user
+            );
+
+            return $sale->fresh()->load(['items', 'party', 'creator', 'receivable']);
+        });
+    }
+
+    /**
      * Membatalkan penjualan (khusus Admin).
      *
      * Nota piutang otomatis yang belum memiliki pembayaran ikut dihapus.
@@ -222,3 +419,4 @@ class SaleService
         });
     }
 }
+

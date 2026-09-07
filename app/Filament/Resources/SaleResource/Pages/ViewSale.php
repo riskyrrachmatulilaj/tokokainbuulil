@@ -69,6 +69,7 @@ class ViewSale extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\EditAction::make(),
             Actions\ActionGroup::make([
                 Actions\Action::make('copy_whatsapp')
                     ->label('Salin Pesan WA')

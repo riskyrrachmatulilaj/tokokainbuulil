@@ -66,7 +66,7 @@ class DebtService
         }
 
         return DB::transaction(function () use ($debt, $data) {
-            $debt = $debt->lockForUpdate();
+            $debt = Debt::whereKey($debt->id)->lockForUpdate()->first();
 
             $paid = $debt->paid_amount;
 

@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Product;
 use App\Models\ReceivableParty;
 use App\Models\Sale;
+use App\Models\SaleDraft;
 use App\Services\SalePdfService;
 use App\Services\SaleThermalService;
 use App\Services\SaleService;
@@ -49,6 +50,12 @@ class KasirPage extends Page
 
     public bool $showPreviewModal = false;
 
+    public bool $showDraftListModal = false;
+
+    public bool $showSaveDraftModal = false;
+
+    public string $draftReferenceName = '';
+
     public function mount(): void
     {
         $this->saleDate = today()->format('Y-m-d');
@@ -77,6 +84,149 @@ class KasirPage extends Page
     public function printDraftNota(): void
     {
         $this->dispatch('do-print-draft-nota');
+    }
+
+    public function getActiveDraftsProperty(): Collection
+    {
+        return SaleDraft::with('party')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+    }
+
+    public function getActiveDraftsCountProperty(): int
+    {
+        return SaleDraft::count();
+    }
+
+    public function openSaveDraftModal(): void
+    {
+        if (empty($this->cart)) {
+            Notification::make()
+                ->warning()
+                ->title('Keranjang Kosong')
+                ->body('Tambahkan produk ke keranjang terlebih dahulu sebelum menyimpan draft.')
+                ->send();
+
+            return;
+        }
+
+        $party = $this->getSelectedParty();
+        $this->draftReferenceName = $party ? $party->name : ('Draft ' . now()->format('H:i'));
+        $this->showSaveDraftModal = true;
+    }
+
+    public function closeSaveDraftModal(): void
+    {
+        $this->showSaveDraftModal = false;
+    }
+
+    public function saveDraft(): void
+    {
+        if (empty($this->cart)) {
+            Notification::make()
+                ->warning()
+                ->title('Keranjang Kosong')
+                ->body('Tambahkan produk ke keranjang terlebih dahulu sebelum menyimpan draft.')
+                ->send();
+
+            return;
+        }
+
+        $refName = trim($this->draftReferenceName) !== '' ? trim($this->draftReferenceName) : ('Draft ' . now()->format('H:i'));
+
+        SaleDraft::create([
+            'user_id' => auth()->id(),
+            'reference_name' => $refName,
+            'cart_data' => $this->cart,
+            'receivable_party_id' => $this->receivablePartyId,
+            'payment_method' => $this->paymentMethod,
+            'sale_date' => $this->saleDate,
+            'total_amount' => $this->cartTotal(),
+        ]);
+
+        $this->clearCart();
+        $this->showSaveDraftModal = false;
+
+        Notification::make()
+            ->success()
+            ->title('Draft Berhasil Disimpan')
+            ->body("Transaksi \"{$refName}\" disimpan sebagai draft.")
+            ->send();
+    }
+
+    public function openDraftListModal(): void
+    {
+        $this->showDraftListModal = true;
+    }
+
+    public function closeDraftListModal(): void
+    {
+        $this->showDraftListModal = false;
+    }
+
+    public function loadDraft(int $draftId): void
+    {
+        $draft = SaleDraft::find($draftId);
+
+        if (! $draft) {
+            Notification::make()
+                ->danger()
+                ->title('Draft Tidak Ditemukan')
+                ->body('Draft tersebut mungkin sudah dihapus atau dimuat sebelumnya.')
+                ->send();
+
+            return;
+        }
+
+        // If current cart is not empty, auto-save it as draft first
+        if (! empty($this->cart)) {
+            $currentParty = $this->getSelectedParty();
+            $autoRef = $currentParty ? ($currentParty->name . ' (Auto)') : ('Draft ' . now()->format('H:i'));
+            SaleDraft::create([
+                'user_id' => auth()->id(),
+                'reference_name' => $autoRef,
+                'cart_data' => $this->cart,
+                'receivable_party_id' => $this->receivablePartyId,
+                'payment_method' => $this->paymentMethod,
+                'sale_date' => $this->saleDate,
+                'total_amount' => $this->cartTotal(),
+            ]);
+        }
+
+        $this->cart = $draft->cart_data ?: [];
+        $this->receivablePartyId = $draft->receivable_party_id;
+        $this->partySearch = $draft->party?->name ?? '';
+        $this->paymentMethod = $draft->payment_method ?: Sale::PAYMENT_METHOD_CASH;
+        $this->saleDate = $draft->sale_date ? $draft->sale_date->format('Y-m-d') : today()->format('Y-m-d');
+        $this->receivedAmount = null;
+        $this->cashAmount = null;
+        $this->transferAmount = null;
+
+        $refName = $draft->reference_name;
+        $draft->delete();
+
+        $this->showDraftListModal = false;
+
+        Notification::make()
+            ->success()
+            ->title('Draft Berhasil Dimuat')
+            ->body("Draft \"{$refName}\" dimuat ke keranjang.")
+            ->send();
+    }
+
+    public function deleteDraft(int $draftId): void
+    {
+        $draft = SaleDraft::find($draftId);
+        if ($draft) {
+            $refName = $draft->reference_name;
+            $draft->delete();
+
+            Notification::make()
+                ->success()
+                ->title('Draft Dihapus')
+                ->body("Draft \"{$refName}\" telah dihapus.")
+                ->send();
+        }
     }
 
     public function getSelectedParty(): ?ReceivableParty

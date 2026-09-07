@@ -46,6 +46,7 @@ class SaleReportService
         ];
 
         $rows = $sales->map(fn (Sale $sale) => [
+            'id' => $sale->id,
             'transaction_number' => $sale->transaction_number,
             'time' => $sale->created_at?->format('H:i'),
             'payment_method_label' => $sale->payment_method_label,

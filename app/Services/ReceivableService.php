@@ -66,7 +66,7 @@ class ReceivableService
         }
 
         return DB::transaction(function () use ($receivable, $data) {
-            $receivable = $receivable->lockForUpdate();
+            $receivable = Receivable::whereKey($receivable->id)->lockForUpdate()->first();
 
             $paid = $receivable->paid_amount;
 

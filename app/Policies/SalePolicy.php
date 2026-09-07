@@ -24,7 +24,7 @@ class SalePolicy
 
     public function update(User $user, Sale $sale): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $user->isKasir();
     }
 
     public function delete(User $user, Sale $sale): bool

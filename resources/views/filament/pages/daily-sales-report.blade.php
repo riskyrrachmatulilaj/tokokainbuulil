@@ -118,13 +118,20 @@
                                     <th>Pelanggan</th>
                                     <th class="dsr-center">Item</th>
                                     <th class="dsr-money">Total</th>
+                                    <th class="dsr-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($this->report['sales'] as $sale)
                                     <tr>
                                         <td>
-                                            <span class="dsr-txn">{{ $sale['transaction_number'] }}</span>
+                                            <a
+                                                href="{{ \App\Filament\Resources\SaleResource::getUrl('view', ['record' => $sale['id']]) }}"
+                                                class="dsr-txn hover:underline text-primary-600"
+                                                title="Lihat detail penjualan"
+                                            >
+                                                {{ $sale['transaction_number'] }}
+                                            </a>
                                         </td>
                                         <td class="dsr-center text-slate-500 font-mono text-xs">
                                             {{ $sale['time'] }}
@@ -145,10 +152,25 @@
                                             <span class="dsr-badge is-qty">{{ $sale['items_count'] }}</span>
                                         </td>
                                         <td class="dsr-money">{{ rupiah($sale['total_amount']) }}</td>
+                                        <td class="dsr-center" style="white-space: nowrap;">
+                                            <a
+                                                href="{{ \App\Filament\Resources\SaleResource::getUrl('view', ['record' => $sale['id']]) }}"
+                                                class="text-xs font-semibold text-primary-600 hover:underline"
+                                            >
+                                                Lihat
+                                            </a>
+                                            <span class="mx-1 text-slate-300">·</span>
+                                            <a
+                                                href="{{ \App\Filament\Resources\SaleResource::getUrl('edit', ['record' => $sale['id']]) }}"
+                                                class="text-xs font-semibold text-amber-600 hover:underline"
+                                            >
+                                                Edit
+                                            </a>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="dsr-empty">
+                                        <td colspan="7" class="dsr-empty">
                                             <div class="flex flex-col items-center justify-center gap-2">
                                                 <x-filament::icon icon="heroicon-o-inbox" style="width: 32px; height: 32px; color: #94a3b8;" />
                                                 <span>Belum ada transaksi pada tanggal ini.</span>

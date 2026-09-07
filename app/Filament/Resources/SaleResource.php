@@ -39,6 +39,140 @@ class SaleResource extends Resource
         return false;
     }
 
+    public static function form(Schema $form): Schema
+    {
+        return $form
+            ->schema([
+                \Filament\Schemas\Components\Section::make('Informasi Transaksi')
+                    ->schema([
+                        Forms\Components\TextInput::make('transaction_number')
+                            ->label('Nomor Transaksi')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->columnSpan(1),
+                        Forms\Components\DatePicker::make('sale_date')
+                            ->label('Tanggal Penjualan')
+                            ->required()
+                            ->default(today())
+                            ->columnSpan(1),
+                        Forms\Components\Select::make('receivable_party_id')
+                            ->label('Pelanggan')
+                            ->relationship('party', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->columnSpan(1),
+                        Forms\Components\Select::make('payment_method')
+                            ->label('Metode Pembayaran')
+                            ->options([
+                                Sale::PAYMENT_METHOD_CASH => 'Tunai',
+                                Sale::PAYMENT_METHOD_TRANSFER => 'Transfer',
+                                Sale::PAYMENT_METHOD_SPLIT => 'Tunai + Transfer',
+                                Sale::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang)',
+                            ])
+                            ->required()
+                            ->live()
+                            ->columnSpan(1),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Keterangan')
+                            ->rows(2)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+
+                \Filament\Schemas\Components\Section::make('Rincian Barang')
+                    ->schema([
+                        Forms\Components\Repeater::make('items')
+                            ->label('Daftar Produk')
+                            ->schema([
+                                Forms\Components\Select::make('product_id')
+                                    ->label('Produk')
+                                    ->options(\App\Models\Product::pluck('name', 'id'))
+                                    ->searchable()
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        if ($state) {
+                                            $prod = \App\Models\Product::find($state);
+                                            if ($prod) {
+                                                $price = (float) $prod->price;
+                                                $set('price', $price);
+                                                $qty = (float) ($get('quantity') ?: 1);
+                                                $set('subtotal', round($price * $qty, 2));
+                                            }
+                                        }
+                                    })
+                                    ->columnSpan(4),
+                                Forms\Components\TextInput::make('quantity')
+                                    ->label('Qty')
+                                    ->numeric()
+                                    ->default(1)
+                                    ->required()
+                                    ->minValue(0.001)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        $qty = (float) ($state ?: 0);
+                                        $price = (float) ($get('price') ?: 0);
+                                        $set('subtotal', round($price * $qty, 2));
+                                    })
+                                    ->columnSpan(2),
+                                Forms\Components\TextInput::make('price')
+                                    ->label('Harga Satuan')
+                                    ->numeric()
+                                    ->required()
+                                    ->prefix('Rp')
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        $price = (float) ($state ?: 0);
+                                        $qty = (float) ($get('quantity') ?: 0);
+                                        $set('subtotal', round($price * $qty, 2));
+                                    })
+                                    ->columnSpan(3),
+                                Forms\Components\TextInput::make('subtotal')
+                                    ->label('Subtotal')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->prefix('Rp')
+                                    ->columnSpan(3),
+                                Forms\Components\TextInput::make('notes')
+                                    ->label('Keterangan / Rincian Roll')
+                                    ->placeholder('Misal: 2 roll kain @ 50m')
+                                    ->columnSpanFull(),
+                            ])
+                            ->columns(12)
+                            ->defaultItems(1)
+                            ->addActionLabel('Tambah Barang')
+                            ->reorderable(false)
+                            ->live(),
+                    ]),
+
+                \Filament\Schemas\Components\Section::make('Pembayaran')
+                    ->schema([
+                        Forms\Components\TextInput::make('received_amount')
+                            ->label('Uang Diterima')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->visible(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_CASH)
+                            ->required(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_CASH),
+                        Forms\Components\TextInput::make('cash_amount')
+                            ->label('Bayar Tunai')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->visible(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT)
+                            ->required(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT),
+                        Forms\Components\TextInput::make('transfer_amount')
+                            ->label('Bayar Transfer')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->visible(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT)
+                            ->required(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT),
+                    ])
+                    ->columns(2)
+                    ->visible(fn (Forms\Get $get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_CASH, Sale::PAYMENT_METHOD_SPLIT])),
+            ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -113,6 +247,7 @@ class SaleResource extends Resource
             ])
             ->actions([
                 Actions\ViewAction::make(),
+                Actions\EditAction::make(),
                 Actions\ActionGroup::make([
                     Actions\Action::make('copy_whatsapp')
                         ->label('Salin Pesan WA')
@@ -198,6 +333,7 @@ class SaleResource extends Resource
         return [
             'index' => Pages\ListSales::route('/'),
             'view' => Pages\ViewSale::route('/{record}'),
+            'edit' => Pages\EditSale::route('/{record}/edit'),
         ];
     }
 }
