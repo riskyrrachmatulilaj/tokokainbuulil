@@ -91,7 +91,7 @@ class SaleResource extends Resource
                                     ->searchable()
                                     ->required()
                                     ->live()
-                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                    ->afterStateUpdated(function ($state, $set, $get) {
                                         if ($state) {
                                             $prod = \App\Models\Product::find($state);
                                             if ($prod) {
@@ -110,7 +110,7 @@ class SaleResource extends Resource
                                     ->required()
                                     ->minValue(0.001)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                    ->afterStateUpdated(function ($state, $set, $get) {
                                         $qty = (float) ($state ?: 0);
                                         $price = (float) ($get('price') ?: 0);
                                         $set('subtotal', round($price * $qty, 2));
@@ -122,7 +122,7 @@ class SaleResource extends Resource
                                     ->required()
                                     ->prefix('Rp')
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                    ->afterStateUpdated(function ($state, $set, $get) {
                                         $price = (float) ($state ?: 0);
                                         $qty = (float) ($get('quantity') ?: 0);
                                         $set('subtotal', round($price * $qty, 2));
@@ -153,23 +153,23 @@ class SaleResource extends Resource
                             ->label('Uang Diterima')
                             ->numeric()
                             ->prefix('Rp')
-                            ->visible(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_CASH)
-                            ->required(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_CASH),
+                            ->visible(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_CASH)
+                            ->required(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_CASH),
                         Forms\Components\TextInput::make('cash_amount')
                             ->label('Bayar Tunai')
                             ->numeric()
                             ->prefix('Rp')
-                            ->visible(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT)
-                            ->required(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT),
+                            ->visible(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT)
+                            ->required(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT),
                         Forms\Components\TextInput::make('transfer_amount')
                             ->label('Bayar Transfer')
                             ->numeric()
                             ->prefix('Rp')
-                            ->visible(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT)
-                            ->required(fn (Forms\Get $get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT),
+                            ->visible(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT)
+                            ->required(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT),
                     ])
                     ->columns(2)
-                    ->visible(fn (Forms\Get $get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_CASH, Sale::PAYMENT_METHOD_SPLIT])),
+                    ->visible(fn ($get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_CASH, Sale::PAYMENT_METHOD_SPLIT])),
             ]);
     }
 
