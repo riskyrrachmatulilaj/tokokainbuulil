@@ -88,14 +88,30 @@ class KasirPage extends Page
 
     public function getActiveDraftsProperty(): Collection
     {
-        return SaleDraft::with('party')
-            ->orderBy('updated_at', 'desc')
-            ->get();
+        try {
+            if (! \Illuminate\Support\Facades\Schema::hasTable('sale_drafts')) {
+                return collect();
+            }
+
+            return SaleDraft::with('party')
+                ->orderBy('updated_at', 'desc')
+                ->get();
+        } catch (\Throwable $e) {
+            return collect();
+        }
     }
 
     public function getActiveDraftsCountProperty(): int
     {
-        return SaleDraft::count();
+        try {
+            if (! \Illuminate\Support\Facades\Schema::hasTable('sale_drafts')) {
+                return 0;
+            }
+
+            return SaleDraft::count();
+        } catch (\Throwable $e) {
+            return 0;
+        }
     }
 
     public function openSaveDraftModal(): void
