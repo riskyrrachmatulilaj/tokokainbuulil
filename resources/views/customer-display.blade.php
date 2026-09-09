@@ -152,12 +152,19 @@
                 <h2 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-3">
                     Selamat Datang di <span class="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">Toko Kain Bu Ulil</span>
                 </h2>
-                <p class="text-base sm:text-xl text-slate-400 max-w-xl font-normal leading-relaxed">
-                    Menyediakan berbagai macam kain berkualitas, katun, rayon, sutra, wolfis & bahan busana terbaik.
+                <p class="text-base sm:text-xl text-slate-300 max-w-2xl font-normal leading-relaxed mb-6">
+                    Pusat grosir & eceran aneka kain kasur, bantal, guling, sprei, bahan boneka, busa, serta berbagai perlengkapan kain berkualitas dengan harga terbaik.
                 </p>
 
-                <div class="mt-8 px-6 py-2.5 rounded-full bg-slate-900/80 border border-slate-800 text-slate-400 text-sm font-medium flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-teal-400"></span>
+                <div class="flex flex-wrap justify-center items-center gap-2 max-w-lg mb-6">
+                    <span class="px-3 py-1 rounded-full bg-slate-900/90 border border-teal-500/30 text-teal-300 text-xs font-semibold">✨ Kain Kasur & Busa</span>
+                    <span class="px-3 py-1 rounded-full bg-slate-900/90 border border-teal-500/30 text-teal-300 text-xs font-semibold">🛏️ Bantal, Guling & Sprei</span>
+                    <span class="px-3 py-1 rounded-full bg-slate-900/90 border border-teal-500/30 text-teal-300 text-xs font-semibold">🧸 Kain Boneka / Rasfur & Velboa</span>
+                    <span class="px-3 py-1 rounded-full bg-slate-900/90 border border-teal-500/30 text-teal-300 text-xs font-semibold">🧵 Aneka Bahan & Motif Lengkap</span>
+                </div>
+
+                <div class="px-6 py-2.5 rounded-full bg-slate-900/80 border border-slate-800 text-slate-400 text-sm font-medium flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-teal-400 animate-pulse"></span>
                     Kasir siap melayani transaksi Anda
                 </div>
             </div>
