@@ -179,6 +179,55 @@
             <span>Status</span>
             <span>Transfer</span>
         </div>
+    @elseif ($sale->payment_method === 'credit_cash')
+        <div class="total-row">
+            <span>DP Tunai</span>
+            <span>{{ number_format($sale->cash_amount, 0, ',', '.') }}</span>
+        </div>
+        <div class="total-row">
+            <span>Sisa Piutang</span>
+            <span>{{ number_format($sale->remaining_credit, 0, ',', '.') }}</span>
+        </div>
+        @if ($sale->receivable)
+            <div class="total-row">
+                <span>No. Piutang</span>
+                <span>{{ $sale->receivable->invoice_number }}</span>
+            </div>
+        @endif
+    @elseif ($sale->payment_method === 'credit_transfer')
+        <div class="total-row">
+            <span>DP Transfer</span>
+            <span>{{ number_format($sale->transfer_amount, 0, ',', '.') }}</span>
+        </div>
+        <div class="total-row">
+            <span>Sisa Piutang</span>
+            <span>{{ number_format($sale->remaining_credit, 0, ',', '.') }}</span>
+        </div>
+        @if ($sale->receivable)
+            <div class="total-row">
+                <span>No. Piutang</span>
+                <span>{{ $sale->receivable->invoice_number }}</span>
+            </div>
+        @endif
+    @elseif ($sale->payment_method === 'credit_split')
+        <div class="total-row">
+            <span>DP Tunai</span>
+            <span>{{ number_format($sale->cash_amount, 0, ',', '.') }}</span>
+        </div>
+        <div class="total-row">
+            <span>DP Transfer</span>
+            <span>{{ number_format($sale->transfer_amount, 0, ',', '.') }}</span>
+        </div>
+        <div class="total-row">
+            <span>Sisa Piutang</span>
+            <span>{{ number_format($sale->remaining_credit, 0, ',', '.') }}</span>
+        </div>
+        @if ($sale->receivable)
+            <div class="total-row">
+                <span>No. Piutang</span>
+                <span>{{ $sale->receivable->invoice_number }}</span>
+            </div>
+        @endif
     @else
         <div class="total-row">
             <span>Status</span>

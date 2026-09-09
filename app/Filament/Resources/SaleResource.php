@@ -68,7 +68,9 @@ class SaleResource extends Resource
                                 Sale::PAYMENT_METHOD_CASH => 'Tunai',
                                 Sale::PAYMENT_METHOD_TRANSFER => 'Transfer',
                                 Sale::PAYMENT_METHOD_SPLIT => 'Tunai + Transfer',
-                                Sale::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang)',
+                                Sale::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang Penuh)',
+                                Sale::PAYMENT_METHOD_CREDIT_CASH => 'Kredit + Tunai',
+                                Sale::PAYMENT_METHOD_CREDIT_TRANSFER => 'Kredit + Transfer',
                             ])
                             ->required()
                             ->live()
@@ -156,20 +158,20 @@ class SaleResource extends Resource
                             ->visible(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_CASH)
                             ->required(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_CASH),
                         Forms\Components\TextInput::make('cash_amount')
-                            ->label('Bayar Tunai')
+                            ->label('Bayar Tunai / DP Tunai')
                             ->numeric()
                             ->prefix('Rp')
-                            ->visible(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT)
-                            ->required(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT),
+                            ->visible(fn ($get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_SPLIT, Sale::PAYMENT_METHOD_CREDIT_CASH, Sale::PAYMENT_METHOD_CREDIT_SPLIT]))
+                            ->required(fn ($get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_SPLIT, Sale::PAYMENT_METHOD_CREDIT_CASH, Sale::PAYMENT_METHOD_CREDIT_SPLIT])),
                         Forms\Components\TextInput::make('transfer_amount')
-                            ->label('Bayar Transfer')
+                            ->label('Bayar Transfer / DP Transfer')
                             ->numeric()
                             ->prefix('Rp')
-                            ->visible(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT)
-                            ->required(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_SPLIT),
+                            ->visible(fn ($get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_SPLIT, Sale::PAYMENT_METHOD_CREDIT_TRANSFER, Sale::PAYMENT_METHOD_CREDIT_SPLIT]))
+                            ->required(fn ($get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_SPLIT, Sale::PAYMENT_METHOD_CREDIT_TRANSFER, Sale::PAYMENT_METHOD_CREDIT_SPLIT])),
                     ])
                     ->columns(2)
-                    ->visible(fn ($get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_CASH, Sale::PAYMENT_METHOD_SPLIT])),
+                    ->visible(fn ($get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_CASH, Sale::PAYMENT_METHOD_SPLIT, Sale::PAYMENT_METHOD_CREDIT_CASH, Sale::PAYMENT_METHOD_CREDIT_TRANSFER, Sale::PAYMENT_METHOD_CREDIT_SPLIT])),
             ]);
     }
 
@@ -198,7 +200,10 @@ class SaleResource extends Resource
                         Sale::PAYMENT_METHOD_CASH => 'success',
                         Sale::PAYMENT_METHOD_TRANSFER => 'info',
                         Sale::PAYMENT_METHOD_SPLIT => 'primary',
-                        Sale::PAYMENT_METHOD_RECEIVABLE => 'warning',
+                        Sale::PAYMENT_METHOD_RECEIVABLE,
+                        Sale::PAYMENT_METHOD_CREDIT_CASH,
+                        Sale::PAYMENT_METHOD_CREDIT_TRANSFER,
+                        Sale::PAYMENT_METHOD_CREDIT_SPLIT => 'warning',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (Sale $record) => $record->payment_method_label),
@@ -230,7 +235,9 @@ class SaleResource extends Resource
                         Sale::PAYMENT_METHOD_CASH => 'Tunai',
                         Sale::PAYMENT_METHOD_TRANSFER => 'Transfer',
                         Sale::PAYMENT_METHOD_SPLIT => 'Tunai + Transfer',
-                        Sale::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang)',
+                        Sale::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang Penuh)',
+                        Sale::PAYMENT_METHOD_CREDIT_CASH => 'Kredit + Tunai',
+                        Sale::PAYMENT_METHOD_CREDIT_TRANSFER => 'Kredit + Transfer',
                     ]),
                 Tables\Filters\Filter::make('sale_date')
                     ->form([

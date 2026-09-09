@@ -35,11 +35,33 @@ class ViewSale extends ViewRecord
                             TextEntry::make('created_at')->label('Jam')->dateTime('H:i'),
                             TextEntry::make('payment_method')->label('Metode Pembayaran')
                                 ->badge()
-                                ->color(fn (Sale $record) => $record->payment_method === Sale::PAYMENT_METHOD_CASH ? 'success' : 'warning')
+                                ->color(fn (Sale $record) => match ($record->payment_method) {
+                                    Sale::PAYMENT_METHOD_CASH => 'success',
+                                    Sale::PAYMENT_METHOD_TRANSFER => 'info',
+                                    Sale::PAYMENT_METHOD_SPLIT => 'primary',
+                                    Sale::PAYMENT_METHOD_CREDIT_CASH,
+                                    Sale::PAYMENT_METHOD_CREDIT_TRANSFER,
+                                    Sale::PAYMENT_METHOD_CREDIT_SPLIT => 'warning',
+                                    default => 'danger',
+                                })
                                 ->state(fn (Sale $record) => $record->payment_method_label),
                             TextEntry::make('total_amount')->label('Total Penjualan')->state(fn (Sale $record) => rupiah($record->total_amount)),
-                            TextEntry::make('received_amount')->label('Uang Diterima')->state(fn (Sale $record) => $record->received_amount !== null ? rupiah($record->received_amount) : '-'),
-                            TextEntry::make('change_amount')->label('Kembalian')->state(fn (Sale $record) => $record->change_amount !== null ? rupiah($record->change_amount) : '-'),
+                            TextEntry::make('cash_amount')->label(fn (Sale $record) => $record->isCredit() ? 'DP Tunai' : 'Bayar Tunai')
+                                ->state(fn (Sale $record) => $record->cash_amount ? rupiah($record->cash_amount) : '-')
+                                ->visible(fn (Sale $record) => in_array($record->payment_method, [Sale::PAYMENT_METHOD_SPLIT, Sale::PAYMENT_METHOD_CREDIT_CASH, Sale::PAYMENT_METHOD_CREDIT_SPLIT])),
+                            TextEntry::make('transfer_amount')->label(fn (Sale $record) => $record->isCredit() ? 'DP Transfer' : 'Bayar Transfer')
+                                ->state(fn (Sale $record) => $record->transfer_amount ? rupiah($record->transfer_amount) : '-')
+                                ->visible(fn (Sale $record) => in_array($record->payment_method, [Sale::PAYMENT_METHOD_TRANSFER, Sale::PAYMENT_METHOD_SPLIT, Sale::PAYMENT_METHOD_CREDIT_TRANSFER, Sale::PAYMENT_METHOD_CREDIT_SPLIT])),
+                            TextEntry::make('remaining_credit')->label('Sisa Piutang')
+                                ->state(fn (Sale $record) => rupiah($record->remaining_credit))
+                                ->color('danger')
+                                ->visible(fn (Sale $record) => $record->isCredit()),
+                            TextEntry::make('received_amount')->label('Uang Diterima')
+                                ->state(fn (Sale $record) => $record->received_amount !== null ? rupiah($record->received_amount) : '-')
+                                ->visible(fn (Sale $record) => in_array($record->payment_method, [Sale::PAYMENT_METHOD_CASH, Sale::PAYMENT_METHOD_SPLIT])),
+                            TextEntry::make('change_amount')->label('Kembalian')
+                                ->state(fn (Sale $record) => $record->change_amount !== null ? rupiah($record->change_amount) : '-')
+                                ->visible(fn (Sale $record) => in_array($record->payment_method, [Sale::PAYMENT_METHOD_CASH, Sale::PAYMENT_METHOD_SPLIT])),
                             TextEntry::make('party.name')->label('Pelanggan')
                                 ->url(fn (Sale $record) => $record->party ? \App\Filament\Resources\ReceivablePartyResource::getUrl('view', ['record' => $record->party]) : null)
                                 ->placeholder('-'),

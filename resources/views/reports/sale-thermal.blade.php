@@ -273,6 +273,33 @@
                     <td>Status Bayar</td>
                     <td class="right">LUNAS (Transfer)</td>
                 </tr>
+            @elseif ($sale->payment_method === 'credit_cash')
+                <tr>
+                    <td>DP (Tunai)</td>
+                    <td class="right">{{ number_format($sale->cash_amount, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>Sisa Piutang</td>
+                    <td class="right">{{ number_format($sale->remaining_credit, 0, ',', '.') }}</td>
+                </tr>
+            @elseif ($sale->payment_method === 'credit_transfer')
+                <tr>
+                    <td>DP (Transfer)</td>
+                    <td class="right">{{ number_format($sale->transfer_amount, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>Sisa Piutang</td>
+                    <td class="right">{{ number_format($sale->remaining_credit, 0, ',', '.') }}</td>
+                </tr>
+            @elseif ($sale->payment_method === 'credit_split')
+                <tr>
+                    <td>DP Tunai / Trf</td>
+                    <td class="right">{{ number_format($sale->cash_amount, 0, ',', '.') }} / {{ number_format($sale->transfer_amount, 0, ',', '.') }}</td>
+                </tr>
+                <tr>
+                    <td>Sisa Piutang</td>
+                    <td class="right">{{ number_format($sale->remaining_credit, 0, ',', '.') }}</td>
+                </tr>
             @else
                 <tr>
                     <td>Status Bayar</td>

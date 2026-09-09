@@ -124,6 +124,63 @@ class SaleService
                 }
 
                 $change = round($received - $total, 2);
+            } elseif ($method === Sale::PAYMENT_METHOD_CREDIT_CASH) {
+                $cashAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['cash_amount'] ?? null) ?? 0), 2);
+                $transferAmount = null;
+                $received = $cashAmount;
+                $change = 0;
+
+                if ($cashAmount < 0) {
+                    throw ValidationException::withMessages([
+                        'cash_amount' => 'Nominal uang muka tunai tidak boleh negatif.',
+                    ]);
+                }
+
+                if ($cashAmount >= $total) {
+                    throw ValidationException::withMessages([
+                        'cash_amount' => 'Uang muka tunai (Rp ' . number_format($cashAmount, 0, ',', '.') . ') melebihi atau sama dengan total belanja. Gunakan metode Tunai.',
+                    ]);
+                }
+            } elseif ($method === Sale::PAYMENT_METHOD_CREDIT_TRANSFER) {
+                $cashAmount = null;
+                $transferAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['transfer_amount'] ?? null) ?? 0), 2);
+                $received = $transferAmount;
+                $change = 0;
+
+                if ($transferAmount < 0) {
+                    throw ValidationException::withMessages([
+                        'transfer_amount' => 'Nominal uang muka transfer tidak boleh negatif.',
+                    ]);
+                }
+
+                if ($transferAmount >= $total) {
+                    throw ValidationException::withMessages([
+                        'transfer_amount' => 'Uang muka transfer (Rp ' . number_format($transferAmount, 0, ',', '.') . ') melebihi atau sama dengan total belanja. Gunakan metode Transfer.',
+                    ]);
+                }
+            } elseif ($method === Sale::PAYMENT_METHOD_CREDIT_SPLIT) {
+                $cashAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['cash_amount'] ?? null) ?? 0), 2);
+                $transferAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['transfer_amount'] ?? null) ?? 0), 2);
+                $received = round($cashAmount + $transferAmount, 2);
+                $change = 0;
+
+                if ($received < 0) {
+                    throw ValidationException::withMessages([
+                        'cash_amount' => 'Nominal uang muka tidak boleh negatif.',
+                    ]);
+                }
+
+                if ($received >= $total) {
+                    throw ValidationException::withMessages([
+                        'cash_amount' => 'Total uang muka (Rp ' . number_format($received, 0, ',', '.') . ') melebihi atau sama dengan total belanja. Gunakan metode Tunai + Transfer.',
+                    ]);
+                }
+            } else {
+                // Sale::PAYMENT_METHOD_RECEIVABLE
+                $cashAmount = null;
+                $transferAmount = null;
+                $received = null;
+                $change = null;
             }
 
             $sale = Sale::create([
@@ -156,14 +213,33 @@ class SaleService
                 $prod->deductStock($line['quantity']);
             }
 
-            if ($method === Sale::PAYMENT_METHOD_RECEIVABLE) {
+            $isCredit = in_array($method, [
+                Sale::PAYMENT_METHOD_RECEIVABLE,
+                Sale::PAYMENT_METHOD_CREDIT_CASH,
+                Sale::PAYMENT_METHOD_CREDIT_TRANSFER,
+                Sale::PAYMENT_METHOD_CREDIT_SPLIT,
+            ]);
+
+            if ($isCredit) {
+                $downPayment = round((float) ($cashAmount ?? 0) + (float) ($transferAmount ?? 0), 2);
+
                 $receivable = app(ReceivableService::class)->createReceivable([
                     'receivable_party_id' => $party->id,
                     'amount' => $total,
                     'receivable_date' => $saleDate,
-                    'due_date' => null,
+                    'due_date' => $data['due_date'] ?? null,
                     'description' => 'Penjualan kredit '.$sale->transaction_number,
                 ], $user);
+
+                if ($downPayment > 0) {
+                    $dpType = $method === Sale::PAYMENT_METHOD_CREDIT_TRANSFER ? 'Transfer' : ($method === Sale::PAYMENT_METHOD_CREDIT_SPLIT ? 'Tunai & Transfer' : 'Tunai');
+                    app(ReceivablePaymentService::class)->recordInstallment([
+                        'receivable_id' => $receivable->id,
+                        'amount' => $downPayment,
+                        'installment_date' => $saleDate,
+                        'description' => "Uang Muka Transaksi {$sale->transaction_number} ({$dpType})",
+                    ], $user);
+                }
 
                 $sale->update(['receivable_id' => $receivable->id]);
             }
@@ -289,6 +365,63 @@ class SaleService
                 }
 
                 $change = round($received - $total, 2);
+            } elseif ($method === Sale::PAYMENT_METHOD_CREDIT_CASH) {
+                $cashAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['cash_amount'] ?? null) ?? 0), 2);
+                $transferAmount = null;
+                $received = $cashAmount;
+                $change = 0;
+
+                if ($cashAmount < 0) {
+                    throw ValidationException::withMessages([
+                        'cash_amount' => 'Nominal uang muka tunai tidak boleh negatif.',
+                    ]);
+                }
+
+                if ($cashAmount >= $total) {
+                    throw ValidationException::withMessages([
+                        'cash_amount' => 'Uang muka tunai (Rp ' . number_format($cashAmount, 0, ',', '.') . ') melebihi atau sama dengan total belanja. Gunakan metode Tunai.',
+                    ]);
+                }
+            } elseif ($method === Sale::PAYMENT_METHOD_CREDIT_TRANSFER) {
+                $cashAmount = null;
+                $transferAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['transfer_amount'] ?? null) ?? 0), 2);
+                $received = $transferAmount;
+                $change = 0;
+
+                if ($transferAmount < 0) {
+                    throw ValidationException::withMessages([
+                        'transfer_amount' => 'Nominal uang muka transfer tidak boleh negatif.',
+                    ]);
+                }
+
+                if ($transferAmount >= $total) {
+                    throw ValidationException::withMessages([
+                        'transfer_amount' => 'Uang muka transfer (Rp ' . number_format($transferAmount, 0, ',', '.') . ') melebihi atau sama dengan total belanja. Gunakan metode Transfer.',
+                    ]);
+                }
+            } elseif ($method === Sale::PAYMENT_METHOD_CREDIT_SPLIT) {
+                $cashAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['cash_amount'] ?? null) ?? 0), 2);
+                $transferAmount = round((float) (\App\Filament\Pages\KasirPage::parseNumericAmount($data['transfer_amount'] ?? null) ?? 0), 2);
+                $received = round($cashAmount + $transferAmount, 2);
+                $change = 0;
+
+                if ($received < 0) {
+                    throw ValidationException::withMessages([
+                        'cash_amount' => 'Nominal uang muka tidak boleh negatif.',
+                    ]);
+                }
+
+                if ($received >= $total) {
+                    throw ValidationException::withMessages([
+                        'cash_amount' => 'Total uang muka (Rp ' . number_format($received, 0, ',', '.') . ') melebihi atau sama dengan total belanja. Gunakan metode Tunai + Transfer.',
+                    ]);
+                }
+            } else {
+                // Sale::PAYMENT_METHOD_RECEIVABLE
+                $cashAmount = null;
+                $transferAmount = null;
+                $received = null;
+                $change = null;
             }
 
             // 3. Deduct new stock and replace sale items
@@ -312,8 +445,16 @@ class SaleService
             // 4. Handle Receivable sync
             $oldReceivableId = $sale->receivable_id;
             $newReceivableId = $oldReceivableId;
+            $isCredit = in_array($method, [
+                Sale::PAYMENT_METHOD_RECEIVABLE,
+                Sale::PAYMENT_METHOD_CREDIT_CASH,
+                Sale::PAYMENT_METHOD_CREDIT_TRANSFER,
+                Sale::PAYMENT_METHOD_CREDIT_SPLIT,
+            ]);
 
-            if ($method === Sale::PAYMENT_METHOD_RECEIVABLE) {
+            if ($isCredit) {
+                $downPayment = round((float) ($cashAmount ?? 0) + (float) ($transferAmount ?? 0), 2);
+
                 if ($oldReceivableId && $sale->receivable) {
                     // Update existing receivable
                     $receivable = $sale->receivable;
@@ -323,6 +464,7 @@ class SaleService
                     app(ReceivableService::class)->updateReceivable($receivable, [
                         'amount' => $total,
                         'receivable_date' => $saleDate,
+                        'due_date' => array_key_exists('due_date', $data) ? $data['due_date'] : $receivable->due_date,
                         'description' => 'Penjualan kredit '.$sale->transaction_number,
                     ]);
                 } else {
@@ -331,9 +473,19 @@ class SaleService
                         'receivable_party_id' => $party->id,
                         'amount' => $total,
                         'receivable_date' => $saleDate,
-                        'due_date' => null,
+                        'due_date' => $data['due_date'] ?? null,
                         'description' => 'Penjualan kredit '.$sale->transaction_number,
                     ], $user);
+
+                    if ($downPayment > 0) {
+                        $dpType = $method === Sale::PAYMENT_METHOD_CREDIT_TRANSFER ? 'Transfer' : ($method === Sale::PAYMENT_METHOD_CREDIT_SPLIT ? 'Tunai & Transfer' : 'Tunai');
+                        app(ReceivablePaymentService::class)->recordInstallment([
+                            'receivable_id' => $receivable->id,
+                            'amount' => $downPayment,
+                            'installment_date' => $saleDate,
+                            'description' => "Uang Muka Transaksi {$sale->transaction_number} ({$dpType})",
+                        ], $user);
+                    }
 
                     $newReceivableId = $receivable->id;
                 }

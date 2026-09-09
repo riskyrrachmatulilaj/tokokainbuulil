@@ -727,6 +727,24 @@
                             <strong>Kredit</strong>
                             <span>Catat sebagai piutang</span>
                         </button>
+                        <button
+                            type="button"
+                            class="kasir-pay-btn {{ $this->paymentMethod === Sale::PAYMENT_METHOD_CREDIT_CASH ? 'is-selected' : '' }}"
+                            data-method="credit_cash"
+                            wire:click="$set('paymentMethod', '{{ Sale::PAYMENT_METHOD_CREDIT_CASH }}')"
+                        >
+                            <strong>Kredit + Tunai</strong>
+                            <span>DP Tunai + Sisa Piutang</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="kasir-pay-btn {{ $this->paymentMethod === Sale::PAYMENT_METHOD_CREDIT_TRANSFER ? 'is-selected' : '' }}"
+                            data-method="credit_transfer"
+                            wire:click="$set('paymentMethod', '{{ Sale::PAYMENT_METHOD_CREDIT_TRANSFER }}')"
+                        >
+                            <strong>Kredit + Transfer</strong>
+                            <span>DP Transfer + Sisa Piutang</span>
+                        </button>
                     </div>
 
                     <div class="kasir-field" x-data="{ isOpen: false }" x-on:click.outside="isOpen = false">
@@ -798,9 +816,9 @@
                             </div>
                         </div>
 
-                        @if ($this->paymentMethod === Sale::PAYMENT_METHOD_RECEIVABLE)
+                        @if (in_array($this->paymentMethod, [Sale::PAYMENT_METHOD_RECEIVABLE, Sale::PAYMENT_METHOD_CREDIT_CASH, Sale::PAYMENT_METHOD_CREDIT_TRANSFER, Sale::PAYMENT_METHOD_CREDIT_SPLIT]))
                             <p class="kasir-hint">
-                                Penjualan kredit otomatis tercatat sebagai nota piutang di menu Manajemen Piutang.
+                                Sisa pembayaran kredit otomatis tercatat sebagai nota piutang di menu Manajemen Piutang.
                             </p>
                         @endif
                     </div>
@@ -943,6 +961,130 @@
                         </div>
                     @endif
 
+                    @if ($this->paymentMethod === Sale::PAYMENT_METHOD_CREDIT_CASH)
+                        <div
+                            class="kasir-field"
+                            wire:key="payment-credit-cash-section"
+                            x-data="{
+                                cash: $wire.entangle('cashAmount'),
+                                parseNum(val) {
+                                    if (val === null || val === undefined || val === '') return 0;
+                                    if (typeof val === 'number') return isNaN(val) ? 0 : val;
+                                    let str = String(val).trim();
+                                    if (!str) return 0;
+                                    if (str.includes('.') && !str.includes(',')) {
+                                        let parts = str.split('.');
+                                        if (parts.length > 1 && parts.slice(1).every(p => p.length === 3)) str = parts.join('');
+                                    } else if (str.includes(',') && !str.includes('.')) {
+                                        let parts = str.split(',');
+                                        if (parts.length > 1 && parts.slice(1).every(p => p.length === 3)) str = parts.join('');
+                                        else str = str.replace(',', '.');
+                                    } else if (str.includes('.') && str.includes(',')) {
+                                        str = str.replace(/\./g, '').replace(',', '.');
+                                    }
+                                    let num = parseFloat(str);
+                                    return isNaN(num) ? 0 : num;
+                                },
+                                get currentTotal() {
+                                    return ($wire.cart || []).reduce((sum, item) => sum + (parseFloat(item.subtotal) || 0), 0);
+                                },
+                                get downPayment() {
+                                    return this.parseNum(this.cash);
+                                },
+                                get remainingDebt() {
+                                    return Math.max(0, this.currentTotal - this.downPayment);
+                                }
+                            }"
+                        >
+                            <label class="kasir-label" for="kasir-credit-cash-amount">Nominal Uang Muka / DP (Tunai)</label>
+                            <x-filament::input.wrapper>
+                                <x-filament::input
+                                    id="kasir-credit-cash-amount"
+                                    type="number"
+                                    x-model="cash"
+                                    wire:model.blur="cashAmount"
+                                    min="0"
+                                    step="any"
+                                    placeholder="contoh: 50000 atau 100000"
+                                    inputmode="decimal"
+                                />
+                            </x-filament::input.wrapper>
+
+                            <div class="kasir-change is-positive" style="margin-top: 0.75rem;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span class="kasir-change-label">Uang Muka (Tunai)</span>
+                                    <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(downPayment)"></span>
+                                </div>
+                                <div style="text-align: right; display: flex; flex-direction: column;">
+                                    <span class="kasir-change-label" style="color: #ea580c;">Sisa Piutang (Kredit)</span>
+                                    <span class="kasir-change-value" style="color: #ea580c; font-weight: 800;" x-text="'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(remainingDebt)"></span>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if ($this->paymentMethod === Sale::PAYMENT_METHOD_CREDIT_TRANSFER)
+                        <div
+                            class="kasir-field"
+                            wire:key="payment-credit-transfer-section"
+                            x-data="{
+                                transfer: $wire.entangle('transferAmount'),
+                                parseNum(val) {
+                                    if (val === null || val === undefined || val === '') return 0;
+                                    if (typeof val === 'number') return isNaN(val) ? 0 : val;
+                                    let str = String(val).trim();
+                                    if (!str) return 0;
+                                    if (str.includes('.') && !str.includes(',')) {
+                                        let parts = str.split('.');
+                                        if (parts.length > 1 && parts.slice(1).every(p => p.length === 3)) str = parts.join('');
+                                    } else if (str.includes(',') && !str.includes('.')) {
+                                        let parts = str.split(',');
+                                        if (parts.length > 1 && parts.slice(1).every(p => p.length === 3)) str = parts.join('');
+                                        else str = str.replace(',', '.');
+                                    } else if (str.includes('.') && str.includes(',')) {
+                                        str = str.replace(/\./g, '').replace(',', '.');
+                                    }
+                                    let num = parseFloat(str);
+                                    return isNaN(num) ? 0 : num;
+                                },
+                                get currentTotal() {
+                                    return ($wire.cart || []).reduce((sum, item) => sum + (parseFloat(item.subtotal) || 0), 0);
+                                },
+                                get downPayment() {
+                                    return this.parseNum(this.transfer);
+                                },
+                                get remainingDebt() {
+                                    return Math.max(0, this.currentTotal - this.downPayment);
+                                }
+                            }"
+                        >
+                            <label class="kasir-label" for="kasir-credit-transfer-amount">Nominal Uang Muka / DP (Transfer)</label>
+                            <x-filament::input.wrapper>
+                                <x-filament::input
+                                    id="kasir-credit-transfer-amount"
+                                    type="number"
+                                    x-model="transfer"
+                                    wire:model.blur="transferAmount"
+                                    min="0"
+                                    step="any"
+                                    placeholder="contoh: 50000 atau 100000"
+                                    inputmode="decimal"
+                                />
+                            </x-filament::input.wrapper>
+
+                            <div class="kasir-change is-positive" style="margin-top: 0.75rem;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span class="kasir-change-label">Uang Muka (Transfer)</span>
+                                    <span class="kasir-change-value" x-text="'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(downPayment)"></span>
+                                </div>
+                                <div style="text-align: right; display: flex; flex-direction: column;">
+                                    <span class="kasir-change-label" style="color: #ea580c;">Sisa Piutang (Kredit)</span>
+                                    <span class="kasir-change-value" style="color: #ea580c; font-weight: 800;" x-text="'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(remainingDebt)"></span>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="kasir-actions">
                         <x-filament::button
                             type="button"
@@ -1031,6 +1173,29 @@
                         <div class="kasir-stat">
                             <div class="kasir-stat-label">Kembalian</div>
                             <div class="kasir-stat-value">{{ rupiah($this->result['change']) }}</div>
+                        </div>
+                    @elseif ($this->result['payment_method'] === Sale::PAYMENT_METHOD_CREDIT_CASH)
+                        <div class="kasir-stat">
+                            <div class="kasir-stat-label">Uang Muka (Tunai)</div>
+                            <div class="kasir-stat-value">{{ rupiah($this->result['cash_amount']) }}</div>
+                        </div>
+                        <div class="kasir-stat">
+                            <div class="kasir-stat-label">Sisa Piutang</div>
+                            <div class="kasir-stat-value" style="color: #ea580c;">{{ rupiah($this->result['remaining_credit']) }}</div>
+                        </div>
+                    @elseif ($this->result['payment_method'] === Sale::PAYMENT_METHOD_CREDIT_TRANSFER)
+                        <div class="kasir-stat">
+                            <div class="kasir-stat-label">Uang Muka (Transfer)</div>
+                            <div class="kasir-stat-value">{{ rupiah($this->result['transfer_amount']) }}</div>
+                        </div>
+                        <div class="kasir-stat">
+                            <div class="kasir-stat-label">Sisa Piutang</div>
+                            <div class="kasir-stat-value" style="color: #ea580c;">{{ rupiah($this->result['remaining_credit']) }}</div>
+                        </div>
+                    @elseif ($this->result['payment_method'] === Sale::PAYMENT_METHOD_RECEIVABLE)
+                        <div class="kasir-stat">
+                            <div class="kasir-stat-label">Sisa Piutang</div>
+                            <div class="kasir-stat-value" style="color: #ea580c;">{{ rupiah($this->result['total']) }}</div>
                         </div>
                     @endif
                     <div class="kasir-stat">
@@ -1284,6 +1449,32 @@
                                         <tr>
                                             <td>Status</td>
                                             <td style="text-align: right;">Transfer (LUNAS)</td>
+                                        </tr>
+                                    @elseif ($this->paymentMethod === Sale::PAYMENT_METHOD_CREDIT_CASH)
+                                        @php
+                                            $cash = static::parseNumericAmount($this->cashAmount) ?? 0.0;
+                                            $remaining = max(0, $this->cartTotal() - $cash);
+                                        @endphp
+                                        <tr>
+                                            <td>Uang Muka (Tunai)</td>
+                                            <td style="text-align: right;">{{ number_format($cash, 0, ',', '.') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sisa Piutang (Kredit)</td>
+                                            <td style="text-align: right; color: #ea580c; font-weight: 700;">{{ number_format($remaining, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @elseif ($this->paymentMethod === Sale::PAYMENT_METHOD_CREDIT_TRANSFER)
+                                        @php
+                                            $transfer = static::parseNumericAmount($this->transferAmount) ?? 0.0;
+                                            $remaining = max(0, $this->cartTotal() - $transfer);
+                                        @endphp
+                                        <tr>
+                                            <td>Uang Muka (Transfer)</td>
+                                            <td style="text-align: right;">{{ number_format($transfer, 0, ',', '.') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sisa Piutang (Kredit)</td>
+                                            <td style="text-align: right; color: #ea580c; font-weight: 700;">{{ number_format($remaining, 0, ',', '.') }}</td>
                                         </tr>
                                     @else
                                         <tr>

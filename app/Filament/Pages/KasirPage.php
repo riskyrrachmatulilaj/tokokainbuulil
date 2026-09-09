@@ -257,6 +257,9 @@ class KasirPage extends Page
             Sale::PAYMENT_METHOD_TRANSFER => 'Transfer',
             Sale::PAYMENT_METHOD_SPLIT => 'Tunai + Transfer',
             Sale::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang)',
+            Sale::PAYMENT_METHOD_CREDIT_CASH => 'Kredit + Tunai',
+            Sale::PAYMENT_METHOD_CREDIT_TRANSFER => 'Kredit + Transfer',
+            Sale::PAYMENT_METHOD_CREDIT_SPLIT => 'Kredit + Tunai + Transfer',
             default => ucfirst($this->paymentMethod),
         };
     }
@@ -593,6 +596,19 @@ class KasirPage extends Page
                 $data['transfer_amount'] = static::parseNumericAmount($this->transferAmount);
             }
 
+            if ($this->paymentMethod === Sale::PAYMENT_METHOD_CREDIT_CASH) {
+                $data['cash_amount'] = static::parseNumericAmount($this->cashAmount);
+            }
+
+            if ($this->paymentMethod === Sale::PAYMENT_METHOD_CREDIT_TRANSFER) {
+                $data['transfer_amount'] = static::parseNumericAmount($this->transferAmount);
+            }
+
+            if ($this->paymentMethod === Sale::PAYMENT_METHOD_CREDIT_SPLIT) {
+                $data['cash_amount'] = static::parseNumericAmount($this->cashAmount);
+                $data['transfer_amount'] = static::parseNumericAmount($this->transferAmount);
+            }
+
             $sale = app(SaleService::class)->createSale($data, auth()->user());
 
             $this->result = [
@@ -607,6 +623,8 @@ class KasirPage extends Page
                 'transfer_amount' => $sale->transfer_amount !== null ? (float) $sale->transfer_amount : null,
                 'received' => $sale->received_amount !== null ? (float) $sale->received_amount : null,
                 'change' => $sale->change_amount !== null ? (float) $sale->change_amount : null,
+                'down_payment' => (float) $sale->down_payment,
+                'remaining_credit' => (float) $sale->remaining_credit,
                 'items_count' => $sale->items->sum('quantity'),
                 'wa_link' => $sale->whatsapp_link,
             ];

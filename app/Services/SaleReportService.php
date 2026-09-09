@@ -24,12 +24,19 @@ class SaleReportService
             ->get();
 
         $cashSales = $sales->where('payment_method', Sale::PAYMENT_METHOD_CASH);
-        $receivableSales = $sales->where('payment_method', Sale::PAYMENT_METHOD_RECEIVABLE);
         $transferSales = $sales->where('payment_method', Sale::PAYMENT_METHOD_TRANSFER);
         $splitSales = $sales->where('payment_method', Sale::PAYMENT_METHOD_SPLIT);
+        $creditSales = $sales->filter(fn (Sale $s) => $s->isCredit());
 
-        $cashRevenue = (float) $cashSales->sum('total_amount') + (float) $splitSales->sum('cash_amount');
-        $transferRevenue = (float) $transferSales->sum('total_amount') + (float) $splitSales->sum('transfer_amount');
+        $cashRevenue = (float) $cashSales->sum('total_amount')
+            + (float) $splitSales->sum('cash_amount')
+            + (float) $sales->whereIn('payment_method', [Sale::PAYMENT_METHOD_CREDIT_CASH, Sale::PAYMENT_METHOD_CREDIT_SPLIT])->sum('cash_amount');
+
+        $transferRevenue = (float) $transferSales->sum('total_amount')
+            + (float) $splitSales->sum('transfer_amount')
+            + (float) $sales->whereIn('payment_method', [Sale::PAYMENT_METHOD_CREDIT_TRANSFER, Sale::PAYMENT_METHOD_CREDIT_SPLIT])->sum('transfer_amount');
+
+        $receivableRevenue = (float) $creditSales->sum(fn (Sale $s) => $s->remaining_credit);
 
         $summary = [
             'transactions' => $sales->count(),
@@ -40,8 +47,8 @@ class SaleReportService
             'transfer_revenue' => round($transferRevenue, 2),
             'split_count' => $splitSales->count(),
             'split_revenue' => round((float) $splitSales->sum('total_amount'), 2),
-            'receivable_count' => $receivableSales->count(),
-            'receivable_revenue' => round((float) $receivableSales->sum('total_amount'), 2),
+            'receivable_count' => $creditSales->count(),
+            'receivable_revenue' => round($receivableRevenue, 2),
             'items_count' => $sales->sum(fn (Sale $sale) => $sale->items->sum('quantity')),
         ];
 

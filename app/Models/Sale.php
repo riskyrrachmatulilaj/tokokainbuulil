@@ -13,6 +13,9 @@ class Sale extends Model
     public const PAYMENT_METHOD_RECEIVABLE = 'receivable';
     public const PAYMENT_METHOD_TRANSFER = 'transfer';
     public const PAYMENT_METHOD_SPLIT = 'split';
+    public const PAYMENT_METHOD_CREDIT_CASH = 'credit_cash';
+    public const PAYMENT_METHOD_CREDIT_TRANSFER = 'credit_transfer';
+    public const PAYMENT_METHOD_CREDIT_SPLIT = 'credit_split';
 
     protected $fillable = [
         'transaction_number',
@@ -61,10 +64,37 @@ class Sale extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function isCredit(): bool
+    {
+        return in_array($this->payment_method, [
+            self::PAYMENT_METHOD_RECEIVABLE,
+            self::PAYMENT_METHOD_CREDIT_CASH,
+            self::PAYMENT_METHOD_CREDIT_TRANSFER,
+            self::PAYMENT_METHOD_CREDIT_SPLIT,
+        ]);
+    }
+
+    public function getDownPaymentAttribute(): float
+    {
+        return round((float) ($this->cash_amount ?? 0) + (float) ($this->transfer_amount ?? 0), 2);
+    }
+
+    public function getRemainingCreditAttribute(): float
+    {
+        if (! $this->isCredit()) {
+            return 0.0;
+        }
+
+        return max(0.0, round((float) $this->total_amount - $this->down_payment, 2));
+    }
+
     public function getPaymentMethodLabelAttribute(): string
     {
         return match ($this->payment_method) {
             self::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang)',
+            self::PAYMENT_METHOD_CREDIT_CASH => 'Kredit + Tunai',
+            self::PAYMENT_METHOD_CREDIT_TRANSFER => 'Kredit + Transfer',
+            self::PAYMENT_METHOD_CREDIT_SPLIT => 'Kredit + Tunai + Transfer',
             self::PAYMENT_METHOD_TRANSFER => 'Transfer',
             self::PAYMENT_METHOD_SPLIT => 'Tunai + Transfer',
             default => 'Tunai',
@@ -113,6 +143,27 @@ class Sale extends Model
             $message .= "*Bayar Tunai:* Rp " . number_format((float)$this->cash_amount, 0, ',', '.') . "\n";
             $message .= "*Bayar Transfer:* Rp " . number_format((float)$this->transfer_amount, 0, ',', '.') . "\n";
             $message .= "*Kembalian:* Rp " . number_format((float)$this->change_amount, 0, ',', '.') . "\n";
+        } elseif ($this->payment_method === self::PAYMENT_METHOD_TRANSFER) {
+            $message .= "*Status:* LUNAS (Transfer)\n";
+        } elseif ($this->payment_method === self::PAYMENT_METHOD_CREDIT_CASH) {
+            $message .= "*Uang Muka (Tunai):* Rp " . number_format((float)$this->cash_amount, 0, ',', '.') . "\n";
+            $message .= "*Sisa Piutang (Kredit):* Rp " . number_format((float)$this->remaining_credit, 0, ',', '.') . "\n";
+            if ($this->receivable && $this->receivable->due_date) {
+                $message .= "*Jatuh Tempo:* " . $this->receivable->due_date->format('d M Y') . "\n";
+            }
+        } elseif ($this->payment_method === self::PAYMENT_METHOD_CREDIT_TRANSFER) {
+            $message .= "*Uang Muka (Transfer):* Rp " . number_format((float)$this->transfer_amount, 0, ',', '.') . "\n";
+            $message .= "*Sisa Piutang (Kredit):* Rp " . number_format((float)$this->remaining_credit, 0, ',', '.') . "\n";
+            if ($this->receivable && $this->receivable->due_date) {
+                $message .= "*Jatuh Tempo:* " . $this->receivable->due_date->format('d M Y') . "\n";
+            }
+        } elseif ($this->payment_method === self::PAYMENT_METHOD_CREDIT_SPLIT) {
+            $message .= "*Uang Muka (Tunai):* Rp " . number_format((float)$this->cash_amount, 0, ',', '.') . "\n";
+            $message .= "*Uang Muka (Transfer):* Rp " . number_format((float)$this->transfer_amount, 0, ',', '.') . "\n";
+            $message .= "*Sisa Piutang (Kredit):* Rp " . number_format((float)$this->remaining_credit, 0, ',', '.') . "\n";
+            if ($this->receivable && $this->receivable->due_date) {
+                $message .= "*Jatuh Tempo:* " . $this->receivable->due_date->format('d M Y') . "\n";
+            }
         } elseif ($this->payment_method === self::PAYMENT_METHOD_RECEIVABLE) {
             $message .= "*Sisa Piutang (Kredit):* Rp " . number_format((float)$this->total_amount, 0, ',', '.') . "\n";
             if ($this->receivable && $this->receivable->due_date) {
