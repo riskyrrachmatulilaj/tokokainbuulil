@@ -42,3 +42,11 @@ Route::middleware(['auth'])->group(function () {
         return SaleThermalService::thermalRollInline($sale);
     })->name('sales.thermal-roll');
 });
+
+// Customer Facing Display Routes (Layar Pelanggan HP/Tablet/Monitor)
+Route::get('/customer-display', [\App\Http\Controllers\CustomerDisplayController::class, 'index'])->name('customer-display');
+Route::get('/display', [\App\Http\Controllers\CustomerDisplayController::class, 'index'])->name('customer-display.alias');
+Route::get('/api/customer-display/state', [\App\Http\Controllers\CustomerDisplayController::class, 'state'])->name('customer-display.state');
+Route::get('/api/customer-display/stream', [\App\Http\Controllers\CustomerDisplayController::class, 'stream'])->name('customer-display.stream');
+Route::post('/api/customer-display/update', [\App\Http\Controllers\CustomerDisplayController::class, 'update'])->name('customer-display.update');
+

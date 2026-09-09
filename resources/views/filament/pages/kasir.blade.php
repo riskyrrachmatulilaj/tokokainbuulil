@@ -474,7 +474,20 @@
                 </div>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <button
+                    type="button"
+                    wire:click="openCustomerDisplayModal"
+                    style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.9rem; border-radius: 0.6rem; font-size: 0.825rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; border: 1px solid rgba(13, 148, 136, 0.4); background: rgba(13, 148, 136, 0.1); color: #0d9488;"
+                    class="hover:bg-teal-500/20 dark:border-teal-500/40 dark:text-teal-400"
+                    title="Buka atau hubungkan Layar Pelanggan (Customer Display HP/Tablet)"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 17px; height: 17px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+                    </svg>
+                    <span>Layar Pelanggan</span>
+                </button>
+
                 <button
                     type="button"
                     wire:click="openDraftListModal"
@@ -1758,8 +1771,229 @@
             </div>
         @endif
 
+        {{-- Modal 4: Layar Pelanggan (Customer Facing Display) --}}
+        @if ($this->showCustomerDisplayModal)
+            <div class="kasir-modal-backdrop" wire:click.self="closeCustomerDisplayModal" style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+                <div class="kasir-modal-card" style="width: 100%; max-width: 580px; background: var(--kasir-surface-solid, #ffffff); border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); border: 1px solid rgba(13, 148, 136, 0.3); overflow: hidden; animation: kasirModalPop 0.2s ease-out;" x-data="{
+                    displayUrl: window.location.origin + '/customer-display',
+                    copied: false,
+                    copyUrl() {
+                        navigator.clipboard.writeText(this.displayUrl);
+                        this.copied = true;
+                        setTimeout(() => this.copied = false, 2000);
+                    },
+                    openWindow() {
+                        window.open(this.displayUrl, 'CustomerDisplay', 'width=1100,height=750');
+                    }
+                }">
+                    <div class="kasir-modal-header" style="padding: 0.9rem 1.25rem; border-bottom: 1px solid rgba(226, 232, 240, 0.8); display: flex; justify-content: space-between; align-items: center; background: rgba(240, 253, 250, 0.7);">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div class="kasir-modal-icon-badge" style="background: rgba(13, 148, 136, 0.15); color: #0d9488;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="kasir-modal-title">Layar Pelanggan (Customer Display)</h3>
+                                <span class="kasir-modal-subtitle">Tampilkan nominal total belanja secara live di HP / Tablet / Monitor</span>
+                            </div>
+                        </div>
+
+                        <button type="button" class="kasir-modal-close-btn" wire:click="closeCustomerDisplayModal">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+
+                    <div class="kasir-modal-body" style="padding: 1.25rem; background: var(--kasir-surface-solid, #ffffff);">
+                        <!-- Action Top: Open New Window -->
+                        <div style="margin-bottom: 1.25rem; text-align: center;">
+                            <button
+                                type="button"
+                                @click="openWindow()"
+                                style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border-radius: 0.75rem; background: #0d9488; color: #ffffff; font-weight: 700; font-size: 0.95rem; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3); transition: all 0.15s ease;"
+                                class="hover:bg-teal-700"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                                <span>Buka di Monitor / Tab Baru</span>
+                            </button>
+                            <p style="font-size: 0.75rem; color: var(--kasir-muted); margin-top: 0.4rem;">
+                                Cocok jika menggunakan monitor kedua (kabel HDMI) di komputer yang sama.
+                            </p>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0;">
+                            <div style="flex: 1; height: 1px; background: rgba(128, 128, 128, 0.2);"></div>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--kasir-muted); text-transform: uppercase;">Atau Hubungkan HP / Tablet</span>
+                            <div style="flex: 1; height: 1px; background: rgba(128, 128, 128, 0.2);"></div>
+                        </div>
+
+                        <!-- QR Code & Link Section -->
+                        <div style="display: flex; gap: 1.25rem; align-items: center; background: rgba(128, 128, 128, 0.05); padding: 1rem; border-radius: 0.75rem; border: 1px solid rgba(128, 128, 128, 0.15);">
+                            <!-- QR Code Image -->
+                            <div style="background: #ffffff; padding: 0.5rem; border-radius: 0.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.1); flex-shrink: 0; text-align: center;">
+                                <img
+                                    :src="'https://api.qrserver.com/v1/create-qr-code/?size=130x130&margin=4&data=' + encodeURIComponent(displayUrl)"
+                                    alt="QR Code Customer Display"
+                                    style="width: 120px; height: 120px; display: block; border-radius: 0.25rem;"
+                                    loading="lazy"
+                                />
+                                <span style="font-size: 0.65rem; color: #64748b; font-weight: 700; margin-top: 0.25rem; display: block;">Scan pakai Kamera HP</span>
+                            </div>
+
+                            <!-- Steps & Copy URL -->
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.825rem; font-weight: 700; color: var(--kasir-text); margin-bottom: 0.35rem;">
+                                    Cara Pakai Layar HP / Tablet:
+                                </div>
+                                <ol style="font-size: 0.775rem; color: var(--kasir-muted); margin: 0 0 0.75rem 1rem; padding: 0; line-height: 1.45;">
+                                    <li>Sambungkan HP ke Wi-Fi toko.</li>
+                                    <li>Scan QR Code di samping menggunakan kamera HP.</li>
+                                    <li>Layar HP otomatis menampilkan total belanja live!</li>
+                                </ol>
+
+                                <div style="display: flex; gap: 0.35rem;">
+                                    <input
+                                        type="text"
+                                        readonly
+                                        :value="displayUrl"
+                                        style="flex: 1; font-size: 0.75rem; font-family: monospace; padding: 0.4rem 0.6rem; border-radius: 0.4rem; border: 1px solid rgba(128, 128, 128, 0.3); background: rgba(128, 128, 128, 0.08); color: var(--kasir-text);"
+                                    />
+                                    <button
+                                        type="button"
+                                        @click="copyUrl()"
+                                        style="padding: 0.4rem 0.65rem; border-radius: 0.4rem; font-size: 0.75rem; font-weight: 700; background: rgba(13, 148, 136, 0.15); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.3); cursor: pointer; white-space: nowrap;"
+                                        x-text="copied ? 'Tersalin! ✓' : 'Salin URL'"
+                                    >
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kasir-modal-footer" style="padding: 0.85rem 1.25rem; border-top: 1px solid rgba(226, 232, 240, 0.8); display: flex; justify-content: flex-end; align-items: center;">
+                        <x-filament::button
+                            type="button"
+                            color="gray"
+                            size="md"
+                            wire:click="closeCustomerDisplayModal"
+                        >
+                            Tutup
+                        </x-filament::button>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @script
         <script>
+            // Customer Display Real-time Sync
+            let broadcastChannel = null;
+            try {
+                broadcastChannel = new BroadcastChannel('pos_customer_display');
+            } catch (e) {
+                console.warn('BroadcastChannel not supported:', e);
+            }
+
+            function syncCustomerDisplay(data) {
+                if (!data) return;
+
+                // 1. BroadcastChannel (instant for dual screen / same PC)
+                if (broadcastChannel) {
+                    try {
+                        broadcastChannel.postMessage(data);
+                    } catch (e) {}
+                }
+
+                // 2. Server API Update (for external phone/tablet)
+                try {
+                    fetch('/api/customer-display/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify(data)
+                    }).catch(() => {});
+                } catch (e) {}
+            }
+
+            function getPosState() {
+                try {
+                    const cart = $wire.get('cart') || [];
+                    const result = $wire.get('result');
+                    const paymentMethod = $wire.get('paymentMethod');
+                    const receivedAmount = $wire.get('receivedAmount');
+                    const cashAmount = $wire.get('cashAmount');
+                    const transferAmount = $wire.get('transferAmount');
+                    const partySearch = $wire.get('partySearch');
+
+                    if (result && result.sale_id) {
+                        return {
+                            status: 'success',
+                            cart: [],
+                            total_amount: parseFloat(result.total) || 0,
+                            items_count: parseFloat(result.items_count) || 0,
+                            payment_method: result.payment_method,
+                            received_amount: result.received !== null ? parseFloat(result.received) : null,
+                            change_amount: result.change !== null ? parseFloat(result.change) : null,
+                            down_payment: result.down_payment !== null ? parseFloat(result.down_payment) : null,
+                            remaining_credit: result.remaining_credit !== null ? parseFloat(result.remaining_credit) : null,
+                            transaction_number: result.transaction_number,
+                            party_name: result.party_name
+                        };
+                    }
+
+                    const total = cart.reduce((sum, item) => sum + (parseFloat(item.subtotal) || 0), 0);
+                    const itemsCount = cart.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0);
+
+                    const hasReceived = receivedAmount !== null && receivedAmount !== undefined && receivedAmount !== '';
+                    const hasDp = (cashAmount > 0 || transferAmount > 0);
+
+                    let status = 'idle';
+                    if (cart.length > 0) {
+                        status = (hasReceived || hasDp) ? 'payment' : 'active';
+                    }
+
+                    const recVal = hasReceived ? (parseFloat(receivedAmount) || 0) : null;
+                    const changeVal = (recVal !== null && recVal >= total) ? Math.round(recVal - total) : null;
+
+                    return {
+                        status: status,
+                        cart: cart,
+                        total_amount: total,
+                        items_count: itemsCount,
+                        last_item: cart.length > 0 ? cart[cart.length - 1] : null,
+                        payment_method: paymentMethod,
+                        received_amount: recVal,
+                        change_amount: changeVal,
+                        down_payment: (parseFloat(cashAmount) || 0) + (parseFloat(transferAmount) || 0),
+                        remaining_credit: Math.max(0, total - ((parseFloat(cashAmount) || 0) + (parseFloat(transferAmount) || 0))),
+                        transaction_number: null,
+                        party_name: partySearch || null
+                    };
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            // Sync on Livewire updates
+            $wire.hook('commit', ({ component, succeed }) => {
+                succeed(() => {
+                    setTimeout(() => {
+                        const state = getPosState();
+                        if (state) syncCustomerDisplay(state);
+                    }, 50);
+                });
+            });
+
+            // Initial Sync
+            setTimeout(() => {
+                const state = getPosState();
+                if (state) syncCustomerDisplay(state);
+            }, 300);
+
             window.printDraftA4Nota = function() {
                 const printElem = document.getElementById('kasir-receipt-paper-printable');
                 if (!printElem) {

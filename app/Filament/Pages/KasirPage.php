@@ -54,7 +54,19 @@ class KasirPage extends Page
 
     public bool $showSaveDraftModal = false;
 
+    public bool $showCustomerDisplayModal = false;
+
     public string $draftReferenceName = '';
+
+    public function openCustomerDisplayModal(): void
+    {
+        $this->showCustomerDisplayModal = true;
+    }
+
+    public function closeCustomerDisplayModal(): void
+    {
+        $this->showCustomerDisplayModal = false;
+    }
 
     public function mount(): void
     {
