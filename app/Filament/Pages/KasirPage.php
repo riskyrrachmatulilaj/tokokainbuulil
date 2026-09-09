@@ -71,6 +71,77 @@ class KasirPage extends Page
     public function mount(): void
     {
         $this->saleDate = today()->format('Y-m-d');
+        $this->syncCustomerDisplayState();
+    }
+
+    public function rendered(): void
+    {
+        $this->syncCustomerDisplayState();
+    }
+
+    public function syncCustomerDisplayState(): void
+    {
+        try {
+            $cart = $this->cart ?: [];
+            $total = $this->cartTotal();
+            $itemsCount = (float) collect($cart)->sum('quantity');
+
+            if ($this->result && ! empty($this->result['sale_id'])) {
+                $status = 'success';
+                $payload = [
+                    'status' => 'success',
+                    'cart' => [],
+                    'total_amount' => (float) ($this->result['total'] ?? 0),
+                    'items_count' => (float) ($this->result['items_count'] ?? 0),
+                    'payment_method' => $this->result['payment_method'] ?? null,
+                    'received_amount' => $this->result['received'] ?? null,
+                    'change_amount' => $this->result['change'] ?? null,
+                    'down_payment' => $this->result['down_payment'] ?? null,
+                    'remaining_credit' => $this->result['remaining_credit'] ?? null,
+                    'transaction_number' => $this->result['transaction_number'] ?? null,
+                    'party_name' => $this->result['party_name'] ?? null,
+                ];
+            } else {
+                $hasReceived = $this->receivedAmount !== null && $this->receivedAmount !== '';
+                $hasDp = ($this->cashAmount > 0 || $this->transferAmount > 0);
+                $status = ! empty($cart) ? (($hasReceived || $hasDp) ? 'payment' : 'active') : 'idle';
+
+                $recAmount = static::parseNumericAmount($this->receivedAmount);
+                $change = ($recAmount !== null && $recAmount >= $total) ? round($recAmount - $total, 2) : null;
+                $cashDp = (float) static::parseNumericAmount($this->cashAmount) ?: 0;
+                $trfDp = (float) static::parseNumericAmount($this->transferAmount) ?: 0;
+                $dp = $cashDp + $trfDp;
+                $party = $this->getSelectedParty();
+
+                $payload = [
+                    'status' => $status,
+                    'cart' => $cart,
+                    'total_amount' => $total,
+                    'items_count' => $itemsCount,
+                    'last_item' => ! empty($cart) ? end($cart) : null,
+                    'payment_method' => $this->paymentMethod,
+                    'received_amount' => $recAmount,
+                    'change_amount' => $change,
+                    'cash_amount' => $cashDp > 0 ? $cashDp : null,
+                    'transfer_amount' => $trfDp > 0 ? $trfDp : null,
+                    'down_payment' => $dp > 0 ? $dp : null,
+                    'remaining_credit' => $dp > 0 ? max(0, $total - $dp) : null,
+                    'transaction_number' => null,
+                    'party_name' => $party?->name ?? ($this->partySearch ?: null),
+                ];
+            }
+
+            $timestamp = microtime(true);
+            $payload['updated_at'] = now()->toIso8601String();
+            $payload['timestamp'] = $timestamp;
+
+            \Illuminate\Support\Facades\Cache::put('pos_customer_display_state', $payload, now()->addHours(6));
+            \Illuminate\Support\Facades\Cache::put('pos_customer_display_timestamp', $timestamp, now()->addHours(6));
+
+            $this->dispatch('customer-display-synced', $payload);
+        } catch (\Throwable $e) {
+            // Safe fail
+        }
     }
 
     public function openPreviewModal(): void

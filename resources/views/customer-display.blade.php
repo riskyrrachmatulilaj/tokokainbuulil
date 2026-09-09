@@ -524,24 +524,33 @@
             }
         }
 
-        // 3. Fallback Initial Fetch
+        let lastStateSignature = '';
+
+        // 3. Regular Polling Fetch (Every 800ms for 100% reliable cross-device sync)
         async function fetchState() {
             try {
-                const res = await fetch('/api/customer-display/state', { cache: 'no-store' });
+                const res = await fetch('/api/customer-display/state?_t=' + Date.now(), { cache: 'no-store' });
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && data.timestamp > (currentState.timestamp || 0)) {
-                        renderState(data);
+                    if (data) {
+                        const signature = JSON.stringify(data);
+                        if (signature !== lastStateSignature) {
+                            lastStateSignature = signature;
+                            renderState(data);
+                        }
                     }
                     setConnectionStatus(true);
+                } else {
+                    setConnectionStatus(false);
                 }
             } catch (e) {
-                // ignore
+                setConnectionStatus(false);
             }
         }
 
-        // Start connection
+        // Start connection & continuous polling
         fetchState();
+        setInterval(fetchState, 800);
         initSSE();
     </script>
 </body>

@@ -1921,13 +1921,13 @@
 
             function getPosState() {
                 try {
-                    const cart = $wire.get('cart') || [];
-                    const result = $wire.get('result');
-                    const paymentMethod = $wire.get('paymentMethod');
-                    const receivedAmount = $wire.get('receivedAmount');
-                    const cashAmount = $wire.get('cashAmount');
-                    const transferAmount = $wire.get('transferAmount');
-                    const partySearch = $wire.get('partySearch');
+                    const cart = $wire.cart || [];
+                    const result = $wire.result;
+                    const paymentMethod = $wire.paymentMethod;
+                    const receivedAmount = $wire.receivedAmount;
+                    const cashAmount = $wire.cashAmount;
+                    const transferAmount = $wire.transferAmount;
+                    const partySearch = $wire.partySearch;
 
                     if (result && result.sale_id) {
                         return {
@@ -1949,7 +1949,7 @@
                     const itemsCount = cart.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0);
 
                     const hasReceived = receivedAmount !== null && receivedAmount !== undefined && receivedAmount !== '';
-                    const hasDp = (cashAmount > 0 || transferAmount > 0);
+                    const hasDp = (parseFloat(cashAmount) > 0 || parseFloat(transferAmount) > 0);
 
                     let status = 'idle';
                     if (cart.length > 0) {
@@ -1968,6 +1968,8 @@
                         payment_method: paymentMethod,
                         received_amount: recVal,
                         change_amount: changeVal,
+                        cash_amount: parseFloat(cashAmount) || null,
+                        transfer_amount: parseFloat(transferAmount) || null,
                         down_payment: (parseFloat(cashAmount) || 0) + (parseFloat(transferAmount) || 0),
                         remaining_credit: Math.max(0, total - ((parseFloat(cashAmount) || 0) + (parseFloat(transferAmount) || 0))),
                         transaction_number: null,
@@ -1978,7 +1980,15 @@
                 }
             }
 
-            // Sync on Livewire updates
+            // Sync on Livewire backend event
+            $wire.on('customer-display-synced', (data) => {
+                const payload = Array.isArray(data) ? data[0] : data;
+                if (payload) {
+                    syncCustomerDisplay(payload);
+                }
+            });
+
+            // Sync on Livewire commit
             $wire.hook('commit', ({ component, succeed }) => {
                 succeed(() => {
                     setTimeout(() => {
