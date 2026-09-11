@@ -48,6 +48,7 @@ class FilamentPagesTest extends TestCase
             CollectivePaymentPage::getUrl(),
             Reports::getUrl(),
             BackupPage::getUrl(),
+            \App\Filament\Pages\TopCustomerReport::getUrl(),
         ];
 
         foreach ($pages as $url) {

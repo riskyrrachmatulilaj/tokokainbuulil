@@ -31,6 +31,11 @@ class ReceivableParty extends Model
         return $this->hasMany(ReceivableCollectivePayment::class);
     }
 
+    public function sales()
+    {
+        return $this->hasMany(Sale::class, 'receivable_party_id');
+    }
+
     public function unpaidReceivables()
     {
         return $this->receivables()
