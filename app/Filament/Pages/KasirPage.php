@@ -82,15 +82,16 @@ class KasirPage extends Page
     public function syncCustomerDisplayState(): void
     {
         try {
-            $cart = $this->cart ?: [];
+            $cart = array_values($this->cart ?: []);
             $total = $this->cartTotal();
             $itemsCount = (float) collect($cart)->sum('quantity');
 
             if ($this->result && ! empty($this->result['sale_id'])) {
                 $status = 'success';
+                $purchasedItems = array_values($this->result['items'] ?? []);
                 $payload = [
                     'status' => 'success',
-                    'cart' => [],
+                    'cart' => $purchasedItems,
                     'total_amount' => (float) ($this->result['total'] ?? 0),
                     'items_count' => (float) ($this->result['items_count'] ?? 0),
                     'payment_method' => $this->result['payment_method'] ?? null,
@@ -694,6 +695,15 @@ class KasirPage extends Page
 
             $sale = app(SaleService::class)->createSale($data, auth()->user());
 
+            $purchasedCart = array_values(collect($this->cart)->map(fn (array $row) => [
+                'product_id' => $row['product_id'] ?? null,
+                'name' => $row['name'] ?? 'Produk',
+                'price' => (float) ($row['price'] ?? 0),
+                'quantity' => (float) ($row['quantity'] ?? 1),
+                'subtotal' => (float) ($row['subtotal'] ?? ((float) ($row['price'] ?? 0) * (float) ($row['quantity'] ?? 1))),
+                'notes' => isset($row['notes']) && trim((string)$row['notes']) !== '' ? trim((string)$row['notes']) : null,
+            ])->all());
+
             $this->result = [
                 'sale_id' => $sale->id,
                 'transaction_number' => $sale->transaction_number,
@@ -709,6 +719,7 @@ class KasirPage extends Page
                 'down_payment' => (float) $sale->down_payment,
                 'remaining_credit' => (float) $sale->remaining_credit,
                 'items_count' => $sale->items->sum('quantity'),
+                'items' => $purchasedCart,
                 'wa_link' => $sale->whatsapp_link,
             ];
 

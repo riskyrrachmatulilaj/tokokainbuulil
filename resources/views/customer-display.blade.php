@@ -231,45 +231,83 @@
                 </div>
             </div>
 
-            <!-- 3. VIEW SUCCESS (Transaksi Selesai) -->
-            <div id="viewSuccess" class="hidden flex flex-col items-center justify-center text-center py-8 sm:py-12 bg-slate-900/70 border-2 border-emerald-500/30 rounded-3xl p-6 sm:p-10 glow-box max-w-2xl mx-auto w-full">
+            <!-- 3. VIEW SUCCESS (Transaksi Selesai & Rincian Belanja) -->
+            <div id="viewSuccess" class="hidden flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch w-full">
                 
-                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-emerald-500/20 border-2 border-emerald-400/50 flex items-center justify-center text-emerald-400 mb-4 shadow-xl shadow-emerald-500/20 animate-bounce">
-                    <svg class="w-10 h-10 sm:w-12 sm:h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
+                <!-- Left: Purchased Items List (7 Cols on desktop) -->
+                <div class="lg:col-span-7 flex flex-col bg-slate-900/70 border border-slate-800/90 rounded-2xl p-4 sm:p-5 overflow-hidden order-2 lg:order-1">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm sm:text-base font-bold text-slate-200">Daftar Barang Belanjaan</span>
+                            <span id="successItemsBadge" class="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-xs font-bold">0 Item</span>
+                        </div>
+                        <div id="successCustomerName" class="text-xs sm:text-sm font-semibold text-emerald-400"></div>
+                    </div>
 
-                <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">
-                    Pembayaran Berhasil!
-                </h2>
-                <p id="successTrxNo" class="text-sm sm:text-base font-mono font-bold text-teal-400 mb-6">
-                    No. Nota: -
-                </p>
-
-                <!-- Summary Box -->
-                <div class="w-full bg-slate-950/70 border border-slate-800 rounded-2xl p-5 mb-6 space-y-3 text-left">
-                    <div class="flex justify-between items-center text-slate-300">
-                        <span>Total Transaksi</span>
-                        <span id="successTotal" class="font-mono font-extrabold text-white text-lg sm:text-xl">Rp 0</span>
-                    </div>
-                    <div id="successReceivedRow" class="flex justify-between items-center text-slate-300">
-                        <span id="successReceivedLabel">Uang Diterima</span>
-                        <span id="successReceived" class="font-mono font-bold text-slate-200">Rp 0</span>
-                    </div>
-                    <div id="successChangeRow" class="flex justify-between items-center pt-2 border-t border-slate-800 text-amber-400">
-                        <span class="font-bold text-base sm:text-lg">KEMBALIAN</span>
-                        <span id="successChange" class="font-mono font-black text-2xl sm:text-3xl text-amber-300 glow-amber">Rp 0</span>
-                    </div>
-                    <div id="successCreditRow" class="hidden flex justify-between items-center pt-2 border-t border-slate-800 text-rose-400">
-                        <span class="font-bold">Sisa Piutang (Kredit)</span>
-                        <span id="successCredit" class="font-mono font-black text-xl text-rose-300">Rp 0</span>
+                    <!-- Item Rows Container for Success View -->
+                    <div id="successItemsContainer" class="flex-1 overflow-y-auto space-y-2.5 max-h-[380px] lg:max-h-[440px] pr-1">
+                        <!-- Dynamic item rows injected here -->
                     </div>
                 </div>
 
-                <p class="text-base sm:text-lg font-bold text-emerald-400">
-                    ✨ Terima Kasih Telah Berbelanja di Toko Kain Bu Ulil ✨
-                </p>
+                <!-- Right: Payment Receipt & Confirmation (5 Cols on desktop) -->
+                <div class="lg:col-span-5 flex flex-col justify-between gap-4 order-1 lg:order-2">
+                    
+                    <!-- Success Status & Total Card -->
+                    <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-7 glow-box text-center relative overflow-hidden">
+                        
+                        <!-- Checkmark Icon -->
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400/50 flex items-center justify-center text-emerald-400 mx-auto mb-3 shadow-lg shadow-emerald-500/20">
+                            <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+
+                        <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight mb-1">
+                            Pembayaran Berhasil!
+                        </h2>
+                        <div id="successTrxNo" class="inline-block px-3 py-1 rounded-full bg-slate-950/80 border border-slate-800 text-xs sm:text-sm font-mono font-bold text-teal-400 mb-3">
+                            No. Nota: -
+                        </div>
+
+                        <!-- Jumbo Total -->
+                        <div class="pt-3 border-t border-slate-800/80">
+                            <span class="text-xs uppercase tracking-widest font-extrabold text-teal-400">
+                                TOTAL TRANSAKSI
+                            </span>
+                            <div id="successTotal" class="font-mono text-3xl sm:text-4xl lg:text-5xl font-black text-emerald-400 tracking-tight glow-emerald my-2">
+                                Rp 0
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Summary Box -->
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-2.5">
+                        <div id="successReceivedRow" class="flex justify-between items-center text-sm sm:text-base text-slate-300">
+                            <span id="successReceivedLabel" class="text-slate-400 font-medium">Uang Diterima:</span>
+                            <span id="successReceived" class="font-mono font-bold text-slate-200">Rp 0</span>
+                        </div>
+
+                        <div id="successChangeRow" class="flex justify-between items-center pt-2 border-t border-slate-800">
+                            <span class="text-base sm:text-lg font-black text-amber-400">KEMBALIAN:</span>
+                            <span id="successChange" class="font-mono text-xl sm:text-2xl font-black text-amber-300 glow-amber">Rp 0</span>
+                        </div>
+
+                        <div id="successCreditRow" class="hidden flex justify-between items-center pt-2 border-t border-slate-800">
+                            <span class="text-sm sm:text-base font-bold text-rose-400">Sisa Piutang:</span>
+                            <span id="successCredit" class="font-mono text-base sm:text-lg font-black text-rose-300">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <!-- Thank you note -->
+                    <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/60 text-center">
+                        <p class="text-xs sm:text-sm font-bold text-emerald-400 flex items-center justify-center gap-1.5">
+                            <span>✨</span>
+                            <span>Terima Kasih Telah Berbelanja di Toko Kain Bu Ulil</span>
+                            <span>✨</span>
+                        </p>
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -315,6 +353,44 @@
             return (n % 1 === 0) ? n.toFixed(0) : n.toFixed(2).replace('.', ',');
         }
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function renderItemCard(item, isHighlighted) {
+            const name = item.name || item.product_name || 'Produk';
+            const price = parseFloat(item.price) || 0;
+            const qty = parseFloat(item.quantity) || 1;
+            const subtotal = parseFloat(item.subtotal) || (price * qty);
+            const notes = item.notes ? String(item.notes).trim() : '';
+
+            return `
+                <div class="flex items-start justify-between p-3 rounded-xl bg-slate-950/60 border ${isHighlighted ? 'border-teal-500/50 bg-teal-950/20 item-row-new' : 'border-slate-800/80'} transition">
+                    <div class="flex-1 pr-3">
+                        <div class="font-bold text-sm sm:text-base text-white leading-snug">
+                            ${escapeHtml(name)}
+                        </div>
+                        ${notes ? `<div class="text-xs text-amber-400 font-medium mt-0.5">* ${escapeHtml(notes)}</div>` : ''}
+                        <div class="text-xs sm:text-sm text-slate-400 mt-1 flex items-center gap-2">
+                            <span class="font-semibold text-teal-400">${formatQty(qty)}x</span>
+                            <span>@ ${formatRupiah(price)}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-mono font-black text-sm sm:text-base text-emerald-400">
+                            ${formatRupiah(subtotal)}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
         // Live Clock
         function updateClock() {
             const now = new Date();
@@ -358,14 +434,30 @@
 
         // Render Function
         function renderState(state) {
+            if (!state) return;
             currentState = { ...currentState, ...state };
+
+            // Ensure cart is strictly a JavaScript Array
+            if (currentState.cart) {
+                if (Array.isArray(currentState.cart)) {
+                    // Valid array
+                } else if (typeof currentState.cart === 'object') {
+                    currentState.cart = Object.values(currentState.cart);
+                } else {
+                    currentState.cart = [];
+                }
+            } else {
+                currentState.cart = [];
+            }
 
             const viewIdle = document.getElementById('viewIdle');
             const viewActive = document.getElementById('viewActive');
             const viewSuccess = document.getElementById('viewSuccess');
 
-            const hasItems = Array.isArray(currentState.cart) && currentState.cart.length > 0;
+            const hasItems = currentState.cart.length > 0;
             const status = currentState.status || (hasItems ? 'active' : 'idle');
+
+            const itemsCount = currentState.cart.reduce((sum, item) => sum + (parseFloat(item.quantity) || 1), 0);
 
             if (status === 'success') {
                 viewIdle.classList.add('hidden');
@@ -374,6 +466,22 @@
 
                 document.getElementById('successTrxNo').textContent = 'No. Nota: ' + (currentState.transaction_number || '-');
                 document.getElementById('successTotal').textContent = formatRupiah(currentState.total_amount);
+                document.getElementById('successCustomerName').textContent = currentState.party_name ? `Pelanggan: ${currentState.party_name}` : '';
+                document.getElementById('successItemsBadge').textContent = `${currentState.cart.length} Produk (${formatQty(itemsCount)} Qty)`;
+
+                // Render Success Item Rows
+                const successContainer = document.getElementById('successItemsContainer');
+                if (successContainer) {
+                    if (currentState.cart.length > 0) {
+                        successContainer.innerHTML = currentState.cart.map(item => renderItemCard(item, false)).join('');
+                    } else {
+                        successContainer.innerHTML = `
+                            <div class="flex flex-col items-center justify-center py-12 text-slate-400 text-sm text-center">
+                                <span>Rincian barang tercatat pada sistem kasir.</span>
+                            </div>
+                        `;
+                    }
+                }
 
                 const succReceivedRow = document.getElementById('successReceivedRow');
                 const succChangeRow = document.getElementById('successChangeRow');
@@ -383,11 +491,12 @@
                     succReceivedRow.classList.remove('hidden');
                     succChangeRow.classList.remove('hidden');
                     succCreditRow.classList.add('hidden');
+                    document.getElementById('successReceivedLabel').textContent = 'Uang Diterima:';
                     document.getElementById('successReceived').textContent = formatRupiah(currentState.received_amount);
                     document.getElementById('successChange').textContent = formatRupiah(currentState.change_amount);
                 } else if (['credit_cash', 'credit_transfer', 'credit_split', 'receivable'].includes(currentState.payment_method)) {
                     succReceivedRow.classList.remove('hidden');
-                    document.getElementById('successReceivedLabel').textContent = 'Uang Muka (DP)';
+                    document.getElementById('successReceivedLabel').textContent = 'Uang Muka (DP):';
                     document.getElementById('successReceived').textContent = formatRupiah(currentState.down_payment || 0);
                     succChangeRow.classList.add('hidden');
                     succCreditRow.classList.remove('hidden');
@@ -405,34 +514,23 @@
 
                 // Update Items Container
                 const container = document.getElementById('itemsContainer');
-                const itemsCount = currentState.cart.reduce((sum, item) => sum + (parseFloat(item.quantity) || 1), 0);
                 document.getElementById('activeItemsBadge').textContent = `${currentState.cart.length} Produk (${formatQty(itemsCount)} Qty)`;
                 document.getElementById('activeSummaryQty').textContent = `${currentState.cart.length} jenis produk (${formatQty(itemsCount)} total qty)`;
                 document.getElementById('activeCustomerName').textContent = currentState.party_name ? `Pelanggan: ${currentState.party_name}` : '';
 
                 // Render Item Cards
-                container.innerHTML = currentState.cart.map((item, index) => {
-                    const isLast = (index === currentState.cart.length - 1);
-                    return `
-                        <div class="flex items-start justify-between p-3 rounded-xl bg-slate-950/60 border ${isLast ? 'border-teal-500/50 bg-teal-950/20 item-row-new' : 'border-slate-800/80'} transition">
-                            <div class="flex-1 pr-3">
-                                <div class="font-bold text-sm sm:text-base text-white leading-snug">
-                                    ${item.name || item.product_name || 'Produk'}
-                                </div>
-                                ${item.notes ? `<div class="text-xs text-amber-400 font-medium mt-0.5">* ${item.notes}</div>` : ''}
-                                <div class="text-xs sm:text-sm text-slate-400 mt-1 flex items-center gap-2">
-                                    <span class="font-semibold text-teal-400">${formatQty(item.quantity)}x</span>
-                                    <span>@ ${formatRupiah(item.price)}</span>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-mono font-black text-sm sm:text-base text-emerald-400">
-                                    ${formatRupiah(item.subtotal || (parseFloat(item.price) * parseFloat(item.quantity)))}
-                                </span>
-                            </div>
+                if (currentState.cart.length > 0) {
+                    container.innerHTML = currentState.cart.map((item, index) => {
+                        const isLast = (index === currentState.cart.length - 1);
+                        return renderItemCard(item, isLast);
+                    }).reverse().join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-12 text-slate-400 text-sm text-center">
+                            <span>Menunggu kasir menambahkan produk...</span>
                         </div>
                     `;
-                }).reverse().join('');
+                }
 
                 // Update Total Amount
                 document.getElementById('activeTotalAmount').textContent = formatRupiah(currentState.total_amount);

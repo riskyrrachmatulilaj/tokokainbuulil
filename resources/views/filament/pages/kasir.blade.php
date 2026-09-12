@@ -1899,10 +1899,18 @@
             function syncCustomerDisplay(data) {
                 if (!data) return;
 
+                // Deep clone to ensure plain serializable JSON object for BroadcastChannel & fetch
+                let cleanData;
+                try {
+                    cleanData = JSON.parse(JSON.stringify(data));
+                } catch (e) {
+                    cleanData = data;
+                }
+
                 // 1. BroadcastChannel (instant for dual screen / same PC)
                 if (broadcastChannel) {
                     try {
-                        broadcastChannel.postMessage(data);
+                        broadcastChannel.postMessage(cleanData);
                     } catch (e) {}
                 }
 
@@ -1914,14 +1922,23 @@
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
-                        body: JSON.stringify(data)
+                        body: JSON.stringify(cleanData)
                     }).catch(() => {});
                 } catch (e) {}
             }
 
             function getPosState() {
                 try {
-                    const cart = $wire.cart || [];
+                    const rawCart = $wire.cart || [];
+                    const cart = (Array.isArray(rawCart) ? rawCart : Object.values(rawCart || {})).map(item => ({
+                        product_id: item.product_id,
+                        name: item.name,
+                        notes: item.notes || '',
+                        price: parseFloat(item.price) || 0,
+                        quantity: parseFloat(item.quantity) || 1,
+                        subtotal: parseFloat(item.subtotal) || ((parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 1))
+                    }));
+
                     const result = $wire.result;
                     const paymentMethod = $wire.paymentMethod;
                     const receivedAmount = $wire.receivedAmount;
@@ -1930,9 +1947,19 @@
                     const partySearch = $wire.partySearch;
 
                     if (result && result.sale_id) {
+                        const rawResultItems = result.items || [];
+                        const purchasedItems = (Array.isArray(rawResultItems) ? rawResultItems : Object.values(rawResultItems || {})).map(item => ({
+                            product_id: item.product_id,
+                            name: item.name,
+                            notes: item.notes || '',
+                            price: parseFloat(item.price) || 0,
+                            quantity: parseFloat(item.quantity) || 1,
+                            subtotal: parseFloat(item.subtotal) || ((parseFloat(item.price) || 0) * (parseFloat(item.quantity) || 1))
+                        }));
+
                         return {
                             status: 'success',
-                            cart: [],
+                            cart: purchasedItems,
                             total_amount: parseFloat(result.total) || 0,
                             items_count: parseFloat(result.items_count) || 0,
                             payment_method: result.payment_method,

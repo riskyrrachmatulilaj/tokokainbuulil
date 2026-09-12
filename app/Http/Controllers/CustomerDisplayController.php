@@ -40,6 +40,12 @@ class CustomerDisplayController extends Controller
             'party_name' => 'nullable|string',
         ]);
 
+        if (isset($payload['cart']) && is_array($payload['cart'])) {
+            $payload['cart'] = array_values($payload['cart']);
+        } else {
+            $payload['cart'] = [];
+        }
+
         $timestamp = microtime(true);
         $payload['updated_at'] = now()->toIso8601String();
         $payload['timestamp'] = $timestamp;
