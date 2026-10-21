@@ -79,6 +79,7 @@ class DebtService
             $remaining = round((float) $data['amount'] - (float) $paid, 2);
 
             $debt->update([
+                'customer_id' => $data['customer_id'] ?? $debt->customer_id,
                 'amount' => $data['amount'],
                 'remaining_amount' => $remaining,
                 'status' => $remaining <= 0 ? Debt::STATUS_PAID : Debt::STATUS_UNPAID,

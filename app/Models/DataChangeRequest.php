@@ -99,4 +99,31 @@ class DataChangeRequest extends Model
             default => 'gray',
         };
     }
+
+    public function getModuleNameAttribute(): string
+    {
+        return match ($this->requestable_type) {
+            \App\Models\Sale::class => 'Penjualan',
+            \App\Models\Debt::class => 'Hutang Toko',
+            \App\Models\Receivable::class => 'Piutang Pelanggan',
+            default => class_basename($this->requestable_type),
+        };
+    }
+
+    public function getModuleBadgeColorAttribute(): string
+    {
+        return match ($this->requestable_type) {
+            \App\Models\Sale::class => 'primary',
+            \App\Models\Debt::class => 'warning',
+            \App\Models\Receivable::class => 'info',
+            default => 'gray',
+        };
+    }
+
+    public function getDocumentNumberAttribute(): string
+    {
+        return $this->original_data['invoice_number']
+            ?? $this->original_data['transaction_number']
+            ?? "#{$this->requestable_id}";
+    }
 }

@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasDataChangeRequests;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Receivable extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasDataChangeRequests;
 
     public const STATUS_UNPAID = 'unpaid';
     public const STATUS_PAID = 'paid';
@@ -55,6 +56,11 @@ class Receivable extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function sale()
+    {
+        return $this->hasOne(Sale::class, 'receivable_id');
     }
 
     public function getStatusLabelAttribute(): string

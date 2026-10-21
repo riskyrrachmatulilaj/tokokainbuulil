@@ -18,9 +18,9 @@ class DataChangeRequestResource extends Resource
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-shield-check';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Transaksi Penjualan';
+    protected static string | \UnitEnum | null $navigationGroup = 'Persetujuan Perubahan';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     public static function getNavigationLabel(): string
     {
@@ -90,11 +90,14 @@ class DataChangeRequestResource extends Resource
                     ->label('Kasir Pengaju')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('original_data.transaction_number')
+                Tables\Columns\TextColumn::make('module_name')
+                    ->label('Modul')
+                    ->badge()
+                    ->color(fn (DataChangeRequest $record) => $record->module_badge_color),
+                Tables\Columns\TextColumn::make('document_number')
                     ->label('No. Nota')
                     ->searchable()
                     ->copyable()
-                    ->placeholder(fn (DataChangeRequest $record) => "#{$record->requestable_id}")
                     ->weight('semibold'),
                 Tables\Columns\TextColumn::make('request_type')
                     ->label('Jenis Pengajuan')
@@ -127,6 +130,13 @@ class DataChangeRequestResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('requestable_type')
+                    ->label('Modul / Sumber Data')
+                    ->options([
+                        \App\Models\Sale::class => 'Penjualan',
+                        \App\Models\Debt::class => 'Hutang Toko',
+                        \App\Models\Receivable::class => 'Piutang Pelanggan',
+                    ]),
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status')
                     ->options([
@@ -138,7 +148,7 @@ class DataChangeRequestResource extends Resource
                     ->label('Jenis Pengajuan')
                     ->options([
                         DataChangeRequest::TYPE_EDIT => 'Koreksi Data',
-                        DataChangeRequest::TYPE_VOID => 'Pembatalan Transaksi',
+                        DataChangeRequest::TYPE_VOID => 'Pembatalan Transaksi / Nota',
                     ]),
             ])
             ->actions([
@@ -150,7 +160,7 @@ class DataChangeRequestResource extends Resource
                     ->visible(fn (DataChangeRequest $record) => auth()->user()?->isAdmin() && $record->isPending())
                     ->requiresConfirmation()
                     ->modalHeading('Setujui Pengajuan Perubahan Data')
-                    ->modalDescription('Apakah Anda yakin ingin menyetujui pengajuan ini? Data penjualan, stok kain, dan piutang terkait akan disesuaikan otomatis oleh sistem.')
+                    ->modalDescription('Apakah Anda yakin ingin menyetujui pengajuan ini? Data terkait akan diperbarui dan disesuaikan otomatis oleh sistem.')
                     ->action(function (DataChangeRequest $record) {
                         try {
                             app(\App\Services\DataChangeRequestService::class)->approveRequest($record, auth()->user());

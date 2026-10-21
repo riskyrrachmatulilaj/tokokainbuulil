@@ -42,11 +42,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Kasir',
+                'Transaksi Penjualan',
+                'Persetujuan Perubahan',
                 'Manajemen Hutang',
                 'Manajemen Piutang',
                 'Transaksi Hutang',
                 'Transaksi Piutang',
-                'Transaksi Penjualan',
                 'Laporan',
                 'Manajemen Pengguna',
             ])

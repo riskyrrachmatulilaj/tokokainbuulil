@@ -2,12 +2,19 @@
 
 namespace Tests\Feature;
 
+use App\Models\Customer;
 use App\Models\DataChangeRequest;
+use App\Models\Debt;
 use App\Models\Product;
+use App\Models\Receivable;
 use App\Models\ReceivableParty;
 use App\Models\Sale;
 use App\Models\User;
 use App\Services\DataChangeRequestService;
+use App\Services\DebtService;
+use App\Services\PaymentService;
+use App\Services\ReceivablePaymentService;
+use App\Services\ReceivableService;
 use App\Services\SaleService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -252,5 +259,199 @@ class DataChangeRequestTest extends TestCase
         $this->assertEquals($admin->id, $request->fresh()->reviewed_by);
         // Penjualan tetap ada di database
         $this->assertDatabaseHas('sales', ['id' => $sale->id]);
+    }
+
+    public function test_kasir_can_create_debt_change_request_and_admin_approve_edit(): void
+    {
+        $admin = $this->admin();
+        $kasir = $this->kasir();
+        $supplier = Customer::create(['name' => 'Supplier Kain Jaya', 'phone' => '0811111111']);
+
+        $debt = app(DebtService::class)->createDebt([
+            'customer_id' => $supplier->id,
+            'amount' => 500000,
+            'debt_date' => now()->format('Y-m-d'),
+            'description' => 'Pembelian roll kain',
+        ], $kasir);
+
+        $this->assertFalse($kasir->can('update', $debt));
+        $this->assertTrue($kasir->can('requestChange', $debt));
+
+        $service = app(DataChangeRequestService::class);
+        $request = $service->createDebtChangeRequest(
+            $debt,
+            $kasir,
+            DataChangeRequest::TYPE_EDIT,
+            'Koreksi nominal faktur dari supplier sebenarnya 450.000',
+            [
+                'customer_id' => $supplier->id,
+                'amount' => 450000,
+                'debt_date' => now()->format('Y-m-d'),
+                'description' => 'Pembelian roll kain (diskon 50rb)',
+            ]
+        );
+
+        $this->assertDatabaseHas('data_change_requests', [
+            'id' => $request->id,
+            'requestable_type' => Debt::class,
+            'requestable_id' => $debt->id,
+            'status' => DataChangeRequest::STATUS_PENDING,
+        ]);
+
+        $service->approveRequest($request, $admin);
+
+        $this->assertEquals(DataChangeRequest::STATUS_APPROVED, $request->fresh()->status);
+        $this->assertEquals(450000, (float) $debt->fresh()->amount);
+        $this->assertEquals(450000, (float) $debt->fresh()->remaining_amount);
+    }
+
+    public function test_kasir_can_create_debt_change_request_and_admin_approve_void(): void
+    {
+        $admin = $this->admin();
+        $kasir = $this->kasir();
+        $supplier = Customer::create(['name' => 'Supplier Sumber Tekstil', 'phone' => '0822222222']);
+
+        $debt = app(DebtService::class)->createDebt([
+            'customer_id' => $supplier->id,
+            'amount' => 300000,
+            'debt_date' => now()->format('Y-m-d'),
+        ], $kasir);
+
+        $service = app(DataChangeRequestService::class);
+        $request = $service->createDebtChangeRequest(
+            $debt,
+            $kasir,
+            DataChangeRequest::TYPE_VOID,
+            'Salah input supplier, transaksi fiktif'
+        );
+
+        $service->approveRequest($request, $admin);
+
+        $this->assertEquals(DataChangeRequest::STATUS_APPROVED, $request->fresh()->status);
+        $this->assertSoftDeleted('debts', ['id' => $debt->id]);
+    }
+
+    public function test_cannot_void_debt_with_payments(): void
+    {
+        $kasir = $this->kasir();
+        $supplier = Customer::create(['name' => 'Supplier Benang', 'phone' => '0833333333']);
+
+        $debt = app(DebtService::class)->createDebt([
+            'customer_id' => $supplier->id,
+            'amount' => 200000,
+            'debt_date' => now()->format('Y-m-d'),
+        ], $kasir);
+
+        // Catat cicilan
+        app(PaymentService::class)->recordInstallment([
+            'debt_id' => $debt->id,
+            'amount' => 50000,
+            'installment_date' => now()->format('Y-m-d'),
+        ], $kasir);
+
+        $this->expectException(ValidationException::class);
+        app(DataChangeRequestService::class)->createDebtChangeRequest(
+            $debt->fresh(),
+            $kasir,
+            DataChangeRequest::TYPE_VOID,
+            'Coba batalkan hutang yang ada cicilan'
+        );
+    }
+
+    public function test_kasir_can_create_receivable_change_request_and_admin_approve_edit(): void
+    {
+        $admin = $this->admin();
+        $kasir = $this->kasir();
+        $party = ReceivableParty::create(['name' => 'Bu Fatimah', 'phone' => '0844444444']);
+
+        $receivable = app(ReceivableService::class)->createReceivable([
+            'receivable_party_id' => $party->id,
+            'amount' => 250000,
+            'receivable_date' => now()->format('Y-m-d'),
+            'description' => 'Bon kain',
+        ], $kasir);
+
+        $this->assertFalse($kasir->can('update', $receivable));
+        $this->assertTrue($kasir->can('requestChange', $receivable));
+
+        $service = app(DataChangeRequestService::class);
+        $request = $service->createReceivableChangeRequest(
+            $receivable,
+            $kasir,
+            DataChangeRequest::TYPE_EDIT,
+            'Koreksi nominal bon piutang menjadi 200.000',
+            [
+                'receivable_party_id' => $party->id,
+                'amount' => 200000,
+                'receivable_date' => now()->format('Y-m-d'),
+                'description' => 'Bon kain (dikurangi retur)',
+            ]
+        );
+
+        $this->assertDatabaseHas('data_change_requests', [
+            'id' => $request->id,
+            'requestable_type' => Receivable::class,
+            'requestable_id' => $receivable->id,
+            'status' => DataChangeRequest::STATUS_PENDING,
+        ]);
+
+        $service->approveRequest($request, $admin);
+
+        $this->assertEquals(DataChangeRequest::STATUS_APPROVED, $request->fresh()->status);
+        $this->assertEquals(200000, (float) $receivable->fresh()->amount);
+        $this->assertEquals(200000, (float) $receivable->fresh()->remaining_amount);
+    }
+
+    public function test_kasir_can_create_receivable_change_request_and_admin_approve_void(): void
+    {
+        $admin = $this->admin();
+        $kasir = $this->kasir();
+        $party = ReceivableParty::create(['name' => 'Pak Anwar', 'phone' => '0855555555']);
+
+        $receivable = app(ReceivableService::class)->createReceivable([
+            'receivable_party_id' => $party->id,
+            'amount' => 150000,
+            'receivable_date' => now()->format('Y-m-d'),
+        ], $kasir);
+
+        $service = app(DataChangeRequestService::class);
+        $request = $service->createReceivableChangeRequest(
+            $receivable,
+            $kasir,
+            DataChangeRequest::TYPE_VOID,
+            'Pembatalan bon piutang karena salah input'
+        );
+
+        $service->approveRequest($request, $admin);
+
+        $this->assertEquals(DataChangeRequest::STATUS_APPROVED, $request->fresh()->status);
+        $this->assertSoftDeleted('receivables', ['id' => $receivable->id]);
+    }
+
+    public function test_cannot_void_receivable_with_payments(): void
+    {
+        $kasir = $this->kasir();
+        $party = ReceivableParty::create(['name' => 'Bu Dewi', 'phone' => '0866666666']);
+
+        $receivable = app(ReceivableService::class)->createReceivable([
+            'receivable_party_id' => $party->id,
+            'amount' => 300000,
+            'receivable_date' => now()->format('Y-m-d'),
+        ], $kasir);
+
+        // Catat cicilan
+        app(ReceivablePaymentService::class)->recordInstallment([
+            'receivable_id' => $receivable->id,
+            'amount' => 100000,
+            'installment_date' => now()->format('Y-m-d'),
+        ], $kasir);
+
+        $this->expectException(ValidationException::class);
+        app(DataChangeRequestService::class)->createReceivableChangeRequest(
+            $receivable->fresh(),
+            $kasir,
+            DataChangeRequest::TYPE_VOID,
+            'Coba batalkan piutang yang sudah ada pembayaran'
+        );
     }
 }

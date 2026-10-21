@@ -79,6 +79,7 @@ class ReceivableService
             $remaining = round((float) $data['amount'] - (float) $paid, 2);
 
             $receivable->update([
+                'receivable_party_id' => $data['receivable_party_id'] ?? $receivable->receivable_party_id,
                 'amount' => $data['amount'],
                 'remaining_amount' => $remaining,
                 'status' => $remaining <= 0 ? Receivable::STATUS_PAID : Receivable::STATUS_UNPAID,

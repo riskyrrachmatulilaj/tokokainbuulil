@@ -3,9 +3,13 @@
 namespace App\Filament\Resources\DataChangeRequestResource\Pages;
 
 use App\Filament\Resources\DataChangeRequestResource;
+use App\Models\Customer;
 use App\Models\DataChangeRequest;
+use App\Models\Debt;
 use App\Models\Product;
+use App\Models\Receivable;
 use App\Models\ReceivableParty;
+use App\Models\Sale;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Infolists\Components\TextEntry;
@@ -29,7 +33,7 @@ class ViewDataChangeRequest extends ViewRecord
                 ->visible(fn () => auth()->user()?->isAdmin() && $this->record->isPending())
                 ->requiresConfirmation()
                 ->modalHeading('Setujui Pengajuan Perubahan Data')
-                ->modalDescription('Apakah Anda yakin ingin menyetujui pengajuan ini? Data penjualan, stok kain, dan piutang terkait akan disesuaikan secara otomatis.')
+                ->modalDescription('Apakah Anda yakin ingin menyetujui pengajuan ini? Data terkait akan diperbarui dan disesuaikan secara otomatis.')
                 ->action(function () {
                     try {
                         app(\App\Services\DataChangeRequestService::class)->approveRequest($this->record, auth()->user());
@@ -100,6 +104,10 @@ class ViewDataChangeRequest extends ViewRecord
                             TextEntry::make('id')->label('ID Pengajuan')->prefix('#')->weight('bold'),
                             TextEntry::make('created_at')->label('Waktu Diajukan')->dateTime('d M Y H:i'),
                             TextEntry::make('user.name')->label('Kasir Pengaju')->weight('semibold'),
+                            TextEntry::make('module_name')
+                                ->label('Modul')
+                                ->badge()
+                                ->color(fn (DataChangeRequest $record) => $record->module_badge_color),
                             TextEntry::make('request_type')
                                 ->label('Jenis Permohonan')
                                 ->badge()
@@ -114,9 +122,8 @@ class ViewDataChangeRequest extends ViewRecord
                                 ->badge()
                                 ->color(fn (DataChangeRequest $record) => $record->status_badge_color)
                                 ->formatStateUsing(fn (DataChangeRequest $record) => $record->status_label),
-                            TextEntry::make('original_data.transaction_number')
+                            TextEntry::make('document_number')
                                 ->label('No. Nota Terkait')
-                                ->placeholder(fn (DataChangeRequest $record) => "#{$record->requestable_id}")
                                 ->weight('bold'),
                         ]),
                         TextEntry::make('reason')
@@ -140,10 +147,11 @@ class ViewDataChangeRequest extends ViewRecord
                         ]),
                     ]),
 
-                Section::make('Perbandingan Data (Asli vs Usulan Kasir)')
+                // 1. Perbandingan Penjualan
+                Section::make('Perbandingan Data Penjualan (Asli vs Usulan Kasir)')
+                    ->visible(fn (DataChangeRequest $record) => $record->requestable_type === Sale::class)
                     ->schema([
                         Grid::make(2)->schema([
-                            // Kolom Data Asli
                             Section::make('Data Saat Ini (Asli)')
                                 ->schema([
                                     TextEntry::make('original_data.sale_date')
@@ -180,13 +188,12 @@ class ViewDataChangeRequest extends ViewRecord
                                 ])
                                 ->columnSpan(1),
 
-                            // Kolom Data Usulan
                             Section::make('Usulan Perubahan oleh Kasir')
                                 ->schema([
                                     TextEntry::make('proposed_info')
                                         ->label('Status Usulan')
                                         ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_VOID)
-                                        ->state('Kasir mengajukan pembatalan penuh (Void) untuk nota ini.')
+                                        ->state('Kasir mengajukan pembatalan penuh (Void) untuk transaksi penjualan ini.')
                                         ->color('danger')
                                         ->weight('bold'),
                                     TextEntry::make('proposed_data.sale_date')
@@ -234,6 +241,154 @@ class ViewDataChangeRequest extends ViewRecord
                                             })->implode("\n");
                                         })
                                         ->prose(),
+                                ])
+                                ->columnSpan(1),
+                        ]),
+                    ]),
+
+                // 2. Perbandingan Hutang Toko
+                Section::make('Perbandingan Data Hutang Toko (Asli vs Usulan Kasir)')
+                    ->visible(fn (DataChangeRequest $record) => $record->requestable_type === Debt::class)
+                    ->schema([
+                        Grid::make(2)->schema([
+                            Section::make('Data Hutang Saat Ini (Asli)')
+                                ->schema([
+                                    TextEntry::make('original_data.invoice_number')
+                                        ->label('Nomor Nota'),
+                                    TextEntry::make('original_data.customer_name')
+                                        ->label('Supplier / Pihak Terkait'),
+                                    TextEntry::make('original_data.amount')
+                                        ->label('Total Nominal Hutang')
+                                        ->formatStateUsing(fn ($state) => rupiah($state))
+                                        ->weight('bold'),
+                                    TextEntry::make('original_data.paid_amount')
+                                        ->label('Sudah Dibayar')
+                                        ->formatStateUsing(fn ($state) => rupiah($state))
+                                        ->color('success'),
+                                    TextEntry::make('original_data.remaining_amount')
+                                        ->label('Sisa Tagihan')
+                                        ->formatStateUsing(fn ($state) => rupiah($state))
+                                        ->color('warning'),
+                                    TextEntry::make('original_data.debt_date')
+                                        ->label('Tanggal Hutang')
+                                        ->date('d M Y'),
+                                    TextEntry::make('original_data.due_date')
+                                        ->label('Jatuh Tempo')
+                                        ->placeholder('-')
+                                        ->date('d M Y'),
+                                    TextEntry::make('original_data.description')
+                                        ->label('Keterangan')
+                                        ->placeholder('-'),
+                                ])
+                                ->columnSpan(1),
+
+                            Section::make('Usulan Perubahan oleh Kasir')
+                                ->schema([
+                                    TextEntry::make('proposed_info_debt')
+                                        ->label('Status Usulan')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_VOID)
+                                        ->state('Kasir mengajukan pembatalan penuh (Void) untuk nota hutang ini.')
+                                        ->color('danger')
+                                        ->weight('bold'),
+                                    TextEntry::make('proposed_customer')
+                                        ->label('Supplier Usulan')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_EDIT)
+                                        ->state(function (DataChangeRequest $record) {
+                                            $cId = $record->proposed_data['customer_id'] ?? null;
+                                            return $cId ? Customer::find($cId)?->name ?? "Supplier #{$cId}" : '-';
+                                        }),
+                                    TextEntry::make('proposed_data.amount')
+                                        ->label('Nominal Hutang Baru')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_EDIT)
+                                        ->formatStateUsing(fn ($state) => rupiah($state))
+                                        ->weight('bold'),
+                                    TextEntry::make('proposed_data.debt_date')
+                                        ->label('Tanggal Hutang Usulan')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_EDIT)
+                                        ->date('d M Y'),
+                                    TextEntry::make('proposed_data.due_date')
+                                        ->label('Jatuh Tempo Usulan')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_EDIT)
+                                        ->placeholder('-')
+                                        ->date('d M Y'),
+                                    TextEntry::make('proposed_data.description')
+                                        ->label('Keterangan Usulan')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_EDIT)
+                                        ->placeholder('-'),
+                                ])
+                                ->columnSpan(1),
+                        ]),
+                    ]),
+
+                // 3. Perbandingan Piutang Pelanggan
+                Section::make('Perbandingan Data Piutang Pelanggan (Asli vs Usulan Kasir)')
+                    ->visible(fn (DataChangeRequest $record) => $record->requestable_type === Receivable::class)
+                    ->schema([
+                        Grid::make(2)->schema([
+                            Section::make('Data Piutang Saat Ini (Asli)')
+                                ->schema([
+                                    TextEntry::make('original_data.invoice_number')
+                                        ->label('Nomor Nota'),
+                                    TextEntry::make('original_data.party_name')
+                                        ->label('Pelanggan / Debitur'),
+                                    TextEntry::make('original_data.amount')
+                                        ->label('Total Nominal Piutang')
+                                        ->formatStateUsing(fn ($state) => rupiah($state))
+                                        ->weight('bold'),
+                                    TextEntry::make('original_data.paid_amount')
+                                        ->label('Sudah Diterima')
+                                        ->formatStateUsing(fn ($state) => rupiah($state))
+                                        ->color('success'),
+                                    TextEntry::make('original_data.remaining_amount')
+                                        ->label('Sisa Tagihan')
+                                        ->formatStateUsing(fn ($state) => rupiah($state))
+                                        ->color('warning'),
+                                    TextEntry::make('original_data.receivable_date')
+                                        ->label('Tanggal Piutang')
+                                        ->date('d M Y'),
+                                    TextEntry::make('original_data.due_date')
+                                        ->label('Jatuh Tempo')
+                                        ->placeholder('-')
+                                        ->date('d M Y'),
+                                    TextEntry::make('original_data.description')
+                                        ->label('Keterangan')
+                                        ->placeholder('-'),
+                                ])
+                                ->columnSpan(1),
+
+                            Section::make('Usulan Perubahan oleh Kasir')
+                                ->schema([
+                                    TextEntry::make('proposed_info_receivable')
+                                        ->label('Status Usulan')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_VOID)
+                                        ->state('Kasir mengajukan pembatalan penuh (Void) untuk nota piutang ini.')
+                                        ->color('danger')
+                                        ->weight('bold'),
+                                    TextEntry::make('proposed_party_receivable')
+                                        ->label('Pelanggan Usulan')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_EDIT)
+                                        ->state(function (DataChangeRequest $record) {
+                                            $pId = $record->proposed_data['receivable_party_id'] ?? null;
+                                            return $pId ? ReceivableParty::find($pId)?->name ?? "Pelanggan #{$pId}" : '-';
+                                        }),
+                                    TextEntry::make('proposed_data.amount')
+                                        ->label('Nominal Piutang Baru')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_EDIT)
+                                        ->formatStateUsing(fn ($state) => rupiah($state))
+                                        ->weight('bold'),
+                                    TextEntry::make('proposed_data.receivable_date')
+                                        ->label('Tanggal Piutang Usulan')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_EDIT)
+                                        ->date('d M Y'),
+                                    TextEntry::make('proposed_data.due_date')
+                                        ->label('Jatuh Tempo Usulan')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_EDIT)
+                                        ->placeholder('-')
+                                        ->date('d M Y'),
+                                    TextEntry::make('proposed_data.description')
+                                        ->label('Keterangan Usulan')
+                                        ->visible(fn (DataChangeRequest $record) => $record->request_type === DataChangeRequest::TYPE_EDIT)
+                                        ->placeholder('-'),
                                 ])
                                 ->columnSpan(1),
                         ]),

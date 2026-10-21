@@ -27,6 +27,11 @@ class ReceivablePolicy
         return $user->isAdmin();
     }
 
+    public function requestChange(User $user, Receivable $receivable): bool
+    {
+        return $user->isKasir() && ! $receivable->hasPendingChangeRequest();
+    }
+
     public function delete(User $user, Receivable $receivable): bool
     {
         return $user->isAdmin();

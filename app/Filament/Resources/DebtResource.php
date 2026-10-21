@@ -162,6 +162,16 @@ class DebtResource extends Resource
                     ->label('Rincian Progres')
                     ->formatStateUsing(fn (Debt $record) => $record->progress.'% ('.rupiah($record->paid_amount).' / '.rupiah($record->amount).')')
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('pendingChangeRequest.request_type')
+                    ->label('Status Pengajuan')
+                    ->badge()
+                    ->state(function (Debt $record) {
+                        $pending = $record->pendingChangeRequest;
+                        return $pending ? "Menunggu: {$pending->request_type_label}" : null;
+                    })
+                    ->color('warning')
+                    ->placeholder('-')
+                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('customer_id')
@@ -310,6 +320,7 @@ class DebtResource extends Resource
                 Actions\EditAction::make()
                     ->label('Ubah')
                     ->visible(fn (Debt $record) => auth()->user()?->can('update', $record)),
+                static::getRequestChangeAction(),
                 Actions\DeleteAction::make()
                     ->label('Hapus')
                     ->requiresConfirmation()
@@ -329,6 +340,105 @@ class DebtResource extends Resource
         return [
             InstallmentsRelationManager::class,
         ];
+    }
+
+    public static function getRequestChangeAction(): Actions\Action
+    {
+        return Actions\Action::make('request_change')
+            ->label('Ajukan Perubahan')
+            ->icon('heroicon-o-arrow-path')
+            ->color('warning')
+            ->visible(fn (Debt $record) => auth()->user()?->isKasir())
+            ->disabled(fn (Debt $record) => $record->hasPendingChangeRequest())
+            ->tooltip(fn (Debt $record) => $record->hasPendingChangeRequest() ? 'Sudah ada pengajuan yang menunggu persetujuan admin' : null)
+            ->modalHeading(fn (Debt $record) => "Ajukan Perubahan / Pembatalan Nota Hutang {$record->invoice_number}")
+            ->modalDescription('Permohonan ini akan ditinjau oleh Admin sebelum data nota hutang diperbarui.')
+            ->modalSubmitActionLabel('Kirim Pengajuan')
+            ->fillForm(fn (Debt $record) => [
+                'request_type' => \App\Models\DataChangeRequest::TYPE_EDIT,
+                'reason' => '',
+                'customer_id' => $record->customer_id,
+                'amount' => $record->amount,
+                'debt_date' => $record->debt_date,
+                'due_date' => $record->due_date,
+                'description' => $record->description,
+            ])
+            ->form([
+                Forms\Components\Radio::make('request_type')
+                    ->label('Jenis Permohonan')
+                    ->options([
+                        \App\Models\DataChangeRequest::TYPE_EDIT => 'Koreksi Data Nota Hutang',
+                        \App\Models\DataChangeRequest::TYPE_VOID => 'Pembatalan Nota Hutang (Void)',
+                    ])
+                    ->default(\App\Models\DataChangeRequest::TYPE_EDIT)
+                    ->required()
+                    ->live(),
+                Forms\Components\Textarea::make('reason')
+                    ->label('Alasan Pengajuan')
+                    ->placeholder('Misal: Salah input nominal tagihan supplier, salah tanggal bon, dsb.')
+                    ->required()
+                    ->minLength(5)
+                    ->rows(2)
+                    ->columnSpanFull(),
+                \Filament\Schemas\Components\Section::make('Koreksi Data Hutang')
+                    ->visible(fn ($get) => $get('request_type') === \App\Models\DataChangeRequest::TYPE_EDIT)
+                    ->schema([
+                        Forms\Components\Select::make('customer_id')
+                            ->label('Supplier / Pihak Terkait')
+                            ->options(\App\Models\Customer::pluck('name', 'id'))
+                            ->searchable()
+                            ->required(),
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Nominal Hutang Baru')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1)
+                            ->prefix('Rp')
+                            ->helperText(fn (Debt $record) => "Sudah dibayar: " . rupiah($record->paid_amount) . " (nominal tidak boleh kurang dari yang sudah dibayar)"),
+                        Forms\Components\DatePicker::make('debt_date')
+                            ->label('Tanggal Hutang')
+                            ->required(),
+                        Forms\Components\DatePicker::make('due_date')
+                            ->label('Jatuh Tempo (opsional)')
+                            ->afterOrEqual('debt_date'),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Keterangan')
+                            ->rows(2)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+            ])
+            ->action(function (Debt $record, array $data) {
+                try {
+                    $service = app(\App\Services\DataChangeRequestService::class);
+                    $proposedData = $data['request_type'] === \App\Models\DataChangeRequest::TYPE_EDIT ? $data : null;
+                    $service->createDebtChangeRequest(
+                        $record,
+                        auth()->user(),
+                        $data['request_type'],
+                        $data['reason'],
+                        $proposedData
+                    );
+
+                    \Filament\Notifications\Notification::make()
+                        ->success()
+                        ->title('Pengajuan Berhasil Dikirim!')
+                        ->body('Permohonan Anda telah diteruskan ke Admin untuk ditinjau.')
+                        ->send();
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    \Filament\Notifications\Notification::make()
+                        ->danger()
+                        ->title('Gagal Mengajukan Perubahan')
+                        ->body(collect($e->errors())->flatten()->first())
+                        ->send();
+                } catch (\Throwable $e) {
+                    \Filament\Notifications\Notification::make()
+                        ->danger()
+                        ->title('Terjadi Kendala')
+                        ->body($e->getMessage() ?: 'Gagal mengirim pengajuan perubahan.')
+                        ->send();
+                }
+            });
     }
 
     public static function getPages(): array

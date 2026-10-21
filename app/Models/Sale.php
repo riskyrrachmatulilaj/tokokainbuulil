@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasDataChangeRequests;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Sale extends Model
 {
-    use HasFactory;
+    use HasFactory, HasDataChangeRequests;
 
     public const PAYMENT_METHOD_CASH = 'cash';
     public const PAYMENT_METHOD_RECEIVABLE = 'receivable';
@@ -195,21 +196,6 @@ class Sale extends Model
         }
 
         return "https://api.whatsapp.com/send?phone=" . $phone . "&text=" . rawurlencode($this->whatsapp_message_text ?? '');
-    }
-
-    public function changeRequests(): \Illuminate\Database\Eloquent\Relations\MorphMany
-    {
-        return $this->morphMany(DataChangeRequest::class, 'requestable');
-    }
-
-    public function pendingChangeRequest(): \Illuminate\Database\Eloquent\Relations\MorphOne
-    {
-        return $this->morphOne(DataChangeRequest::class, 'requestable')->where('status', DataChangeRequest::STATUS_PENDING);
-    }
-
-    public function hasPendingChangeRequest(): bool
-    {
-        return $this->changeRequests()->where('status', DataChangeRequest::STATUS_PENDING)->exists();
     }
 }
 

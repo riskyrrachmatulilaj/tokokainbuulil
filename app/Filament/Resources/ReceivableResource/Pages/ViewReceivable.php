@@ -97,6 +97,7 @@ class ViewReceivable extends ViewRecord
                         throw new \Filament\Support\Exceptions\Halt;
                     }
                 }),
+            ReceivableResource::getRequestChangeAction(),
             Actions\EditAction::make()
                 ->visible(fn () => auth()->user()?->can('update', $this->record)),
             Actions\DeleteAction::make()

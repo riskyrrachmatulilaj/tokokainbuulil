@@ -163,6 +163,16 @@ class ReceivableResource extends Resource
                     ->label('Rincian Progres')
                     ->formatStateUsing(fn (Receivable $record) => $record->progress.'% ('.rupiah($record->paid_amount).' / '.rupiah($record->amount).')')
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('pendingChangeRequest.request_type')
+                    ->label('Status Pengajuan')
+                    ->badge()
+                    ->state(function (Receivable $record) {
+                        $pending = $record->pendingChangeRequest;
+                        return $pending ? "Menunggu: {$pending->request_type_label}" : null;
+                    })
+                    ->color('warning')
+                    ->placeholder('-')
+                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('receivable_party_id')
@@ -311,6 +321,7 @@ class ReceivableResource extends Resource
                 Actions\EditAction::make()
                     ->label('Ubah')
                     ->visible(fn (Receivable $record) => auth()->user()?->can('update', $record)),
+                static::getRequestChangeAction(),
                 Actions\DeleteAction::make()
                     ->label('Hapus')
                     ->requiresConfirmation()
@@ -330,6 +341,105 @@ class ReceivableResource extends Resource
         return [
             ReceivableInstallmentsRelationManager::class,
         ];
+    }
+
+    public static function getRequestChangeAction(): Actions\Action
+    {
+        return Actions\Action::make('request_change')
+            ->label('Ajukan Perubahan')
+            ->icon('heroicon-o-arrow-path')
+            ->color('warning')
+            ->visible(fn (Receivable $record) => auth()->user()?->isKasir())
+            ->disabled(fn (Receivable $record) => $record->hasPendingChangeRequest())
+            ->tooltip(fn (Receivable $record) => $record->hasPendingChangeRequest() ? 'Sudah ada pengajuan yang menunggu persetujuan admin' : null)
+            ->modalHeading(fn (Receivable $record) => "Ajukan Perubahan / Pembatalan Nota Piutang {$record->invoice_number}")
+            ->modalDescription('Permohonan ini akan ditinjau oleh Admin sebelum data nota piutang diperbarui.')
+            ->modalSubmitActionLabel('Kirim Pengajuan')
+            ->fillForm(fn (Receivable $record) => [
+                'request_type' => \App\Models\DataChangeRequest::TYPE_EDIT,
+                'reason' => '',
+                'receivable_party_id' => $record->receivable_party_id,
+                'amount' => $record->amount,
+                'receivable_date' => $record->receivable_date,
+                'due_date' => $record->due_date,
+                'description' => $record->description,
+            ])
+            ->form([
+                Forms\Components\Radio::make('request_type')
+                    ->label('Jenis Permohonan')
+                    ->options([
+                        \App\Models\DataChangeRequest::TYPE_EDIT => 'Koreksi Data Nota Piutang',
+                        \App\Models\DataChangeRequest::TYPE_VOID => 'Pembatalan Nota Piutang (Void)',
+                    ])
+                    ->default(\App\Models\DataChangeRequest::TYPE_EDIT)
+                    ->required()
+                    ->live(),
+                Forms\Components\Textarea::make('reason')
+                    ->label('Alasan Pengajuan')
+                    ->placeholder('Misal: Salah input nominal piutang, salah nama pelanggan, dsb.')
+                    ->required()
+                    ->minLength(5)
+                    ->rows(2)
+                    ->columnSpanFull(),
+                \Filament\Schemas\Components\Section::make('Koreksi Data Piutang')
+                    ->visible(fn ($get) => $get('request_type') === \App\Models\DataChangeRequest::TYPE_EDIT)
+                    ->schema([
+                        Forms\Components\Select::make('receivable_party_id')
+                            ->label('Pelanggan / Debitur')
+                            ->options(\App\Models\ReceivableParty::pluck('name', 'id'))
+                            ->searchable()
+                            ->required(),
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Nominal Piutang Baru')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1)
+                            ->prefix('Rp')
+                            ->helperText(fn (Receivable $record) => "Sudah diterima: " . rupiah($record->paid_amount) . " (nominal tidak boleh kurang dari yang sudah dibayar)"),
+                        Forms\Components\DatePicker::make('receivable_date')
+                            ->label('Tanggal Piutang')
+                            ->required(),
+                        Forms\Components\DatePicker::make('due_date')
+                            ->label('Jatuh Tempo (opsional)')
+                            ->afterOrEqual('receivable_date'),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Keterangan')
+                            ->rows(2)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+            ])
+            ->action(function (Receivable $record, array $data) {
+                try {
+                    $service = app(\App\Services\DataChangeRequestService::class);
+                    $proposedData = $data['request_type'] === \App\Models\DataChangeRequest::TYPE_EDIT ? $data : null;
+                    $service->createReceivableChangeRequest(
+                        $record,
+                        auth()->user(),
+                        $data['request_type'],
+                        $data['reason'],
+                        $proposedData
+                    );
+
+                    \Filament\Notifications\Notification::make()
+                        ->success()
+                        ->title('Pengajuan Berhasil Dikirim!')
+                        ->body('Permohonan Anda telah diteruskan ke Admin untuk ditinjau.')
+                        ->send();
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    \Filament\Notifications\Notification::make()
+                        ->danger()
+                        ->title('Gagal Mengajukan Perubahan')
+                        ->body(collect($e->errors())->flatten()->first())
+                        ->send();
+                } catch (\Throwable $e) {
+                    \Filament\Notifications\Notification::make()
+                        ->danger()
+                        ->title('Terjadi Kendala')
+                        ->body($e->getMessage() ?: 'Gagal mengirim pengajuan perubahan.')
+                        ->send();
+                }
+            });
     }
 
     public static function getPages(): array

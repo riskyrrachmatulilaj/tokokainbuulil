@@ -27,6 +27,11 @@ class DebtPolicy
         return $user->isAdmin();
     }
 
+    public function requestChange(User $user, Debt $debt): bool
+    {
+        return $user->isKasir() && ! $debt->hasPendingChangeRequest();
+    }
+
     public function delete(User $user, Debt $debt): bool
     {
         return $user->isAdmin();
