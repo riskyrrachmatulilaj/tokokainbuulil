@@ -227,6 +227,16 @@ class SaleResource extends Resource
                     ->label('Kasir')
                     ->placeholder('-')
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('pendingChangeRequest.request_type')
+                    ->label('Status Pengajuan')
+                    ->badge()
+                    ->state(function (Sale $record) {
+                        $pending = $record->pendingChangeRequest;
+                        return $pending ? "Menunggu: {$pending->request_type_label}" : null;
+                    })
+                    ->color('warning')
+                    ->placeholder('-')
+                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('payment_method')
@@ -255,6 +265,7 @@ class SaleResource extends Resource
             ->actions([
                 Actions\ViewAction::make(),
                 Actions\EditAction::make(),
+                static::getRequestChangeAction(),
                 Actions\ActionGroup::make([
                     Actions\Action::make('copy_whatsapp')
                         ->label('Salin Pesan WA')
@@ -333,6 +344,194 @@ class SaleResource extends Resource
                     ->visible(fn () => auth()->user()?->isAdmin()),
             ])
             ->defaultSort('sale_date', 'desc');
+    }
+
+    public static function getRequestChangeAction(): Actions\Action
+    {
+        return Actions\Action::make('request_change')
+            ->label('Ajukan Perubahan')
+            ->icon('heroicon-o-arrow-path')
+            ->color('warning')
+            ->visible(fn (Sale $record) => auth()->user()?->isKasir())
+            ->disabled(fn (Sale $record) => $record->hasPendingChangeRequest())
+            ->tooltip(fn (Sale $record) => $record->hasPendingChangeRequest() ? 'Sudah ada pengajuan yang menunggu persetujuan admin' : null)
+            ->modalHeading(fn (Sale $record) => "Ajukan Perubahan / Pembatalan Nota {$record->transaction_number}")
+            ->modalDescription('Permohonan ini akan ditinjau oleh Admin sebelum data diperbarui.')
+            ->modalSubmitActionLabel('Kirim Pengajuan')
+            ->fillForm(fn (Sale $record) => [
+                'request_type' => \App\Models\DataChangeRequest::TYPE_EDIT,
+                'reason' => '',
+                'sale_date' => $record->sale_date,
+                'receivable_party_id' => $record->receivable_party_id,
+                'payment_method' => $record->payment_method,
+                'description' => $record->description,
+                'received_amount' => $record->received_amount,
+                'cash_amount' => $record->cash_amount,
+                'transfer_amount' => $record->transfer_amount,
+                'items' => $record->items->map(fn ($item) => [
+                    'product_id' => $item->product_id,
+                    'quantity' => (float)$item->quantity == (int)$item->quantity ? (int)$item->quantity : (float)$item->quantity,
+                    'price' => (float)$item->price,
+                    'notes' => $item->notes,
+                    'subtotal' => (float)$item->subtotal,
+                ])->toArray(),
+            ])
+            ->form([
+                Forms\Components\Radio::make('request_type')
+                    ->label('Jenis Permohonan')
+                    ->options([
+                        \App\Models\DataChangeRequest::TYPE_EDIT => 'Koreksi Data / Item Penjualan',
+                        \App\Models\DataChangeRequest::TYPE_VOID => 'Pembatalan Transaksi Penjualan (Void)',
+                    ])
+                    ->default(\App\Models\DataChangeRequest::TYPE_EDIT)
+                    ->required()
+                    ->live(),
+                Forms\Components\Textarea::make('reason')
+                    ->label('Alasan Pengajuan')
+                    ->placeholder('Misal: Salah input meter kain, pembeli ganti barang, salah metode bayar...')
+                    ->required()
+                    ->minLength(5)
+                    ->rows(2)
+                    ->columnSpanFull(),
+                \Filament\Schemas\Components\Section::make('Koreksi Data Transaksi')
+                    ->visible(fn ($get) => $get('request_type') === \App\Models\DataChangeRequest::TYPE_EDIT)
+                    ->schema([
+                        Forms\Components\DatePicker::make('sale_date')
+                            ->label('Tanggal Penjualan')
+                            ->required(),
+                        Forms\Components\Select::make('receivable_party_id')
+                            ->label('Pelanggan')
+                            ->options(\App\Models\ReceivableParty::pluck('name', 'id'))
+                            ->searchable()
+                            ->required(),
+                        Forms\Components\Select::make('payment_method')
+                            ->label('Metode Pembayaran')
+                            ->options([
+                                Sale::PAYMENT_METHOD_CASH => 'Tunai',
+                                Sale::PAYMENT_METHOD_TRANSFER => 'Transfer',
+                                Sale::PAYMENT_METHOD_SPLIT => 'Tunai + Transfer',
+                                Sale::PAYMENT_METHOD_RECEIVABLE => 'Kredit (Piutang Penuh)',
+                                Sale::PAYMENT_METHOD_CREDIT_CASH => 'Kredit + Tunai',
+                                Sale::PAYMENT_METHOD_CREDIT_TRANSFER => 'Kredit + Transfer',
+                            ])
+                            ->required()
+                            ->live(),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Keterangan')
+                            ->rows(2)
+                            ->columnSpanFull(),
+                        Forms\Components\Repeater::make('items')
+                            ->label('Daftar Produk Usulan')
+                            ->schema([
+                                Forms\Components\Select::make('product_id')
+                                    ->label('Produk')
+                                    ->options(\App\Models\Product::pluck('name', 'id'))
+                                    ->searchable()
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        if ($state) {
+                                            $prod = \App\Models\Product::find($state);
+                                            if ($prod) {
+                                                $price = (float) $prod->price;
+                                                $set('price', $price);
+                                                $qty = (float) ($get('quantity') ?: 1);
+                                                $set('subtotal', round($price * $qty, 2));
+                                            }
+                                        }
+                                    })
+                                    ->columnSpan(4),
+                                Forms\Components\TextInput::make('quantity')
+                                    ->label('Qty')
+                                    ->numeric()
+                                    ->default(1)
+                                    ->required()
+                                    ->minValue(0.001)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        $qty = (float) ($state ?: 0);
+                                        $price = (float) ($get('price') ?: 0);
+                                        $set('subtotal', round($price * $qty, 2));
+                                    })
+                                    ->columnSpan(2),
+                                Forms\Components\TextInput::make('price')
+                                    ->label('Harga Satuan')
+                                    ->numeric()
+                                    ->required()
+                                    ->prefix('Rp')
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        $price = (float) ($state ?: 0);
+                                        $qty = (float) ($get('quantity') ?: 0);
+                                        $set('subtotal', round($price * $qty, 2));
+                                    })
+                                    ->columnSpan(3),
+                                Forms\Components\TextInput::make('subtotal')
+                                    ->label('Subtotal')
+                                    ->numeric()
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->prefix('Rp')
+                                    ->columnSpan(3),
+                                Forms\Components\TextInput::make('notes')
+                                    ->label('Keterangan / Rincian Roll')
+                                    ->placeholder('Misal: 2 roll kain @ 50m')
+                                    ->columnSpanFull(),
+                            ])
+                            ->columns(12)
+                            ->defaultItems(1)
+                            ->addActionLabel('Tambah Barang')
+                            ->reorderable(false)
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('received_amount')
+                            ->label('Uang Diterima')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->visible(fn ($get) => $get('payment_method') === Sale::PAYMENT_METHOD_CASH),
+                        Forms\Components\TextInput::make('cash_amount')
+                            ->label('Bayar Tunai / DP Tunai')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->visible(fn ($get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_SPLIT, Sale::PAYMENT_METHOD_CREDIT_CASH, Sale::PAYMENT_METHOD_CREDIT_SPLIT])),
+                        Forms\Components\TextInput::make('transfer_amount')
+                            ->label('Bayar Transfer / DP Transfer')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->visible(fn ($get) => in_array($get('payment_method'), [Sale::PAYMENT_METHOD_SPLIT, Sale::PAYMENT_METHOD_CREDIT_TRANSFER, Sale::PAYMENT_METHOD_CREDIT_SPLIT])),
+                    ])
+                    ->columns(2),
+            ])
+            ->action(function (Sale $record, array $data) {
+                try {
+                    $service = app(\App\Services\DataChangeRequestService::class);
+                    $proposedData = $data['request_type'] === \App\Models\DataChangeRequest::TYPE_EDIT ? $data : null;
+                    $service->createSaleChangeRequest(
+                        $record,
+                        auth()->user(),
+                        $data['request_type'],
+                        $data['reason'],
+                        $proposedData
+                    );
+
+                    Notification::make()
+                        ->success()
+                        ->title('Pengajuan Berhasil Dikirim!')
+                        ->body('Permohonan Anda telah diteruskan ke Admin untuk ditinjau.')
+                        ->send();
+                } catch (ValidationException $e) {
+                    Notification::make()
+                        ->danger()
+                        ->title('Gagal Mengajukan Perubahan')
+                        ->body(collect($e->errors())->flatten()->first())
+                        ->send();
+                } catch (\Throwable $e) {
+                    Notification::make()
+                        ->danger()
+                        ->title('Terjadi Kendala')
+                        ->body($e->getMessage() ?: 'Gagal mengirim pengajuan perubahan.')
+                        ->send();
+                }
+            });
     }
 
     public static function getPages(): array

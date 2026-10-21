@@ -24,7 +24,12 @@ class SalePolicy
 
     public function update(User $user, Sale $sale): bool
     {
-        return $user->isAdmin() || $user->isKasir();
+        return $user->isAdmin();
+    }
+
+    public function requestChange(User $user, Sale $sale): bool
+    {
+        return $user->isKasir() && ! $sale->hasPendingChangeRequest();
     }
 
     public function delete(User $user, Sale $sale): bool

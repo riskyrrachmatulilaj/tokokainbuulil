@@ -92,6 +92,7 @@ class ViewSale extends ViewRecord
     {
         return [
             Actions\EditAction::make(),
+            SaleResource::getRequestChangeAction(),
             Actions\ActionGroup::make([
                 Actions\Action::make('copy_whatsapp')
                     ->label('Salin Pesan WA')

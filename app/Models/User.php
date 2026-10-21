@@ -85,6 +85,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Sale::class, 'created_by');
     }
 
+    public function changeRequests()
+    {
+        return $this->hasMany(DataChangeRequest::class, 'user_id');
+    }
+
+    public function reviewedChangeRequests()
+    {
+        return $this->hasMany(DataChangeRequest::class, 'reviewed_by');
+    }
+
     protected static function booted(): void
     {
         static::created(function (User $user) {

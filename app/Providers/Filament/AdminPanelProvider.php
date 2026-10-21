@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Toko Kain Bu Ulil')
             ->font('Plus Jakarta Sans', 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap')
             ->sidebarCollapsibleOnDesktop()
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Indigo,
                 'gray' => Color::Slate,
